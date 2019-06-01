@@ -1,4 +1,5 @@
-import { Entity } from './types';
+import { Actor, ArrayProperty, Component, Entity,
+    Property, SaveGame, StructProperty, TextProperty } from './types';
 
 // TODO find a way to optimize this more!
 interface OutputBufferBuffer {
@@ -97,8 +98,8 @@ export class Json2Sav {
     public uuid?: string;
     public hadError = false;
     public buffer: OutputBuffer;
-    public saveJson: any;
-    constructor(saveJson: any) {
+    public saveJson: SaveGame;
+    constructor(saveJson: SaveGame) {
         this.saveJson = saveJson;
         this.buffer = new OutputBuffer();
     }
@@ -123,26 +124,25 @@ export class Json2Sav {
                 this.buffer.writeByte(saveJson.sessionVisibility);
             }
 
-            this.buffer.writeInt(saveJson.objects.length);
+            this.buffer.writeInt(saveJson.actors.length + saveJson.components.length);
 
-            for (const obj of saveJson.objects) {
+            for (const obj of saveJson.actors) {
                 this.buffer.writeInt(obj.type);
-                if (obj.type === 1) {
-                    this.writeActor(obj);
-                } else if (obj.type === 0) {
-                    this.writeComponent(obj);
-                } else {
-                    this.error('uknown type ' + obj.type);
-                }
+                this.writeActor(obj);
             }
 
-            this.buffer.writeInt(saveJson.objects.length);
-            for (const obj of saveJson.objects) {
-                if (obj.type === 1) {
-                    this.writeEntity(obj.entity, true, obj.className);
-                } else if (obj.type === 0) {
-                    this.writeEntity(obj.entity, false, obj.className);
-                }
+            for (const obj of saveJson.components) {
+                this.buffer.writeInt(obj.type);
+                this.writeComponent(obj);
+            }
+
+            this.buffer.writeInt(saveJson.actors.length + saveJson.components.length);
+            for (const obj of saveJson.actors) {
+                this.writeEntity(obj.entity, true, obj.className);
+            }
+
+            for (const obj of saveJson.components) {
+                this.writeEntity(obj.entity, false, obj.className);
             }
 
             this.buffer.writeInt(saveJson.collected.length);
@@ -166,7 +166,7 @@ export class Json2Sav {
         }
     }
 
-    public writeActor(obj: any) {
+    public writeActor(obj: Actor) {
         this.buffer.writeLengthPrefixedString(obj.className);
         this.buffer.writeLengthPrefixedString(obj.levelName);
         this.buffer.writeLengthPrefixedString(obj.pathName);
@@ -184,20 +184,20 @@ export class Json2Sav {
         this.buffer.writeInt(obj.wasPlacedInLevel);
     }
 
-    public writeComponent(obj: any) {
+    public writeComponent(obj: Component) {
         this.buffer.writeLengthPrefixedString(obj.className);
         this.buffer.writeLengthPrefixedString(obj.levelName);
         this.buffer.writeLengthPrefixedString(obj.pathName);
         this.buffer.writeLengthPrefixedString(obj.outerPathName);
     }
 
-    public writeEntity(entity: any, withNames: boolean, className: string) {
+    public writeEntity(entity: Entity, withNames: boolean, className: string) {
         this.buffer.addBuffer(); // size will be written at this place later
         if (withNames) {
-            this.buffer.writeLengthPrefixedString(entity.levelName);
-            this.buffer.writeLengthPrefixedString(entity.pathName);
-            this.buffer.writeInt(entity.children.length);
-            for (const child of entity.children) {
+            this.buffer.writeLengthPrefixedString(entity.levelName!);
+            this.buffer.writeLengthPrefixedString(entity.pathName!);
+            this.buffer.writeInt(entity.children!.length);
+            for (const child of entity.children!) {
                 this.buffer.writeLengthPrefixedString(child.levelName);
                 this.buffer.writeLengthPrefixedString(child.pathName);
             }
@@ -221,7 +221,7 @@ export class Json2Sav {
         this.buffer.writeLengthPrefixedString('None');
     }
 
-    public writeProperty(property: any) {
+    public writeProperty(property: Property) {
         this.buffer.writeLengthPrefixedString(property.name);
         const type = property.type;
         this.buffer.writeLengthPrefixedString(property.type);
@@ -246,12 +246,13 @@ export class Json2Sav {
                 this.buffer.writeLengthPrefixedString(property.value);
                 break;
             case 'TextProperty':
+                const textProperty = property as TextProperty;
                 this.buffer.writeByte(0, false);
-                this.buffer.writeInt(property.unkown1);
-                this.buffer.writeByte(property.unkown2);
-                this.buffer.writeInt(property.unkown3);
-                this.buffer.writeLengthPrefixedString(property.unknown4);
-                this.buffer.writeLengthPrefixedString(property.value);
+                this.buffer.writeInt(textProperty.unknown1);
+                this.buffer.writeByte(textProperty.unknown2);
+                this.buffer.writeInt(textProperty.unknown3);
+                this.buffer.writeLengthPrefixedString(textProperty.unknown4);
+                this.buffer.writeLengthPrefixedString(textProperty.value);
                 break;
             case 'ByteProperty':
                 this.buffer.writeLengthPrefixedString(property.value.unk1, false);
@@ -276,11 +277,12 @@ export class Json2Sav {
                 this.buffer.writeLengthPrefixedString(property.value.pathName);
                 break;
 
-            case 'StructProperty':
-                this.buffer.writeLengthPrefixedString(property.value.type, false);
-                this.buffer.writeHex(property.structUnknown, false);
+            case 'StructProperty': {
+                const structProperty = property as StructProperty;
+                this.buffer.writeLengthPrefixedString(structProperty.value.type, false);
+                this.buffer.writeHex(structProperty.structUnknown, false);
 
-                const structType = property.value.type;
+                const structType = structProperty.value.type;
                 switch (structType) {
                     case 'Vector':
                     case 'Rotator':
@@ -352,6 +354,7 @@ export class Json2Sav {
                         break;
                 }
                 break;
+            }
             case 'ArrayProperty':
                 const itemType = property.value.type;
                 this.buffer.writeLengthPrefixedString(itemType, false);
@@ -376,15 +379,16 @@ export class Json2Sav {
                         }
                         break;
                     case 'StructProperty':
-                        this.buffer.writeLengthPrefixedString(property.structName);
-                        this.buffer.writeLengthPrefixedString(property.structType);
+                        const arrayProperty = property as ArrayProperty;
+                        this.buffer.writeLengthPrefixedString(arrayProperty.structName!);
+                        this.buffer.writeLengthPrefixedString(arrayProperty.structType!);
                         this.buffer.addBuffer();
                         this.buffer.writeInt(0, false);
                         this.buffer.writeLengthPrefixedString(
-                            property.structInnerType,
+                            arrayProperty.structInnerType!,
                             false
                         );
-                        this.buffer.writeHex(property.structUnknown, false);
+                        this.buffer.writeHex(arrayProperty.structUnknown!, false);
                         for (const prop of property.value.values) {
                             const obj = prop;
                             for (const innerProp of obj.properties) {

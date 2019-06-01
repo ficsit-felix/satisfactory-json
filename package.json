@@ -15,7 +15,9 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "lint": "tslint --project \"./tsconfig.json\""
+    "lint": "tslint --project \"./tsconfig.json\"",
+    "prepublish": "yarn build",
+    "postversion": "git push && git push --tags"
   },
   "files": [
     "lib/**/*"

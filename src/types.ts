@@ -8,7 +8,8 @@ export interface SaveGame {
     playDurationSeconds: number;
     saveDateTime: string;
     sessionVisibility: number;
-    objects: ActorOrComponent[];
+    actors: Actor[];
+    components: Component[];
     collected: ObjectReference[];
     missing: string;
 }
@@ -25,7 +26,7 @@ export interface Actor {
         scale3d: number[];
     };
     wasPlacedInLevel: number;
-    entity?: Entity;
+    entity: Entity;
 }
 
 export interface Component {
@@ -34,10 +35,8 @@ export interface Component {
     levelName: string;
     pathName: string;
     outerPathName: string;
-    entity?: Entity;
+    entity: Entity;
 }
-
-export type ActorOrComponent = Actor | Component;
 
 export interface Entity {
     levelName?: string;
@@ -88,8 +87,10 @@ export interface TextProperty extends BaseProperty {
 }
 
 export interface ByteProperty extends BaseProperty {
-    unk1: string;
-    unk2: string;
+    value: {
+        unk1: string;
+        unk2: number;
+    };
 }
 
 export interface EnumProperty extends BaseProperty {
@@ -113,10 +114,13 @@ export interface ArrayProperty extends BaseProperty {
     structName?: string;
     structType?: string;
     structInnerType?: string;
+    structUnknown?: string;
     value: any; // TODO!!
 }
 
-export interface MapProperty extends BaseProperty { }
+export interface MapProperty extends BaseProperty {
+    value: any; // TODO!!
+}
 
 export type Property =
     | IntProperty

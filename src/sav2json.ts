@@ -143,7 +143,8 @@ export class Sav2Json {
             playDurationSeconds: buffer.readInt(),
             saveDateTime: buffer.readLong(),
             sessionVisibility: saveHeaderType > 4 ? buffer.readByte() : 0,
-            objects: [],
+            actors: [],
+            components: [],
             collected: [],
             missing: ''
         };
@@ -156,9 +157,9 @@ export class Sav2Json {
             }
             const type = buffer.readInt();
             if (type === 1) {
-                saveJson['objects'].push(this.readActor(buffer));
+                saveJson.actors.push(this.readActor(buffer));
             } else if (type === 0) {
-                saveJson['objects'].push(this.readComponent(buffer));
+                saveJson.components.push(this.readComponent(buffer));
             } else {
                 this.error('Unknown type ' + type);
                 return;
@@ -180,18 +181,18 @@ export class Sav2Json {
             if (this.hadError) {
                 return;
             }
-            if (saveJson.objects[i].type === 1) {
-                saveJson.objects[i].entity = this.readEntity(
+            if (i < saveJson.actors.length) {
+                saveJson.actors[i].entity = this.readEntity(
                     buffer,
                     true,
-                    saveJson.objects[i].className
+                    saveJson.actors[i].className
                 );
             } else {
                 // type == 0
-                saveJson.objects[i].entity = this.readEntity(
+                saveJson.components[i - saveJson.actors.length].entity = this.readEntity(
                     buffer,
                     false,
-                    saveJson.objects[i].className
+                    saveJson.components[i - saveJson.actors.length].className
                 );
             }
         }
@@ -212,7 +213,7 @@ export class Sav2Json {
         return saveJson;
     }
 
-    public readActor(buffer: DataBuffer): Actor {
+    public readActor(buffer: DataBuffer): any {
         return {
             type: 1,
             className: buffer.readLengthPrefixedString(),
@@ -237,7 +238,7 @@ export class Sav2Json {
         };
     }
 
-    public readComponent(buffer: DataBuffer): Component {
+    public readComponent(buffer: DataBuffer): any {
         return {
             type: 0,
             className: buffer.readLengthPrefixedString(),
