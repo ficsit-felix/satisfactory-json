@@ -125,21 +125,19 @@ export class Json2Sav {
 
             this.buffer.writeInt(saveJson.objects.length);
 
-            for (let i = 0; i < saveJson.objects.length; i++) {
-                const obj = saveJson.objects[i];
+            for (const obj of saveJson.objects) {
                 this.buffer.writeInt(obj.type);
                 if (obj.type === 1) {
                     this.writeActor(obj);
                 } else if (obj.type === 0) {
-                    this.writeObject(obj);
+                    this.writeComponent(obj);
                 } else {
                     this.error('uknown type ' + obj.type);
                 }
             }
 
             this.buffer.writeInt(saveJson.objects.length);
-            for (let i = 0; i < saveJson.objects.length; i++) {
-                const obj = saveJson.objects[i];
+            for (const obj of saveJson.objects) {
                 if (obj.type === 1) {
                     this.writeEntity(obj.entity, true, obj.className);
                 } else if (obj.type === 0) {
@@ -148,8 +146,7 @@ export class Json2Sav {
             }
 
             this.buffer.writeInt(saveJson.collected.length);
-            for (let i = 0; i < saveJson.collected.length; i++) {
-                const obj = saveJson.collected[i];
+            for (const obj of saveJson.collected) {
                 this.buffer.writeLengthPrefixedString(obj.levelName);
                 this.buffer.writeLengthPrefixedString(obj.pathName);
             }
@@ -187,7 +184,7 @@ export class Json2Sav {
         this.buffer.writeInt(obj.wasPlacedInLevel);
     }
 
-    public writeObject(obj: any) {
+    public writeComponent(obj: any) {
         this.buffer.writeLengthPrefixedString(obj.className);
         this.buffer.writeLengthPrefixedString(obj.levelName);
         this.buffer.writeLengthPrefixedString(obj.pathName);
@@ -200,13 +197,13 @@ export class Json2Sav {
             this.buffer.writeLengthPrefixedString(entity.levelName);
             this.buffer.writeLengthPrefixedString(entity.pathName);
             this.buffer.writeInt(entity.children.length);
-            for (let i = 0; i < entity.children.length; i++) {
-                this.buffer.writeLengthPrefixedString(entity.children[i].levelName);
-                this.buffer.writeLengthPrefixedString(entity.children[i].pathName);
+            for (const child of entity.children) {
+                this.buffer.writeLengthPrefixedString(child.levelName);
+                this.buffer.writeLengthPrefixedString(child.pathName);
             }
         }
-        for (let i = 0; i < entity.properties.length; i++) {
-            this.writeProperty(entity.properties[i]);
+        for (const property of entity.properties) {
+            this.writeProperty(property);
         }
 
         this.writeNone();
@@ -313,8 +310,8 @@ export class Json2Sav {
                         this.buffer.writeFloat(property.value.a);
                         break;
                     case 'Transform':
-                        for (let i = 0; i < property.value.properties.length; i++) {
-                            this.writeProperty(property.value.properties[i]);
+                        for (const prop of property.value.properties) {
+                            this.writeProperty(prop);
                         }
                         this.writeNone();
                         break;
@@ -326,8 +323,8 @@ export class Json2Sav {
                         break;
                     case 'RemovedInstanceArray':
                     case 'InventoryStack':
-                        for (let i = 0; i < property.value.properties.length; i++) {
-                            this.writeProperty(property.value.properties[i]);
+                        for (const prop of property.value.properties) {
+                            this.writeProperty(prop);
                         }
                         this.writeNone();
                         break;
@@ -339,7 +336,8 @@ export class Json2Sav {
                         const oldval = this.buffer.buffers[this.buffer.buffers.length - 1]
                             .length;
                         this.writeProperty(property.value.properties[0]);
-                        // Dirty hack to make in this one case the inner property only take up 4 bytes
+                        // Dirty hack to make in this one case the inner property
+                        // only take up 4 bytes
                         this.buffer.buffers[this.buffer.buffers.length - 1].length =
                             oldval + 4;
                         break;
@@ -361,18 +359,18 @@ export class Json2Sav {
                 this.buffer.writeInt(property.value.values.length);
                 switch (itemType) {
                     case 'IntProperty':
-                        for (let i = 0; i < property.value.values.length; i++) {
-                            this.buffer.writeInt(property.value.values[i]);
+                        for (const prop of property.value.values) {
+                            this.buffer.writeInt(prop);
                         }
                         break;
                     case 'ByteProperty':
-                        for (let i = 0; i < property.value.values.length; i++) {
-                            this.buffer.writeByte(property.value.values[i]);
+                        for (const prop of property.value.values) {
+                            this.buffer.writeByte(prop);
                         }
                         break;
                     case 'ObjectProperty':
-                        for (let i = 0; i < property.value.values.length; i++) {
-                            const obj = property.value.values[i];
+                        for (const prop of property.value.values) {
+                            const obj = prop;
                             this.buffer.writeLengthPrefixedString(obj.levelName);
                             this.buffer.writeLengthPrefixedString(obj.pathName);
                         }
@@ -387,10 +385,10 @@ export class Json2Sav {
                             false
                         );
                         this.buffer.writeHex(property.structUnknown, false);
-                        for (let i = 0; i < property.value.values.length; i++) {
-                            const obj = property.value.values[i];
-                            for (let j = 0; j < obj.properties.length; j++) {
-                                this.writeProperty(obj.properties[j]);
+                        for (const prop of property.value.values) {
+                            const obj = prop;
+                            for (const innerProp of obj.properties) {
+                                this.writeProperty(innerProp);
                             }
                             this.writeNone();
                         }
@@ -409,13 +407,12 @@ export class Json2Sav {
 
                 const keys = Object.keys(property.value.values);
                 this.buffer.writeInt(keys.length);
-                for (let i = 0; i < keys.length; i++) {
+                for (const key of keys) {
                     // (let [key, value] of property.value.values) {
-                    const key = keys[i];
                     const value = property.value.values[key];
                     this.buffer.writeInt(+key); // parse key to int
-                    for (let j = 0; j < value.length; j++) {
-                        this.writeProperty(value[j]);
+                    for (const element of value) {
+                        this.writeProperty(element);
                     }
                     this.writeNone();
                 }

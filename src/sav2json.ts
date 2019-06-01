@@ -1,4 +1,4 @@
-import { Actor, Entity, Object, Property, SaveGame } from './types';
+import { Actor, Entity, Component, Property, SaveGame } from './types';
 
 class DataBuffer {
     public buffer: Buffer;
@@ -74,10 +74,7 @@ class DataBuffer {
         }
 
         if (this.cursor + length > this.buffer.length) {
-            // throw new Error('TOO LONG: ' +length + ' | ' + this.readHex(32) + ': ' + this.cursor + ' / ' + this.buffer.length );
-            // console.error(this.readHex(this.buffer.length - this.cursor -1));
             console.log(this.readHex(32));
-            // return '';
             console.trace('buffer < ' + length);
             throw new Error('cannot read string of length: ' + length);
         }
@@ -161,7 +158,7 @@ export class Sav2Json {
             if (type === 1) {
                 saveJson['objects'].push(this.readActor(buffer));
             } else if (type === 0) {
-                saveJson['objects'].push(this.readObject(buffer));
+                saveJson['objects'].push(this.readComponent(buffer));
             } else {
                 this.error('Unknown type ' + type);
                 return;
@@ -170,7 +167,8 @@ export class Sav2Json {
 
         const elementCount = buffer.readInt();
 
-        // # So far these counts have always been the same and the entities seem to belong 1 to 1 to the actors/objects read above
+        // So far these counts have always been the same and the entities seem to belong 1 to 1 to
+        // the actors/objects read above
         if (elementCount !== entryCount) {
             this.error(
                 'elementCount (' + elementCount + ') != entryCount(' + entryCount + ')'
@@ -239,7 +237,7 @@ export class Sav2Json {
         };
     }
 
-    public readObject(buffer: DataBuffer): Object {
+    public readComponent(buffer: DataBuffer): Component {
         return {
             type: 0,
             className: buffer.readLengthPrefixedString(),
@@ -363,7 +361,7 @@ export class Sav2Json {
                     value: buffer.readLengthPrefixedString()
                 });
                 break;
-            case 'ByteProperty':
+            case 'ByteProperty': {
                 const unk1 = buffer.readLengthPrefixedString();
                 buffer.assertNullByte();
                 if (unk1 === 'None') {
@@ -388,6 +386,7 @@ export class Sav2Json {
                     });
                 }
                 break;
+            }
             case 'EnumProperty':
                 const enumName = buffer.readLengthPrefixedString();
                 buffer.assertNullByte();
@@ -419,7 +418,7 @@ export class Sav2Json {
 
                 switch (type) {
                     case 'Vector':
-                    case 'Rotator':
+                    case 'Rotator': {
                         properties.push({
                             name,
                             type: prop,
@@ -433,7 +432,8 @@ export class Sav2Json {
                             }
                         });
                         break;
-                    case 'Box':
+                    }
+                    case 'Box': {
                         properties.push({
                             name,
                             type: prop,
@@ -455,7 +455,8 @@ export class Sav2Json {
                             }
                         });
                         break;
-                    case 'Color':
+                    }
+                    case 'Color': {
                         properties.push({
                             name,
                             type: prop,
@@ -471,7 +472,8 @@ export class Sav2Json {
                         });
 
                         break;
-                    case 'LinearColor':
+                    }
+                    case 'LinearColor': {
                         properties.push({
                             name,
                             type: prop,
@@ -486,9 +488,10 @@ export class Sav2Json {
                             }
                         });
                         break;
-                    case 'Transform':
+                    }
+                    case 'Transform': {
                         const props: Property[] = [];
-                        while (this.readProperty(buffer, props)) {  }
+                        while (this.readProperty(buffer, props)) { }
                         properties.push({
                             name,
                             type: prop,
@@ -500,7 +503,8 @@ export class Sav2Json {
                             }
                         });
                         break;
-                    case 'Quat':
+                    }
+                    case 'Quat': {
                         properties.push({
                             name,
                             type: prop,
@@ -515,6 +519,7 @@ export class Sav2Json {
                             }
                         });
                         break;
+                    }
                     case 'RemovedInstanceArray':
                     case 'InventoryStack': {
                         const props: Property[] = [];
@@ -537,7 +542,8 @@ export class Sav2Json {
                         const levelName = buffer.readLengthPrefixedString();
                         const pathName = buffer.readLengthPrefixedString();
                         const props: Property[] = [];
-                        this.readProperty(buffer, props); // can't consume null here because it is needed by the entaingling struct
+                        this.readProperty(buffer, props);
+                        // can't consume null here because it is needed by the entaingling struct
 
                         properties.push({
                             name,
@@ -555,7 +561,7 @@ export class Sav2Json {
                         });
                         break;
                     }
-                    case 'RailroadTrackPosition':
+                    case 'RailroadTrackPosition': {
                         properties.push({
                             name,
                             type: prop,
@@ -570,7 +576,8 @@ export class Sav2Json {
                             }
                         });
                         break;
-                    case 'TimerHandle':
+                    }
+                    case 'TimerHandle': {
                         properties.push({
                             name,
                             type: prop,
@@ -582,6 +589,7 @@ export class Sav2Json {
                             }
                         });
                         break;
+                    }
                     default:
                         console.log(buffer.readHex(32));
                         this.error('Unknown struct type: ' + type);
@@ -589,7 +597,7 @@ export class Sav2Json {
                 }
 
                 break;
-            case 'ArrayProperty':
+            case 'ArrayProperty': {
                 const itemType = buffer.readLengthPrefixedString();
                 buffer.assertNullByte();
                 const count = buffer.readInt();
@@ -627,15 +635,10 @@ export class Sav2Json {
                             return false;
                         }
 
-                        const type = buffer.readLengthPrefixedString();
+                        const structInnerType = buffer.readLengthPrefixedString();
 
-                        const unknown = buffer.readHex(17); // TODO
-                        /*property['structName'] = structName
-                                      property['structType'] = structType
-                                      property['structInnerType'] = type
+                        const structUnknown = buffer.readHex(17); // TODO
 
-                                      property['structUnknown'] = readHex(17)  # TODO what are those?
-                                      property['_structLength'] = structSize*/
                         for (let j = 0; j < count; j++) {
                             const props: Property[] = [];
                             while (this.readProperty(buffer, props)) { }
@@ -647,10 +650,9 @@ export class Sav2Json {
                             name,
                             type: prop,
                             index,
-                            structUnknown: unknown,
                             structName,
                             structType,
-                            structInnerType: type,
+                            structInnerType,
                             value: {
                                 type: itemType,
                                 values
@@ -673,6 +675,7 @@ export class Sav2Json {
                 });
 
                 break;
+            }
             case 'MapProperty': {
                 const mapName = buffer.readLengthPrefixedString();
                 const valueType = buffer.readLengthPrefixedString();
