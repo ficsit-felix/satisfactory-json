@@ -654,6 +654,7 @@ export class Sav2Json {
                             structName,
                             structType,
                             structInnerType,
+                            structUnknown,
                             value: {
                                 type: itemType,
                                 values
