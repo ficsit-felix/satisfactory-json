@@ -718,10 +718,42 @@ export class Sav2Json {
             case '/Game/FactoryGame/Buildable/Factory/PowerLine/Build_PowerLine.Build_PowerLine_C':
                 this.readPowerLineExtra(entity);
                 break;
+            case '/Game/FactoryGame/-Shared/Blueprint/BP_CircuitSubsystem.BP_CircuitSubsystem_C':
+                this.readCircuitSubsystemExtra(entity);
+                break;
+            case '/Game/FactoryGame/-Shared/Blueprint/BP_GameMode.BP_GameMode_C':
+                this.readGameModeExtra(entity);
+                break;
+            case '/Game/FactoryGame/-Shared/Blueprint/BP_GameState.BP_GameState_C':
+                this.readGameStateExtra(entity);
+                break;
+            case '/Game/FactoryGame/-Shared/Blueprint/BP_RailroadSubsystem.BP_RailroadSubsystem_C':
+                this.readRailroadSubsystemExtra(entity);
+                break;
+            case '/Game/FactoryGame/Character/Player/BP_PlayerState.BP_PlayerState_C':
+                this.readPlayerStateExtra(entity);
+                break;
+            case '/Game/FactoryGame/Buildable/Vehicle/Tractor/BP_Tractor.BP_Tractor_C':
+            case '/Game/FactoryGame/Buildable/Vehicle/Truck/BP_Truck.BP_Truck_C':
+            case '/Game/FactoryGame/Buildable/Vehicle/Explorer/BP_Explorer.BP_Explorer_C':
+                this.readVehicleExtra(entity);
+                break;
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk1/Build_ConveyorBeltMk1.Build_ConveyorBeltMk1_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk2/Build_ConveyorBeltMk2.Build_ConveyorBeltMk2_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk3/Build_ConveyorBeltMk3.Build_ConveyorBeltMk3_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk4/Build_ConveyorBeltMk4.Build_ConveyorBeltMk4_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk5/Build_ConveyorBeltMk5.Build_ConveyorBeltMk5_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk1/Build_ConveyorLiftMk1.Build_ConveyorLiftMk1_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk2/Build_ConveyorLiftMk2.Build_ConveyorLiftMk2_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk3/Build_ConveyorLiftMk3.Build_ConveyorLiftMk3_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk4/Build_ConveyorLiftMk4.Build_ConveyorLiftMk4_C':
+                this.readConveyorBeltExtra(entity);
+                break;
         }
     }
 
-    public readPowerLineExtra(entity: Entity) {
+    private readPowerLineExtra(entity: Entity) {
         entity.extra = {
             sourceLevelName: this.buffer.readLengthPrefixedString(),
             sourcePathName: this.buffer.readLengthPrefixedString(),
@@ -730,7 +762,104 @@ export class Sav2Json {
         };
     }
 
-    public error(message: string) {
+    private readCircuitSubsystemExtra(entity: Entity) {
+        const circuitCount = this.buffer.readInt();
+        const circuits: any[] = [];
+        for (let i = 0; i < circuitCount; i++) {
+            circuits.push({
+                unknown: this.buffer.readHex(4),
+                levelName: this.buffer.readLengthPrefixedString(),
+                pathName: this.buffer.readLengthPrefixedString()
+            });
+        }
+        entity.extra = {
+            circuits
+        };
+    }
+
+    private readGameModeExtra(entity: Entity) {
+        const objectCount = this.buffer.readInt();
+        const objects: any[] = [];
+        for (let i = 0; i < objectCount; i++) {
+            objects.push({
+                levelName: this.buffer.readLengthPrefixedString(),
+                pathName: this.buffer.readLengthPrefixedString()
+            });
+        }
+        entity.extra = {
+            objects
+        };
+    }
+
+    private readGameStateExtra(entity: Entity) {
+        const objectCount = this.buffer.readInt();
+        const objects: any[] = [];
+        for (let i = 0; i < objectCount; i++) {
+            objects.push({
+                levelName: this.buffer.readLengthPrefixedString(),
+                pathName: this.buffer.readLengthPrefixedString()
+            });
+        }
+        entity.extra = {
+            objects
+        };
+    }
+
+    private readRailroadSubsystemExtra(entity: Entity) {
+        const trainCount = this.buffer.readInt();
+        const trains: any[] = [];
+        for (let i = 0; i < trainCount; i++) {
+            trains.push({
+                unknown: this.buffer.readHex(4),
+                levelName: this.buffer.readLengthPrefixedString(),
+                pathName: this.buffer.readLengthPrefixedString(),
+                worldSecond: this.buffer.readLengthPrefixedString(),
+                entitySecond: this.buffer.readLengthPrefixedString(),
+                worldTimetable: this.buffer.readLengthPrefixedString(),
+                entityTimetable: this.buffer.readLengthPrefixedString()
+            });
+        }
+        entity.extra = {
+            trains
+        };
+    }
+
+    private readPlayerStateExtra(entity: Entity) {
+        entity.extra = {
+            unknown: this.buffer.readHex(18)
+        };
+    }
+
+    private readVehicleExtra(entity: Entity) {
+        const objectCount = this.buffer.readInt();
+        const objects: any[] = [];
+        for (let i = 0; i < objectCount; i++) {
+            objects.push({
+                name: this.buffer.readLengthPrefixedString(),
+                unknown: this.buffer.readHex(53)
+            });
+        }
+        entity.extra = {
+            objects
+        };
+    }
+
+    private readConveyorBeltExtra(entity: Entity) {
+        const itemCount = this.buffer.readInt();
+        const items: any[] = [];
+        for (let i = 0; i < itemCount; i++) {
+            items.push({
+                unknown1: this.buffer.readHex(4),
+                name: this.buffer.readLengthPrefixedString(),
+                unknown2: this.buffer.readHex(12),
+            });
+        }
+        entity.extra = {
+            items
+        };
+    }
+
+    private error(message: string) {
         console.trace('error: ' + message);
         if (this.buffer) {
             console.error('cursor: ' + this.buffer.cursor);

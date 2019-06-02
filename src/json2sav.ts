@@ -433,17 +433,108 @@ export class Json2Sav {
             case '/Game/FactoryGame/Buildable/Factory/PowerLine/Build_PowerLine.Build_PowerLine_C':
                 this.writePowerLineExtra(entity);
                 break;
+             case '/Game/FactoryGame/-Shared/Blueprint/BP_CircuitSubsystem.BP_CircuitSubsystem_C':
+                this.writeCircuitSubsystemExtra(entity);
+                break;
+            case '/Game/FactoryGame/-Shared/Blueprint/BP_GameMode.BP_GameMode_C':
+                this.writeGameModeExtra(entity);
+                break;
+            case '/Game/FactoryGame/-Shared/Blueprint/BP_GameState.BP_GameState_C':
+                this.writeGameStateExtra(entity);
+                break;
+            case '/Game/FactoryGame/-Shared/Blueprint/BP_RailroadSubsystem.BP_RailroadSubsystem_C':
+                this.writeRailroadSubsystemExtra(entity);
+                break;
+            case '/Game/FactoryGame/Character/Player/BP_PlayerState.BP_PlayerState_C':
+                this.writePlayerStateExtra(entity);
+                break;
+            case '/Game/FactoryGame/Buildable/Vehicle/Tractor/BP_Tractor.BP_Tractor_C':
+            case '/Game/FactoryGame/Buildable/Vehicle/Truck/BP_Truck.BP_Truck_C':
+            case '/Game/FactoryGame/Buildable/Vehicle/Explorer/BP_Explorer.BP_Explorer_C':
+                this.writeVehicleExtra(entity);
+                break;
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk1/Build_ConveyorBeltMk1.Build_ConveyorBeltMk1_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk2/Build_ConveyorBeltMk2.Build_ConveyorBeltMk2_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk3/Build_ConveyorBeltMk3.Build_ConveyorBeltMk3_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk4/Build_ConveyorBeltMk4.Build_ConveyorBeltMk4_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk5/Build_ConveyorBeltMk5.Build_ConveyorBeltMk5_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk1/Build_ConveyorLiftMk1.Build_ConveyorLiftMk1_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk2/Build_ConveyorLiftMk2.Build_ConveyorLiftMk2_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk3/Build_ConveyorLiftMk3.Build_ConveyorLiftMk3_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk4/Build_ConveyorLiftMk4.Build_ConveyorLiftMk4_C':
+                this.writeConveyorBeltExtra(entity);
+                break;
         }
     }
 
-    public writePowerLineExtra(entity: Entity) {
+    private writePowerLineExtra(entity: Entity) {
         this.buffer.writeLengthPrefixedString(entity.extra.sourceLevelName);
         this.buffer.writeLengthPrefixedString(entity.extra.sourcePathName);
         this.buffer.writeLengthPrefixedString(entity.extra.targetLevelName);
         this.buffer.writeLengthPrefixedString(entity.extra.targetPathName);
     }
 
-    public error(message: string) {
+    private writeCircuitSubsystemExtra(entity: Entity) {
+        this.buffer.writeInt(entity.extra.circuits.length);
+        for (const circuit of entity.extra.circuits) {
+            this.buffer.writeHex(circuit.unknown);
+            this.buffer.writeLengthPrefixedString(circuit.levelName);
+            this.buffer.writeLengthPrefixedString(circuit.pathName);
+        }
+    }
+
+    private writeGameModeExtra(entity: Entity) {
+        this.buffer.writeInt(entity.extra.objects.length);
+        for (const object of entity.extra.objects) {
+            this.buffer.writeLengthPrefixedString(object.levelName);
+            this.buffer.writeLengthPrefixedString(object.pathName);
+        }
+    }
+
+    private writeGameStateExtra(entity: Entity) {
+        this.buffer.writeInt(entity.extra.objects.length);
+        for (const object of entity.extra.objects) {
+            this.buffer.writeLengthPrefixedString(object.levelName);
+            this.buffer.writeLengthPrefixedString(object.pathName);
+        }
+    }
+
+    private writeRailroadSubsystemExtra(entity: Entity) {
+        this.buffer.writeInt(entity.extra.trains.length);
+        for (const train of entity.extra.trains) {
+            this.buffer.writeHex(train.unkown);
+            this.buffer.writeLengthPrefixedString(train.levelName);
+            this.buffer.writeLengthPrefixedString(train.pathName);
+            this.buffer.writeLengthPrefixedString(train.levelSecond);
+            this.buffer.writeLengthPrefixedString(train.pathSecond);
+            this.buffer.writeLengthPrefixedString(train.levelTimetable);
+            this.buffer.writeLengthPrefixedString(train.pathTimetable);
+        }
+    }
+
+    private writePlayerStateExtra(entity: Entity) {
+        this.buffer.writeHex(entity.extra.unknown);
+    }
+
+    private writeVehicleExtra(entity: Entity) {
+        this.buffer.writeInt(entity.extra.objects.count);
+        for (const object of entity.extra.objects) {
+            this.buffer.writeLengthPrefixedString(object.name);
+            this.buffer.writeHex(object.unknown);
+        }
+    }
+
+    private writeConveyorBeltExtra(entity: Entity) {
+        this.buffer.writeInt(entity.extra.items.count);
+        for (const item of entity.extra.items) {
+            this.buffer.writeHex(item.unknown1);
+            this.buffer.writeLengthPrefixedString(item.name);
+            this.buffer.writeHex(item.unknown2);
+        }
+    }
+
+    private error(message: string) {
         console.trace('error: ' + message);
         if (this.uuid) {
             console.error('uuid: ' + this.uuid);
