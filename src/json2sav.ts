@@ -530,10 +530,10 @@ export class Json2Sav {
     private writeConveyorBeltExtra(entity: Entity) {
         this.buffer.writeInt(entity.extra.items.count);
         for (const item of entity.extra.items) {
-            this.buffer.writeByte(0);
+            this.buffer.writeInt(0);
             this.buffer.writeLengthPrefixedString(item.name);
-            this.buffer.writeByte(0);
-            this.buffer.writeByte(0);
+            this.buffer.writeInt(0);
+            this.buffer.writeInt(0);
             this.buffer.writeFloat(item.position);
         }
     }

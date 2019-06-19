@@ -124,6 +124,13 @@ class DataBuffer {
         this.bytesRead += 1;
     }
 
+    public assertNullInt() {
+        const zero = this.readInt();
+        if (zero !== 0) {
+            throw new Error('expected 0 int, but got ' + zero);
+        }
+    }
+
     public resetBytesRead() {
         this.bytesRead = 0;
     }
@@ -868,10 +875,10 @@ export class Sav2Json {
                 break;
             }
 
-            this.buffer.assertNullByte();
+            this.buffer.assertNullInt();
             const name = this.buffer.readLengthPrefixedString();
-            this.buffer.assertNullByte();
-            this.buffer.assertNullByte();
+            this.buffer.assertNullInt();
+            this.buffer.assertNullInt();
 
             items.push({
                 name,
