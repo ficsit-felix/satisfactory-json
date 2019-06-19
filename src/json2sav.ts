@@ -453,6 +453,7 @@ export class Json2Sav {
             case '/Game/FactoryGame/Buildable/Vehicle/Explorer/BP_Explorer.BP_Explorer_C':
                 this.writeVehicleExtra(entity);
                 break;
+            // tslint:disable: max-line-length
             case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk1/Build_ConveyorBeltMk1.Build_ConveyorBeltMk1_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk2/Build_ConveyorBeltMk2.Build_ConveyorBeltMk2_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk3/Build_ConveyorBeltMk3.Build_ConveyorBeltMk3_C':
@@ -463,6 +464,7 @@ export class Json2Sav {
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk2/Build_ConveyorLiftMk2.Build_ConveyorLiftMk2_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk3/Build_ConveyorLiftMk3.Build_ConveyorLiftMk3_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk4/Build_ConveyorLiftMk4.Build_ConveyorLiftMk4_C':
+            // tslint:enable
                 this.writeConveyorBeltExtra(entity);
                 break;
         }
@@ -478,7 +480,7 @@ export class Json2Sav {
     private writeCircuitSubsystemExtra(entity: Entity) {
         this.buffer.writeInt(entity.extra.circuits.length);
         for (const circuit of entity.extra.circuits) {
-            this.buffer.writeHex(circuit.unknown);
+            this.buffer.writeInt(circuit.circuitId);
             this.buffer.writeLengthPrefixedString(circuit.levelName);
             this.buffer.writeLengthPrefixedString(circuit.pathName);
         }
@@ -528,13 +530,16 @@ export class Json2Sav {
     private writeConveyorBeltExtra(entity: Entity) {
         this.buffer.writeInt(entity.extra.items.count);
         for (const item of entity.extra.items) {
-            this.buffer.writeHex(item.unknown1);
+            this.buffer.writeByte(0);
             this.buffer.writeLengthPrefixedString(item.name);
-            this.buffer.writeHex(item.unknown2);
+            this.buffer.writeByte(0);
+            this.buffer.writeByte(0);
+            this.buffer.writeFloat(item.position);
         }
     }
 
     private error(message: string) {
+        // tslint:disable-next-line: no-console
         console.trace('error: ' + message);
         if (this.uuid) {
             console.error('uuid: ' + this.uuid);

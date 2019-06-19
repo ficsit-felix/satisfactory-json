@@ -68,13 +68,14 @@ class DataBuffer {
         let utf16 = false;
         if (length < 0) {
             // Thanks to @Goz3rr we know that this is now an utf16 based string
-            // throw new Error("length of string < 0: " + length);
+            // throw new Error('length of string < 0: ' + length);
             length = -2 * length;
             utf16 = true;
         }
 
         if (this.cursor + length > this.buffer.length) {
             console.log(this.readHex(32));
+            // tslint:disable-next-line: no-console
             console.trace('buffer < ' + length);
             throw new Error('cannot read string of length: ' + length);
         }
@@ -98,16 +99,26 @@ class DataBuffer {
             throw new Error('Cursor overflowed to ' + this.cursor + ' by ' + length);
         }
         if (utf16) {
-            this.assertNullByte(); // two null bytes for utf16
+            this.assertNullByteString(length, resultStr); // two null bytes for utf16
         }
-        this.assertNullByte();
+        this.assertNullByteString(length, resultStr);
         return resultStr;
     }
+
+    public assertNullByteString(length: number, result: string) {
+        const zero = this.buffer.readInt8(this.cursor);
+        if (zero !== 0) {
+            throw new Error('string (length: ' + length +
+            ') does not end with zero, but with ' + zero + ': ' + result);
+        }
+        this.cursor += 1;
+        this.bytesRead += 1;
+    }
+
     public assertNullByte() {
         const zero = this.buffer.readInt8(this.cursor);
         if (zero !== 0) {
-            throw new Error('string does not end with 0 byte, but ' + zero);
-            // TODO return error
+            throw new Error('expected 0 byte, but got ' + zero);
         }
         this.cursor += 1;
         this.bytesRead += 1;
@@ -283,7 +294,7 @@ export class Sav2Json {
             );
         }
 
-        this.readExtra(entity, className);
+        this.readExtra(entity, className, length);
 
         const missing = length - buffer.bytesRead;
         if (missing > 0) {
@@ -713,7 +724,7 @@ export class Sav2Json {
         return true;
     }
 
-    public readExtra(entity: Entity, className: string) {
+    public readExtra(entity: Entity, className: string, length: number) {
         switch (className) {
             case '/Game/FactoryGame/Buildable/Factory/PowerLine/Build_PowerLine.Build_PowerLine_C':
                 this.readPowerLineExtra(entity);
@@ -738,17 +749,19 @@ export class Sav2Json {
             case '/Game/FactoryGame/Buildable/Vehicle/Explorer/BP_Explorer.BP_Explorer_C':
                 this.readVehicleExtra(entity);
                 break;
+            // tslint:disable: max-line-length
             case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk1/Build_ConveyorBeltMk1.Build_ConveyorBeltMk1_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk2/Build_ConveyorBeltMk2.Build_ConveyorBeltMk2_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk3/Build_ConveyorBeltMk3.Build_ConveyorBeltMk3_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk4/Build_ConveyorBeltMk4.Build_ConveyorBeltMk4_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk5/Build_ConveyorBeltMk5.Build_ConveyorBeltMk5_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk6/Build_ConveyorBeltMk6.Build_ConveyorBeltMk6_C':
-            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk1/Build_ConveyorLiftMk1.Build_ConveyorLiftMk1_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk1/Build_ConveyorLiftMk1.Build_ConveyorLiftMk1_C'
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk2/Build_ConveyorLiftMk2.Build_ConveyorLiftMk2_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk3/Build_ConveyorLiftMk3.Build_ConveyorLiftMk3_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk4/Build_ConveyorLiftMk4.Build_ConveyorLiftMk4_C':
-                this.readConveyorBeltExtra(entity);
+            // tslint:enable
+                this.readConveyorBeltExtra(entity, length);
                 break;
         }
     }
@@ -767,7 +780,7 @@ export class Sav2Json {
         const circuits: any[] = [];
         for (let i = 0; i < circuitCount; i++) {
             circuits.push({
-                unknown: this.buffer.readHex(4),
+                circuitId: this.buffer.readInt(),
                 levelName: this.buffer.readLengthPrefixedString(),
                 pathName: this.buffer.readLengthPrefixedString()
             });
@@ -813,10 +826,10 @@ export class Sav2Json {
                 unknown: this.buffer.readHex(4),
                 levelName: this.buffer.readLengthPrefixedString(),
                 pathName: this.buffer.readLengthPrefixedString(),
-                worldSecond: this.buffer.readLengthPrefixedString(),
-                entitySecond: this.buffer.readLengthPrefixedString(),
-                worldTimetable: this.buffer.readLengthPrefixedString(),
-                entityTimetable: this.buffer.readLengthPrefixedString()
+                levelSecond: this.buffer.readLengthPrefixedString(),
+                pathSecond: this.buffer.readLengthPrefixedString(),
+                levelTimetable: this.buffer.readLengthPrefixedString(),
+                pathTimetable: this.buffer.readLengthPrefixedString()
             });
         }
         entity.extra = {
@@ -844,14 +857,25 @@ export class Sav2Json {
         };
     }
 
-    private readConveyorBeltExtra(entity: Entity) {
+    private readConveyorBeltExtra(entity: Entity, length: number) {
         const itemCount = this.buffer.readInt();
         const items: any[] = [];
         for (let i = 0; i < itemCount; i++) {
+
+            if (this.buffer.bytesRead >= length) {
+                console.warn('Item count is ' + itemCount +
+                 ' while there are only ' + i + ' items in there');
+                break;
+            }
+
+            this.buffer.assertNullByte();
+            const name = this.buffer.readLengthPrefixedString();
+            this.buffer.assertNullByte();
+            this.buffer.assertNullByte();
+
             items.push({
-                unknown1: this.buffer.readHex(4),
-                name: this.buffer.readLengthPrefixedString(),
-                unknown2: this.buffer.readHex(12),
+                name,
+                position: this.buffer.readFloat()
             });
         }
         entity.extra = {
@@ -860,6 +884,7 @@ export class Sav2Json {
     }
 
     private error(message: string) {
+        // tslint:disable-next-line: no-console
         console.trace('error: ' + message);
         if (this.buffer) {
             console.error('cursor: ' + this.buffer.cursor);
