@@ -127,6 +127,7 @@ class DataBuffer {
     public assertNullInt() {
         const zero = this.readInt();
         if (zero !== 0) {
+            console.log(this.readHex(32));
             throw new Error('expected 0 int, but got ' + zero);
         }
     }
@@ -309,8 +310,8 @@ export class Sav2Json {
         const missing = length - buffer.bytesRead;
         if (missing > 0) {
             entity.missing = buffer.readHex(missing);
-            console.warn('missing data found in entity of type ' + className +
-                ': ' + entity.missing);
+            /*console.warn('missing data found in entity of type ' + className +
+                ': ' + entity.missing);*/
         } else if (missing < 0) {
             this.error('negative missing amount: ' + missing);
         }
@@ -875,15 +876,19 @@ export class Sav2Json {
     }
 
     private readConveyorBeltExtra(entity: Entity, length: number) {
-        const itemCount = this.buffer.readInt();
+        /*const itemCount = this.buffer.readInt();
         const items: any[] = [];
-        for (let i = 0; i < itemCount; i++) {
+        // ignore item count
+        while (this.buffer.bytesRead < length) {
+        //for (let i = 0; i < itemCount; i++) {
 
             if (this.buffer.bytesRead >= length) {
-                console.warn('Item count is ' + itemCount +
-                    ' while there are only ' + i + ' items in there');
+                //console.warn('Item count is ' + itemCount +
+                    //' while there are only ' + i + ' items in there');
                 break;
             }
+
+            console.log(length - this.buffer.bytesRead + ' left ' + itemCount);
 
             this.buffer.assertNullInt();
             const name = this.buffer.readLengthPrefixedString();
@@ -897,7 +902,7 @@ export class Sav2Json {
         }
         entity.extra = {
             items
-        };
+        };*/
     }
 
     private error(message: string) {
