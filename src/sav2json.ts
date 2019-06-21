@@ -313,7 +313,7 @@ export class Sav2Json {
             /*console.warn('missing data found in entity of type ' + className +
                 ': ' + entity.missing);*/
         } else if (missing < 0) {
-            this.error('negative missing amount: ' + missing);
+            this.error('negative missing amount in entity of type ' + className + ': ' + missing);
         }
         // console.log(entity);
 
@@ -755,7 +755,7 @@ export class Sav2Json {
                 this.readRailroadSubsystemExtra(entity, length);
                 break;
             case '/Game/FactoryGame/Character/Player/BP_PlayerState.BP_PlayerState_C':
-                this.readPlayerStateExtra(entity);
+                this.readPlayerStateExtra(entity, length);
                 break;
             case '/Game/FactoryGame/Buildable/Vehicle/Tractor/BP_Tractor.BP_Tractor_C':
             case '/Game/FactoryGame/Buildable/Vehicle/Truck/BP_Truck.BP_Truck_C':
@@ -855,9 +855,17 @@ export class Sav2Json {
         };
     }
 
-    private readPlayerStateExtra(entity: Entity) {
+    private readPlayerStateExtra(entity: Entity, length: number) {
+        /* first byte seems to be an enum
+         - 03: nothing more
+         - 11: 17 more bytes
+         - 08: station name, then more bytes
+        */
+
+        const unknown = this.buffer.readHex(length - this.buffer.bytesRead);
+        console.log('playerStateExtra: ' + unknown);
         entity.extra = {
-            unknown: this.buffer.readHex(18)
+            unknown
         };
     }
 
