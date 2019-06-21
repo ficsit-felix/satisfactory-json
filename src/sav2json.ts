@@ -109,7 +109,7 @@ class DataBuffer {
         const zero = this.buffer.readInt8(this.cursor);
         if (zero !== 0) {
             throw new Error('string (length: ' + length +
-            ') does not end with zero, but with ' + zero + ': ' + result);
+                ') does not end with zero, but with ' + zero + ': ' + result);
         }
         this.cursor += 1;
         this.bytesRead += 1;
@@ -227,6 +227,9 @@ export class Sav2Json {
         saveJson.missing = this.buffer.readHex(
             this.buffer.buffer.length - this.buffer.cursor
         );
+        if (this.buffer.buffer.length - this.buffer.cursor > 0) {
+            console.warn('global missing data found: ' + saveJson.missing);
+        }
 
         return saveJson;
     }
@@ -306,6 +309,8 @@ export class Sav2Json {
         const missing = length - buffer.bytesRead;
         if (missing > 0) {
             entity.missing = buffer.readHex(missing);
+            console.warn('missing data found in entity of type ' + className +
+                ': ' + entity.missing);
         } else if (missing < 0) {
             this.error('negative missing amount: ' + missing);
         }
@@ -746,7 +751,7 @@ export class Sav2Json {
                 this.readGameStateExtra(entity);
                 break;
             case '/Game/FactoryGame/-Shared/Blueprint/BP_RailroadSubsystem.BP_RailroadSubsystem_C':
-                this.readRailroadSubsystemExtra(entity);
+                this.readRailroadSubsystemExtra(entity, length);
                 break;
             case '/Game/FactoryGame/Character/Player/BP_PlayerState.BP_PlayerState_C':
                 this.readPlayerStateExtra(entity);
@@ -767,7 +772,7 @@ export class Sav2Json {
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk2/Build_ConveyorLiftMk2.Build_ConveyorLiftMk2_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk3/Build_ConveyorLiftMk3.Build_ConveyorLiftMk3_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk4/Build_ConveyorLiftMk4.Build_ConveyorLiftMk4_C':
-            // tslint:enable
+                // tslint:enable
                 this.readConveyorBeltExtra(entity, length);
                 break;
         }
@@ -825,7 +830,12 @@ export class Sav2Json {
         };
     }
 
-    private readRailroadSubsystemExtra(entity: Entity) {
+    private readRailroadSubsystemExtra(entity: Entity, length: number) {
+        // Workaround for broken savegames in the experimental version
+        if (this.buffer.bytesRead >= length) {
+            return;
+        }
+
         const trainCount = this.buffer.readInt();
         const trains: any[] = [];
         for (let i = 0; i < trainCount; i++) {
@@ -871,7 +881,7 @@ export class Sav2Json {
 
             if (this.buffer.bytesRead >= length) {
                 console.warn('Item count is ' + itemCount +
-                 ' while there are only ' + i + ' items in there');
+                    ' while there are only ' + i + ' items in there');
                 break;
             }
 

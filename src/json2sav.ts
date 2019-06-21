@@ -503,6 +503,11 @@ export class Json2Sav {
     }
 
     private writeRailroadSubsystemExtra(entity: Entity) {
+        // Workaround for broken savegames in the experimental version
+        if (entity.extra === undefined) {
+            this.buffer.writeInt(0);
+            return;
+        }
         this.buffer.writeInt(entity.extra.trains.length);
         for (const train of entity.extra.trains) {
             this.buffer.writeHex(train.unkown);
