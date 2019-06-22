@@ -325,6 +325,7 @@ export class Json2Sav {
                         break;
                     case 'RemovedInstanceArray':
                     case 'InventoryStack':
+                    case 'ProjectileData':
                         for (const prop of property.value.properties) {
                             this.writeProperty(prop);
                         }

@@ -546,7 +546,9 @@ export class Sav2Json {
                         break;
                     }
                     case 'RemovedInstanceArray':
-                    case 'InventoryStack': {
+                    case 'InventoryStack': 
+                    case 'ProjectileData':
+                    {
                         const props: Property[] = [];
                         while (this.readProperty(buffer, props)) { }
                         properties.push({
