@@ -505,8 +505,7 @@ export class Json2Sav {
 
     private writeRailroadSubsystemExtra(entity: Entity) {
         // Workaround for broken savegames in the experimental version
-        if (entity.extra === undefined) {
-            this.buffer.writeInt(0);
+        if (entity.extra === undefined) { // TODO if saveHeaderVersion >= 6
             return;
         }
         this.buffer.writeInt(entity.extra.trains.length);

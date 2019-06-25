@@ -835,7 +835,7 @@ export class Sav2Json {
 
     private readRailroadSubsystemExtra(entity: Entity, length: number) {
         // Workaround for broken savegames in the experimental version
-        if (this.buffer.bytesRead >= length) {
+        if (this.buffer.bytesRead >= length) { // TODO replace with if saveHeaderType >= 6
             return;
         }
 
