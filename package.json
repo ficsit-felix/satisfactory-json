@@ -9,6 +9,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^12.0.4",
+    "ts-node": "^8.3.0",
     "tslint": "^5.17.0",
     "typescript": "^3.5.1"
   },
@@ -17,9 +18,18 @@
     "build:watch": "tsc --watch",
     "lint": "tslint --project \"./tsconfig.json\"",
     "prepublish": "yarn build",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "sav2json": "ts-node src/cli/sav2json.ts",
+    "json2sav": "ts-node src/cli/json2sav.ts"
   },
   "files": [
     "lib/**/*"
-  ]
+  ],
+  "bin": {
+    "sav2json": "./lib/sav2json.js",
+    "json2sav": "./lib/json2sav.js"
+  },
+  "dependencies": {
+    "commander": "^2.20.0"
+  }
 }
