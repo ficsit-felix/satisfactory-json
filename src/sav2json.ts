@@ -439,7 +439,11 @@ export class Sav2Json {
                 break;
             case 'StructProperty':
                 const type = buffer.readLengthPrefixedString();
-                const unknown = buffer.readHex(17);
+                this.buffer.assertNullInt();
+                this.buffer.assertNullInt();
+                this.buffer.assertNullInt();
+                this.buffer.assertNullInt();
+                this.buffer.assertNullByte();
 
                 switch (type) {
                     case 'Vector':
@@ -448,7 +452,6 @@ export class Sav2Json {
                             name,
                             type: prop,
                             index,
-                            structUnknown: unknown,
                             value: {
                                 type,
                                 x: buffer.readFloat(),
@@ -463,7 +466,6 @@ export class Sav2Json {
                             name,
                             type: prop,
                             index,
-                            structUnknown: unknown,
                             value: {
                                 type,
                                 min: [
@@ -486,7 +488,6 @@ export class Sav2Json {
                             name,
                             type: prop,
                             index,
-                            structUnknown: unknown,
                             value: {
                                 type,
                                 b: buffer.readByte(),
@@ -503,7 +504,6 @@ export class Sav2Json {
                             name,
                             type: prop,
                             index,
-                            structUnknown: unknown,
                             value: {
                                 type,
                                 r: buffer.readFloat(),
@@ -521,7 +521,6 @@ export class Sav2Json {
                             name,
                             type: prop,
                             index,
-                            structUnknown: unknown,
                             value: {
                                 type,
                                 properties: props
@@ -534,7 +533,6 @@ export class Sav2Json {
                             name,
                             type: prop,
                             index,
-                            structUnknown: unknown,
                             value: {
                                 type,
                                 a: buffer.readFloat(),
@@ -546,16 +544,14 @@ export class Sav2Json {
                         break;
                     }
                     case 'RemovedInstanceArray':
-                    case 'InventoryStack': 
-                    case 'ProjectileData':
-                    {
+                    case 'InventoryStack':
+                    case 'ProjectileData': {
                         const props: Property[] = [];
                         while (this.readProperty(buffer, props)) { }
                         properties.push({
                             name,
                             type: prop,
                             index,
-                            structUnknown: unknown,
                             value: {
                                 type,
                                 properties: props
@@ -576,7 +572,6 @@ export class Sav2Json {
                             name,
                             type: prop,
                             index,
-                            structUnknown: unknown,
                             value: {
                                 type,
                                 unk1,
@@ -593,7 +588,6 @@ export class Sav2Json {
                             name,
                             type: prop,
                             index,
-                            structUnknown: unknown,
                             value: {
                                 type,
                                 levelName: buffer.readLengthPrefixedString(),
@@ -609,7 +603,6 @@ export class Sav2Json {
                             name,
                             type: prop,
                             index,
-                            structUnknown: unknown,
                             value: {
                                 type,
                                 handle: this.buffer.readLengthPrefixedString()
@@ -775,6 +768,7 @@ export class Sav2Json {
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk2/Build_ConveyorLiftMk2.Build_ConveyorLiftMk2_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk3/Build_ConveyorLiftMk3.Build_ConveyorLiftMk3_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk4/Build_ConveyorLiftMk4.Build_ConveyorLiftMk4_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk5/Build_ConveyorLiftMk5.Build_ConveyorLiftMk5_C':
                 // tslint:enable
                 this.readConveyorBeltExtra(entity, length);
                 break;
@@ -886,19 +880,19 @@ export class Sav2Json {
     }
 
     private readConveyorBeltExtra(entity: Entity, length: number) {
-        /*const itemCount = this.buffer.readInt();
+        const itemCount = this.buffer.readInt();
         const items: any[] = [];
         // ignore item count
-        while (this.buffer.bytesRead < length) {
-        //for (let i = 0; i < itemCount; i++) {
+        // while (this.buffer.bytesRead < length) {
+        for (let i = 0; i < itemCount; i++) {
 
-            if (this.buffer.bytesRead >= length) {
+            /*if (this.buffer.bytesRead >= length) {
                 //console.warn('Item count is ' + itemCount +
                     //' while there are only ' + i + ' items in there');
                 break;
             }
 
-            console.log(length - this.buffer.bytesRead + ' left ' + itemCount);
+            console.log(length - this.buffer.bytesRead + ' left ' + itemCount);*/
 
             this.buffer.assertNullInt();
             const name = this.buffer.readLengthPrefixedString();
@@ -912,7 +906,7 @@ export class Sav2Json {
         }
         entity.extra = {
             items
-        };*/
+        };
     }
 
     private error(message: string) {

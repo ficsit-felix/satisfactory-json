@@ -280,7 +280,11 @@ export class Json2Sav {
             case 'StructProperty': {
                 const structProperty = property as StructProperty;
                 this.buffer.writeLengthPrefixedString(structProperty.value.type, false);
-                this.buffer.writeHex(structProperty.structUnknown, false);
+                this.buffer.writeInt(0, false);
+                this.buffer.writeInt(0, false);
+                this.buffer.writeInt(0, false);
+                this.buffer.writeInt(0, false);
+                this.buffer.writeByte(0, false);
 
                 const structType = structProperty.value.type;
                 switch (structType) {
@@ -465,6 +469,7 @@ export class Json2Sav {
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk2/Build_ConveyorLiftMk2.Build_ConveyorLiftMk2_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk3/Build_ConveyorLiftMk3.Build_ConveyorLiftMk3_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk4/Build_ConveyorLiftMk4.Build_ConveyorLiftMk4_C':
+                    case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk5/Build_ConveyorLiftMk5.Build_ConveyorLiftMk5_C':
             // tslint:enable
                 this.writeConveyorBeltExtra(entity);
                 break;
@@ -533,14 +538,14 @@ export class Json2Sav {
     }
 
     private writeConveyorBeltExtra(entity: Entity) {
-        /*this.buffer.writeInt(entity.extra.items.count);
+        this.buffer.writeInt(entity.extra.items.count);
         for (const item of entity.extra.items) {
             this.buffer.writeInt(0);
             this.buffer.writeLengthPrefixedString(item.name);
             this.buffer.writeInt(0);
             this.buffer.writeInt(0);
             this.buffer.writeFloat(item.position);
-        }*/
+        }
     }
 
     private error(message: string) {
