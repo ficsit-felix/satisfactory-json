@@ -294,7 +294,6 @@ export class Sav2Json {
                 });
             }
         }
-
         // read properties
         while (this.readProperty(buffer, entity.properties)) { }
 
@@ -310,8 +309,8 @@ export class Sav2Json {
         const missing = length - buffer.bytesRead;
         if (missing > 0) {
             entity.missing = buffer.readHex(missing);
-            /*console.warn('missing data found in entity of type ' + className +
-                ': ' + entity.missing);*/
+            console.warn('missing data found in entity of type ' + className +
+                ': ' + entity.missing);
         } else if (missing < 0) {
             this.error('negative missing amount in entity of type ' + className + ': ' + missing);
         }
@@ -657,7 +656,13 @@ export class Sav2Json {
 
                         const structInnerType = buffer.readLengthPrefixedString();
 
-                        const structUnknown = buffer.readHex(17); // TODO
+                        // is not just 0s in BP_PlayerState -> mShoppingList
+                        const unknown = this.buffer.readHex(16);
+                        if (unknown !== '00000000000000000000000000000000') {
+                            console.warn(unknown);
+                            console.warn('Unknown data in inner struct ' + name);
+                        }
+                        this.buffer.assertNullByte();
 
                         for (let j = 0; j < count; j++) {
                             const props: Property[] = [];
@@ -673,9 +678,9 @@ export class Sav2Json {
                             structName,
                             structType,
                             structInnerType,
-                            structUnknown,
                             value: {
                                 type: itemType,
+                                unknown,
                                 values
                             }
                         });
@@ -733,6 +738,7 @@ export class Sav2Json {
     }
 
     public readExtra(entity: Entity, className: string, length: number) {
+        
         switch (className) {
             case '/Game/FactoryGame/Buildable/Factory/PowerLine/Build_PowerLine.Build_PowerLine_C':
                 this.readPowerLineExtra(entity);
@@ -886,13 +892,13 @@ export class Sav2Json {
         // while (this.buffer.bytesRead < length) {
         for (let i = 0; i < itemCount; i++) {
 
-            /*if (this.buffer.bytesRead >= length) {
-                //console.warn('Item count is ' + itemCount +
-                    //' while there are only ' + i + ' items in there');
+            if (this.buffer.bytesRead >= length) {
+                console.warn('Item count is ' + itemCount +
+                    ' while there are only ' + i + ' items in there');
                 break;
             }
 
-            console.log(length - this.buffer.bytesRead + ' left ' + itemCount);*/
+            //console.log(length - this.buffer.bytesRead + ' left ' + itemCount);
 
             this.buffer.assertNullInt();
             const name = this.buffer.readLengthPrefixedString();

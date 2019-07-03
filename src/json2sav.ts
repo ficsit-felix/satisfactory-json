@@ -393,7 +393,8 @@ export class Json2Sav {
                             arrayProperty.structInnerType!,
                             false
                         );
-                        this.buffer.writeHex(arrayProperty.structUnknown!, false);
+                        this.buffer.writeHex(arrayProperty.value.unknown, false);
+                        this.buffer.writeByte(0, false);
                         for (const prop of property.value.values) {
                             const obj = prop;
                             for (const innerProp of obj.properties) {
@@ -434,6 +435,7 @@ export class Json2Sav {
     }
 
     public writeExtra(entity: Entity, className: string) {
+
         switch (className) {
             case '/Game/FactoryGame/Buildable/Factory/PowerLine/Build_PowerLine.Build_PowerLine_C':
                 this.writePowerLineExtra(entity);
@@ -469,7 +471,7 @@ export class Json2Sav {
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk2/Build_ConveyorLiftMk2.Build_ConveyorLiftMk2_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk3/Build_ConveyorLiftMk3.Build_ConveyorLiftMk3_C':
             case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk4/Build_ConveyorLiftMk4.Build_ConveyorLiftMk4_C':
-                    case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk5/Build_ConveyorLiftMk5.Build_ConveyorLiftMk5_C':
+            case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk5/Build_ConveyorLiftMk5.Build_ConveyorLiftMk5_C':
             // tslint:enable
                 this.writeConveyorBeltExtra(entity);
                 break;
@@ -530,7 +532,7 @@ export class Json2Sav {
     }
 
     private writeVehicleExtra(entity: Entity) {
-        this.buffer.writeInt(entity.extra.objects.count);
+        this.buffer.writeInt(entity.extra.objects.length);
         for (const object of entity.extra.objects) {
             this.buffer.writeLengthPrefixedString(object.name);
             this.buffer.writeHex(object.unknown);
@@ -538,7 +540,7 @@ export class Json2Sav {
     }
 
     private writeConveyorBeltExtra(entity: Entity) {
-        this.buffer.writeInt(entity.extra.items.count);
+        this.buffer.writeInt(entity.extra.items.length);
         for (const item of entity.extra.items) {
             this.buffer.writeInt(0);
             this.buffer.writeLengthPrefixedString(item.name);
