@@ -251,7 +251,6 @@ export class DataBuffer {
                 this.resetBytesRead();
             }
             return length;
-            // TODO return length?
         }
     }
     public transformBufferEnd(toSav: boolean) {
@@ -278,7 +277,7 @@ export class DataBuffer {
     }
 
     public transformHex(obj: any, key: Key,
-                        count: number, toSav: boolean, shouldCount: boolean = true) {
+        count: number, toSav: boolean, shouldCount: boolean = true) {
         if (toSav) {
             this.writeHex(obj[key], shouldCount);
         } else {
