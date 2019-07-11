@@ -72,8 +72,8 @@ export default function transformArrayProperty(
                         if (innerProperty.name === 'None') {
                             break; // end of properties
                         }
-                        console.log(property);
-                        console.log('building...',innerProperty.name,j);
+                       // console.log(property);
+                        //console.log('building...',innerProperty.name,j);
                         transformProperty(buffer, innerProperty, toSav);
                         props.push(innerProperty);
                     }

@@ -10,6 +10,7 @@ import transformEnumProperty from './properties/EnumProperty';
 import transformObjectProperty from './properties/ObjectProperty';
 import transformMapProperty from './properties/MapProperty';
 import transformArrayProperty from './properties/ArrayProperty';
+import transformStructProperty from './properties/StructProperty';
 
 export default function transformProperty(buffer: DataBuffer, property: Property, toSav: boolean) {
     buffer.transformString(property, 'type', toSav);
@@ -41,9 +42,9 @@ export default function transformProperty(buffer: DataBuffer, property: Property
         case 'ObjectProperty':
             transformObjectProperty(buffer, property, toSav);
             break;
-        /*case 'StructProperty':
+        case 'StructProperty':
             transformStructProperty(buffer, property, toSav);
-            break;*/
+            break;
         case 'ArrayProperty':
             transformArrayProperty(buffer, property, toSav);
             break;
@@ -51,9 +52,9 @@ export default function transformProperty(buffer: DataBuffer, property: Property
             transformMapProperty(buffer, property, toSav);
             break;
         default:
-            console.log(buffer.readHex(32));
+            //console.log(buffer.readHex(32));
             throw Error(`Unkown property type ${property.type}`);
     }
     buffer.transformBufferEnd(toSav);
-    console.log('property', property);
+    //console.log('property', property);
 }

@@ -33,7 +33,7 @@ export default function transformMapProperty(
         }
     } else {
         const count = buffer.readInt();
-        console.log('counti', count);
+        //console.log('counti', count);
         const mapValues: { [id: string]: Property[] } = {};
         for (let i = 0; i < count; i++) {
             const key = buffer.readInt();
@@ -52,7 +52,7 @@ export default function transformMapProperty(
     
                 transformProperty(buffer, innerProperty, toSav);
                 props.push(innerProperty);
-                console.log('inner', innerProperty);
+               // console.log('inner', innerProperty);
             }
     
             mapValues[key] = props;

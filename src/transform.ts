@@ -189,12 +189,12 @@ function transformEntity(buffer: DataBuffer, entity: Entity,
             throw Error('negative missing amount in entity of type ' + className + ': ' + missing);
         }
     }
-    console.log('finished entity', entity);
+//    console.log('finished entity', entity);
     buffer.transformBufferEnd(toSav);
 }
 
 function transformProperties(buffer: DataBuffer, entity: Entity, toSav: boolean) {
-    console.log(entity);
+//    console.log(entity);
     if (toSav) {
         for (const property of entity.properties) {
             buffer.transformString(property, 'name', toSav);
@@ -217,7 +217,7 @@ function transformProperties(buffer: DataBuffer, entity: Entity, toSav: boolean)
 
             transformProperty(buffer, property, toSav);
             entity.properties.push(property);
-            console.log('property built', property);
+            //console.log('property built', property);
 
         }
 
