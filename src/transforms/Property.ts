@@ -15,7 +15,7 @@ import transformStructProperty from './properties/StructProperty';
 export default function transformProperty(buffer: DataBuffer, property: Property, toSav: boolean) {
     buffer.transformString(property, 'type', toSav);
     buffer.transformBufferStart(toSav, false);
-    buffer.transformInt(property, 'index', false);
+    buffer.transformInt(property, 'index', toSav, false);
     switch (property.type) {
         case 'IntProperty':
             transformIntProperty(buffer, property, toSav);
@@ -52,9 +52,9 @@ export default function transformProperty(buffer: DataBuffer, property: Property
             transformMapProperty(buffer, property, toSav);
             break;
         default:
-            //console.log(buffer.readHex(32));
+            // console.log(buffer.readHex(32));
             throw Error(`Unkown property type ${property.type}`);
     }
     buffer.transformBufferEnd(toSav);
-    //console.log('property', property);
+    // console.log('property', property);
 }

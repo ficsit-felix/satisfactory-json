@@ -12,6 +12,12 @@ export class DataBuffer {
     //#region read buffer
     public cursor: number;
     public bytesRead: number;
+
+    //#endregion
+
+    //#region write buffer
+    public bytes: string = '';
+    public buffers: OutputBufferBuffer[] = [];
     constructor(buffer: Buffer) {
         this.buffer = buffer;
         this.cursor = 0;
@@ -125,12 +131,6 @@ export class DataBuffer {
     public resetBytesRead() {
         this.bytesRead = 0;
     }
-
-    //#endregion
-
-    //#region write buffer
-    public bytes: string = '';
-    public buffers: OutputBufferBuffer[] = [];
 
     public write(bytes: string, count = true) {
         if (this.buffers.length === 0) {
@@ -267,8 +267,16 @@ export class DataBuffer {
         }
     }
 
+    public transformAssertNullInt(toSav: boolean, count: boolean = true) {
+        if (toSav) {
+            this.writeInt(0, count);
+        } else {
+            this.assertNullInt();
+        }
+    }
+
     public transformHex(obj: any, key: Key,
-        count: number, toSav: boolean, shouldCount: boolean = true) {
+                        count: number, toSav: boolean, shouldCount: boolean = true) {
         if (toSav) {
             this.writeHex(obj[key], shouldCount);
         } else {

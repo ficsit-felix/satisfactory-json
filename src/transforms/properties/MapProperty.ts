@@ -16,7 +16,7 @@ export default function transformMapProperty(
     if (nullInt.value !== 0) {
         throw Error(`Not 0, but ${nullInt.value}`);
     }
-    
+
     // TODO find a better way to make this bidirectional?
     if (toSav) {
         const keys = Object.keys(property.value.values);
@@ -26,14 +26,14 @@ export default function transformMapProperty(
             const value = property.value.values[key];
             buffer.writeInt(+key); // parse key to int
             for (const element of value) {
-                buffer.transformString(property, 'name', toSav);
-                transformProperty(buffer, property, toSav);
+                buffer.transformString(element, 'name', toSav);
+                transformProperty(buffer, element, toSav);
             }
             buffer.writeLengthPrefixedString('None'); // end of properties
         }
     } else {
         const count = buffer.readInt();
-        //console.log('counti', count);
+        // console.log('counti', count);
         const mapValues: { [id: string]: Property[] } = {};
         for (let i = 0; i < count; i++) {
             const key = buffer.readInt();
@@ -49,12 +49,12 @@ export default function transformMapProperty(
                 if (innerProperty.name === 'None') {
                     break; // end of properties
                 }
-    
+
                 transformProperty(buffer, innerProperty, toSav);
                 props.push(innerProperty);
                // console.log('inner', innerProperty);
             }
-    
+
             mapValues[key] = props;
         }
         property.value.values = mapValues;

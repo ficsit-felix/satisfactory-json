@@ -1,6 +1,7 @@
 import { SaveGame, Actor, Entity, Component, Property } from './types';
 import { DataBuffer } from './DataBuffer';
 import transformProperty from './transforms/Property';
+import transformExtra from './transforms/Extra';
 
 /**
  *
@@ -8,8 +9,6 @@ import transformProperty from './transforms/Property';
  */
 export function transform(buffer: DataBuffer, saveGame: SaveGame, toSav: boolean) {
     transformHeader(buffer, saveGame, toSav);
-
-    console.log(saveGame);
 
     const entryCount = {
         entryCount: saveGame.actors.length +
@@ -104,7 +103,11 @@ function transformActorOrComponent(buffer: DataBuffer, saveGame: SaveGame, id: n
         }
     } else {
         if (id < saveGame.actors.length) {
+            buffer.writeInt(1);
             transformActor(buffer, saveGame.actors[id], toSav);
+        } else {
+            buffer.writeInt(0);
+            transformComponent(buffer, saveGame.components[id - saveGame.actors.length], toSav);
         }
     }
 }
@@ -147,7 +150,7 @@ function ref(obj: any, key: Key): Reference {
 }
 */
 function transformEntity(buffer: DataBuffer, entity: Entity,
-                         withNames: boolean, className: string, toSav: boolean) {
+    withNames: boolean, className: string, toSav: boolean) {
     const length = buffer.transformBufferStart(toSav, true);
 
     if (withNames) {
@@ -166,13 +169,14 @@ function transformEntity(buffer: DataBuffer, entity: Entity,
 
     transformProperties(buffer, entity, toSav);
 
-    const extraObjectCount = {count: 0};
+    const extraObjectCount = { count: 0 };
     buffer.transformInt(extraObjectCount, 'count', toSav);
     if (extraObjectCount.count !== 0) {
         throw Error(`Extra object count not zero, but ${extraObjectCount.count}`);
     }
 
-    // TODO read extra
+    // read extra
+    transformExtra(buffer, entity, toSav, className, length);
 
     // read missing
     if (toSav) {
@@ -189,12 +193,12 @@ function transformEntity(buffer: DataBuffer, entity: Entity,
             throw Error('negative missing amount in entity of type ' + className + ': ' + missing);
         }
     }
-//    console.log('finished entity', entity);
+    //    console.log('finished entity', entity);
     buffer.transformBufferEnd(toSav);
 }
 
 function transformProperties(buffer: DataBuffer, entity: Entity, toSav: boolean) {
-//    console.log(entity);
+    //    console.log(entity);
     if (toSav) {
         for (const property of entity.properties) {
             buffer.transformString(property, 'name', toSav);
@@ -217,7 +221,7 @@ function transformProperties(buffer: DataBuffer, entity: Entity, toSav: boolean)
 
             transformProperty(buffer, property, toSav);
             entity.properties.push(property);
-            //console.log('property built', property);
+            // console.log('property built', property);
 
         }
 
@@ -243,4 +247,10 @@ export function sav2json(buffer: Buffer): SaveGame {
     };
     transform(new DataBuffer(buffer), saveGame, false);
     return saveGame;
+}
+
+export function json2sav(saveGame: SaveGame): string {
+    const buffer = new DataBuffer(new Buffer(0));
+    transform(buffer, saveGame, true);
+    return buffer.bytes;
 }

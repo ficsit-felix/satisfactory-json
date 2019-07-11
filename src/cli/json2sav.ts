@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as program from 'commander';
 
 import { Json2Sav } from '../json2sav';
+import { json2sav } from '../transform';
 
 let sourceValue: string | undefined;
 let targetValue: string | undefined;
@@ -37,8 +38,9 @@ fs.readFile(sourceValue!, 'utf8', (error, data) => {
     quitWithError(error);
   }
   const json = JSON.parse(data);
-  const json2sav = new Json2Sav(json);
-  const output = json2sav.transform();
+//  const json2sav = new Json2Sav(json);
+//  const output = json2sav.transform();
+  const output = json2sav(json);
 
   fs.writeFile(targetValue!, output, 'binary', (error2) => {
     if (error2) {

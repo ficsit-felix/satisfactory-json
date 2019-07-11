@@ -11,7 +11,7 @@ export default function transformArrayProperty(
     }
     buffer.transformString(property.value, 'type', toSav, false);
     buffer.transformAssertNullByte(toSav, false);
-    const itemCount = { count: 0 };
+    const itemCount = { count: property.value.values.length };
     buffer.transformInt(itemCount, 'count', toSav);
 
     switch (property.value.type) {
@@ -38,16 +38,16 @@ export default function transformArrayProperty(
             buffer.transformString(property, 'structName', toSav);
             buffer.transformString(property, 'structType', toSav);
             buffer.transformBufferStart(toSav, false);
-            const zero = {zero:0};
+            const zero = {zero: 0};
             buffer.transformInt(zero, 'zero', toSav, false);
             if (zero.zero !== 0) {
                 throw new Error(`Not zero, but ${zero.zero}`);
             }
             buffer.transformString(property, 'structInnerType', toSav);
-            buffer.transformHex(property, 'unknown', 16, toSav, false);
+            buffer.transformHex(property.value, 'unknown', 16, toSav, false);
             buffer.transformAssertNullByte(toSav, false);
 
-                // TODO find a better way to make this bidirectional?
+            // TODO find a better way to make this bidirectional?
             if (toSav) {
                 for (const prop of property.value.values) {
                     const obj = prop;
@@ -73,7 +73,7 @@ export default function transformArrayProperty(
                             break; // end of properties
                         }
                        // console.log(property);
-                        //console.log('building...',innerProperty.name,j);
+                        // console.log('building...',innerProperty.name,j);
                         transformProperty(buffer, innerProperty, toSav);
                         props.push(innerProperty);
                     }
