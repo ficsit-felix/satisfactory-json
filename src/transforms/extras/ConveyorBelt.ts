@@ -14,12 +14,12 @@ export default function transformConveyorBelt(
     for (let i = 0; i < items.length; i++) {
 
         if (!toSav) {
-            entity.extra.items.push({});
             if (buffer.bytesRead >= length) {
                 console.warn('Item count is ' + items.length +
                     ' while there are only ' + i + ' items in there');
                 break;
             }
+            entity.extra.items.push({});
         }
 
         buffer.transformAssertNullInt(toSav);

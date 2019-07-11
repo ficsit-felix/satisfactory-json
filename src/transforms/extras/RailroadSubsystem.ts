@@ -2,17 +2,20 @@ import { DataBuffer } from '../../DataBuffer';
 import { Entity } from '../../types';
 
 export default function transformRailroadSubsystem(
-    buffer: DataBuffer, entity: Entity, toSav: boolean) {
-    if (!toSav) {
-        entity.extra = {
-            trains: []
-        };
-    }
+    buffer: DataBuffer, entity: Entity, toSav: boolean, length: number) {
     if (toSav) {
         // Workaround for broken savegames in the experimental version
         if (entity.extra === undefined) { // TODO if saveHeaderVersion >= 6
             return;
         }
+    } else {
+        // Workaround for broken savegames in the experimental version
+        if (buffer.bytesRead >= length) { // TODO replace with if saveHeaderType >= 6
+            return;
+        }
+        entity.extra = {
+            trains: []
+        };
     }
     const trains = { length: entity.extra.trains.length };
     buffer.transformInt(trains, 'length', toSav);

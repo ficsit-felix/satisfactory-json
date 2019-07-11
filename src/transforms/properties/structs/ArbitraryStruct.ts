@@ -8,8 +8,7 @@ export function transformArbitraryStruct(buffer: DataBuffer, property: Property,
             transformProperty(buffer, property2, toSav);
         }
         buffer.writeLengthPrefixedString('None'); // end of properties
-    }
-    else {
+    } else {
         property.value.properties = [];
         // read properties
         while (true) {

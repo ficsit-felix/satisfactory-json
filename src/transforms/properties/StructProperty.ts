@@ -62,4 +62,3 @@ export default function transformStructProperty(
             throw new Error(`Unknown struct type ${property.value.type}`);
     }
 }
-

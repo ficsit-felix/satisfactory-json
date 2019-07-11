@@ -15,8 +15,7 @@ export function transformInventoryItem(buffer: DataBuffer, property: Property, t
         // only take up 4 bytes
         buffer.buffers[buffer.buffers.length - 1].length =
             oldval + 4;
-    }
-    else {
+    } else {
         const props: Property[] = [];
         const property2: Property = {
             name: '',

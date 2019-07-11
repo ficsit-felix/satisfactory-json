@@ -9,8 +9,10 @@ import transformVehicle from './extras/Vehicle';
 import transformConveyorBelt from './extras/ConveyorBelt';
 import transformRailroadSubsystem from './extras/RailroadSubsystem';
 
-export default function transformExtra(buffer: DataBuffer,
-                                       entity: Entity, toSav: boolean, className: string, length: number) {
+export default function transformExtra(
+    buffer: DataBuffer,
+    entity: Entity, toSav: boolean, className: string,
+    length: number) {
     switch (className) {
         case '/Game/FactoryGame/Buildable/Factory/PowerLine/Build_PowerLine.Build_PowerLine_C':
             transformPowerLine(buffer, entity, toSav);
@@ -25,7 +27,7 @@ export default function transformExtra(buffer: DataBuffer,
             transformGameState(buffer, entity, toSav);
             break;
         case '/Game/FactoryGame/-Shared/Blueprint/BP_RailroadSubsystem.BP_RailroadSubsystem_C':
-            transformRailroadSubsystem(buffer, entity, toSav);
+            transformRailroadSubsystem(buffer, entity, toSav, length);
             break;
         case '/Game/FactoryGame/Character/Player/BP_PlayerState.BP_PlayerState_C':
             transformPlayerState(buffer, entity, toSav, length);
@@ -48,7 +50,7 @@ export default function transformExtra(buffer: DataBuffer,
         case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk4/Build_ConveyorLiftMk4.Build_ConveyorLiftMk4_C':
         case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk5/Build_ConveyorLiftMk5.Build_ConveyorLiftMk5_C':
         case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk6/Build_ConveyorLiftMk6.Build_ConveyorLiftMk6_C':
-        // tslint:enable
+            // tslint:enable
             transformConveyorBelt(buffer, entity, toSav, length);
             break;
     }
