@@ -738,7 +738,7 @@ export class Sav2Json {
     }
 
     public readExtra(entity: Entity, className: string, length: number) {
-        
+
         switch (className) {
             case '/Game/FactoryGame/Buildable/Factory/PowerLine/Build_PowerLine.Build_PowerLine_C':
                 this.readPowerLineExtra(entity);
@@ -898,7 +898,7 @@ export class Sav2Json {
                 break;
             }
 
-            //console.log(length - this.buffer.bytesRead + ' left ' + itemCount);
+            // console.log(length - this.buffer.bytesRead + ' left ' + itemCount);
 
             this.buffer.assertNullInt();
             const name = this.buffer.readLengthPrefixedString();
