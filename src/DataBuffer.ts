@@ -239,12 +239,16 @@ export class DataBuffer {
             obj[key] = this.readByte();
         }
     }
-    public transformBufferStart(toSav: boolean) {
+    public transformBufferStart(toSav: boolean, resetBytesRead: boolean): number {
         if (toSav) {
             this.addBuffer();
+            return 0;
         } else {
             const length = this.readInt();
-            this.resetBytesRead();
+            if (resetBytesRead) { // is currently only true for the Entity as we don't add missing sections anywhere else
+                this.resetBytesRead();
+            }
+            return length;
             // TODO return length?
         }
     }
@@ -260,6 +264,15 @@ export class DataBuffer {
             this.writeByte(0, count);
         } else {
             this.assertNullByte();
+        }
+    }
+
+    public transformHex(obj: any, key: Key,
+        count: number, toSav: boolean, shouldCount: boolean = true) {
+        if (toSav) {
+            this.writeHex(obj[key], shouldCount);
+        } else {
+            obj[key] = this.readHex(count);
         }
     }
     //#endregion

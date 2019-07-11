@@ -148,11 +148,10 @@ function ref(obj: any, key: Key): Reference {
 */
 function transformEntity(buffer: DataBuffer, entity: Entity,
                          withNames: boolean, className: string, toSav: boolean) {
-    buffer.transformBufferStart(toSav);
+    const length = buffer.transformBufferStart(toSav, true);
 
     if (withNames) {
         buffer.transformString(entity, 'levelName', toSav);
-        console.log('LEVELNAME', entity.levelName);
         buffer.transformString(entity, 'pathName', toSav);
         const childCount = { count: entity.children!.length };
         buffer.transformInt(childCount, 'count', toSav);
@@ -175,7 +174,22 @@ function transformEntity(buffer: DataBuffer, entity: Entity,
 
     // TODO read extra
 
-    // TODO read missing
+    // read missing
+    if (toSav) {
+        if (entity.missing !== undefined) {
+            buffer.writeHex(entity.missing);
+        }
+    } else {
+        const missing = length - buffer.bytesRead;
+        if (missing > 0) {
+            entity.missing = buffer.readHex(missing);
+            console.warn('missing data found in entity of type ' + className +
+                ': ' + entity.missing);
+        } else if (missing < 0) {
+            throw Error('negative missing amount in entity of type ' + className + ': ' + missing);
+        }
+    }
+    console.log('finished entity', entity);
     buffer.transformBufferEnd(toSav);
 }
 
@@ -183,6 +197,7 @@ function transformProperties(buffer: DataBuffer, entity: Entity, toSav: boolean)
     console.log(entity);
     if (toSav) {
         for (const property of entity.properties) {
+            buffer.transformString(property, 'name', toSav);
             transformProperty(buffer, property, toSav);
         }
         buffer.writeLengthPrefixedString('None'); // end of properties
@@ -197,11 +212,13 @@ function transformProperties(buffer: DataBuffer, entity: Entity, toSav: boolean)
             };
             buffer.transformString(property, 'name', toSav);
             if (property.name === 'None') {
-                return; // end of properties
+                break; // end of properties
             }
-            console.log(property);
 
             transformProperty(buffer, property, toSav);
+            entity.properties.push(property);
+            console.log('property built', property);
+
         }
 
     }
