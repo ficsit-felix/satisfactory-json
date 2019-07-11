@@ -245,7 +245,9 @@ export class DataBuffer {
             return 0;
         } else {
             const length = this.readInt();
-            if (resetBytesRead) { // is currently only true for the Entity as we don't add missing sections anywhere else
+            if (resetBytesRead) {
+                // is currently only true for the Entity as we don't add
+                // missing sections anywhere else
                 this.resetBytesRead();
             }
             return length;

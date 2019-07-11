@@ -8,6 +8,7 @@ import transformPlayerState from './extras/PlayerState';
 import transformVehicle from './extras/Vehicle';
 import transformConveyorBelt from './extras/ConveyorBelt';
 import transformRailroadSubsystem from './extras/RailroadSubsystem';
+import transformTrain from './extras/Train';
 
 export default function transformExtra(
     buffer: DataBuffer,
@@ -53,5 +54,10 @@ export default function transformExtra(
             // tslint:enable
             transformConveyorBelt(buffer, entity, toSav, length);
             break;
+        case '/Game/FactoryGame/Buildable/Vehicle/Train/Wagon/BP_FreightWagon.BP_FreightWagon_C':
+        case '/Game/FactoryGame/Buildable/Vehicle/Train/Locomotive/BP_Locomotive.BP_Locomotive_C':
+            transformTrain(buffer, entity, toSav, length);
+            break;
+
     }
 }
