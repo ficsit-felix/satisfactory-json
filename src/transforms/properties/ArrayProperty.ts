@@ -25,6 +25,11 @@ export default function transformArrayProperty(
                 buffer.transformByte(property.value.values, i, toSav);
             }
             break;
+        case 'EnumProperty':
+            for (let i = 0; i < itemCount.count; i++) {
+                buffer.transformString(property.value, 'enum', toSav);
+            }
+            break;
         case 'ObjectProperty':
             for (let i = 0; i < itemCount.count; i++) {
                 if (!toSav) {
@@ -38,7 +43,7 @@ export default function transformArrayProperty(
             buffer.transformString(property, 'structName', toSav);
             buffer.transformString(property, 'structType', toSav);
             buffer.transformBufferStart(toSav, false);
-            const zero = {zero: 0};
+            const zero = { zero: 0 };
             buffer.transformInt(zero, 'zero', toSav, false);
             if (zero.zero !== 0) {
                 throw new Error(`Not zero, but ${zero.zero}`);
@@ -72,7 +77,7 @@ export default function transformArrayProperty(
                         if (innerProperty.name === 'None') {
                             break; // end of properties
                         }
-                       // console.log(property);
+                        // console.log(property);
                         // console.log('building...',innerProperty.name,j);
                         transformProperty(buffer, innerProperty, toSav);
                         props.push(innerProperty);
