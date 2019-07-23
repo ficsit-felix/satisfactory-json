@@ -27,7 +27,7 @@ export default function transformArrayProperty(
             break;
         case 'EnumProperty':
             for (let i = 0; i < itemCount.count; i++) {
-                buffer.transformString(property.value, 'enum', toSav);
+                buffer.transformString(property.value.values, i, toSav);
             }
             break;
         case 'ObjectProperty':
