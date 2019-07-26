@@ -1,4 +1,4 @@
-import { DataBuffer } from '../DataBuffer';
+import { Archive } from '../Archive';
 import { Property } from '../types';
 import transformIntProperty from './properties/IntProperty';
 import transformBoolProperty from './properties/BoolProperty';
@@ -13,49 +13,49 @@ import transformArrayProperty from './properties/ArrayProperty';
 import transformStructProperty from './properties/StructProperty';
 
 // compare to FPropertyTag
-export default function transformProperty(buffer: DataBuffer, property: Property, toSav: boolean) {
-    buffer.transformString(property, 'type', toSav); // Tag.Type
-    buffer.transformBufferStart(toSav, false); // Tag.Size
-    buffer.transformInt(property, 'index', toSav, false); // Tag.ArrayIndex
+export default function transformProperty(ar: Archive, property: Property) {
+    ar.transformString(property, 'type'); // Tag.Type
+    ar.transformBufferStart(false); // Tag.Size
+    ar.transformInt(property, 'index', false); // Tag.ArrayIndex
     switch (property.type) {
         case 'IntProperty':
-            transformIntProperty(buffer, property, toSav);
+            transformIntProperty(ar, property);
             break;
         case 'BoolProperty':
-            transformBoolProperty(buffer, property, toSav);
+            transformBoolProperty(ar, property);
             break;
         case 'FloatProperty':
-            transformFloatProperty(buffer, property, toSav);
+            transformFloatProperty(ar, property);
             break;
         case 'StrProperty':
         case 'NameProperty':
-            transformStringProperty(buffer, property, toSav);
+            transformStringProperty(ar, property);
             break;
         case 'TextProperty':
-            transformTextProperty(buffer, property, toSav);
+            transformTextProperty(ar, property);
             break;
         case 'ByteProperty':
-            transformByteProperty(buffer, property, toSav);
+            transformByteProperty(ar, property);
             break;
         case 'EnumProperty':
-            transformEnumProperty(buffer, property, toSav);
+            transformEnumProperty(ar, property);
             break;
         case 'ObjectProperty':
-            transformObjectProperty(buffer, property, toSav);
+            transformObjectProperty(ar, property);
             break;
         case 'StructProperty':
-            transformStructProperty(buffer, property, toSav);
+            transformStructProperty(ar, property);
             break;
         case 'ArrayProperty':
-            transformArrayProperty(buffer, property, toSav);
+            transformArrayProperty(ar, property);
             break;
         case 'MapProperty':
-            transformMapProperty(buffer, property, toSav);
+            transformMapProperty(ar, property);
             break;
         default:
             // console.log(buffer.readHex(32));
             throw Error(`Unkown property type ${property.type}`);
     }
-    buffer.transformBufferEnd(toSav);
+    ar.transformBufferEnd();
     // console.log('property', property);
 }

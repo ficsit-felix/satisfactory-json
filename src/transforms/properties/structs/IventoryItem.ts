@@ -1,19 +1,20 @@
-import { DataBuffer } from '../../../DataBuffer';
+import { Archive, SavingArchive } from '../../../Archive';
 import { Property } from '../../../types';
 import transformProperty from '../../Property';
-export function transformInventoryItem(buffer: DataBuffer, property: Property, toSav: boolean) {
-    buffer.transformString(property.value, 'unk1', toSav, false);
-    buffer.transformString(property.value, 'itemName', toSav);
-    buffer.transformString(property.value, 'levelName', toSav);
-    buffer.transformString(property.value, 'pathName', toSav);
-    if (toSav) {
-        const oldval = buffer.buffers[buffer.buffers.length - 1]
+export function transformInventoryItem(ar: Archive, property: Property) {
+    ar.transformString(property.value, 'unk1', false);
+    ar.transformString(property.value, 'itemName');
+    ar.transformString(property.value, 'levelName');
+    ar.transformString(property.value, 'pathName');
+    if (ar.isSaving()) {
+        const sar = ar as SavingArchive;
+        const oldval = sar.buffers[sar.buffers.length - 1]
             .length;
-        buffer.transformString(property.value.properties[0], 'name', toSav); // Tag.Name
-        transformProperty(buffer, property.value.properties[0], toSav);
+        ar.transformString(property.value.properties[0], 'name'); // Tag.Name
+        transformProperty(ar, property.value.properties[0]);
         // Dirty hack to make in this one case the inner property
         // only take up 4 bytes
-        buffer.buffers[buffer.buffers.length - 1].length =
+        sar.buffers[sar.buffers.length - 1].length =
             oldval + 4;
     } else {
         const props: Property[] = [];
@@ -23,11 +24,11 @@ export function transformInventoryItem(buffer: DataBuffer, property: Property, t
             index: 0,
             value: ''
         };
-        buffer.transformString(property2, 'name', toSav); // Tag.Name
+        ar.transformString(property2, 'name'); // Tag.Name
         if (property2.name === 'None') {
             return; // end of properties
         }
-        transformProperty(buffer, property2, toSav);
+        transformProperty(ar, property2);
         // can't consume null here because it is needed by the entaingling struct
         props.push(property2);
         property.value.properties = props;

@@ -1,4 +1,4 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Property } from '../../types';
 import { transformVector } from './structs/Vector';
 import { transformTimerHandle } from './structs/TimerHandle';
@@ -11,52 +11,52 @@ import { transformArbitraryStruct } from './structs/ArbitraryStruct';
 import { transformBox } from './structs/Box';
 
 export default function transformStructProperty(
-    buffer: DataBuffer, property: Property, toSav: boolean) {
-    if (!toSav) {
+    ar: Archive, property: Property) {
+    if (ar.isLoading()) {
         property.value = {};
     }
-    buffer.transformString(property.value, 'type', toSav); // Tag.StructName
+    ar.transformString(property.value, 'type'); // Tag.StructName
 
     const zero = { zero: 0 };
     for (let i = 0; i < 4; i++) { // Tag.StructGuid
-        buffer.transformInt(zero, 'zero', toSav, false);
+        ar.transformInt(zero, 'zero', false);
         if (zero.zero !== 0) {
             throw new Error(`Not zero, but ${zero.zero}`);
         }
     }
-    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
+    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
 
     switch (property.value.type) {
         case 'Vector':
         case 'Rotator':
-            transformVector(buffer, property, toSav);
+            transformVector(ar, property);
             break;
         case 'Box':
-            transformBox(buffer, property, toSav);
+            transformBox(ar, property);
             break;
         case 'Color':
-            transformColor(buffer, property, toSav);
+            transformColor(ar, property);
             break;
         case 'LinearColor':
-            transformLinearColor(buffer, property, toSav);
+            transformLinearColor(ar, property);
             break;
         case 'Quat':
-            transformQuat(buffer, property, toSav);
+            transformQuat(ar, property);
             break;
         case 'InventoryItem':
-            transformInventoryItem(buffer, property, toSav);
+            transformInventoryItem(ar, property);
             break;
         case 'RailroadTrackPosition':
-            transformRailroadTrackPosition(buffer, property, toSav);
+            transformRailroadTrackPosition(ar, property);
             break;
         case 'TimerHandle':
-            transformTimerHandle(buffer, property, toSav);
+            transformTimerHandle(ar, property);
             break;
         case 'Transform':
         case 'RemovedInstanceArray':
         case 'InventoryStack':
         case 'ProjectileData':
-            transformArbitraryStruct(buffer, property, toSav);
+            transformArbitraryStruct(ar, property);
             break;
         default:
             throw new Error(`Unknown struct type ${property.value.type}`);

@@ -1,4 +1,4 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Property } from '../../types';
 
 // ETextHistoryType
@@ -25,60 +25,60 @@ const FORMATARGUMENTTYPE_TEXT = 4;
 const FORMATARGUMENTTYPE_GENDER = 5;
 
 export default function transformTextProperty(
-    buffer: DataBuffer, property: Property, toSav: boolean) {
-    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
-    if (!toSav) {
+    ar: Archive, property: Property) {
+    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
+    if (ar.isLoading()) {
         property.value = {};
     }
-    transformFText(buffer, property.value, toSav);
+    transformFText(ar, property.value);
 }
 
-function transformFText(buffer: DataBuffer, value: any, toSav: boolean) {
-    buffer.transformInt(value, 'flags', toSav); // Value.Flags
+function transformFText(ar: Archive, value: any) {
+    ar.transformInt(value, 'flags'); // Value.Flags
 
-    buffer.transformByte(value, 'historyType', toSav); // HistoryType
+    ar.transformByte(value, 'historyType'); // HistoryType
 
     // parse the TextHistory according to TextHistory.cpp
     switch (value.historyType) {
         case HISTORYTYPE_BASE:
-            buffer.transformString(value, 'namespace', toSav);
-            buffer.transformString(value, 'key', toSav);
-            buffer.transformString(value, 'sourceString', toSav);
+            ar.transformString(value, 'namespace');
+            ar.transformString(value, 'key');
+            ar.transformString(value, 'sourceString');
             break;
 
         case HISTORYTYPE_NONE:
             // this is the end of the  no value ?
             break;
         case HISTORYTYPE_ARGUMENTFORMAT:
-            if (!toSav) {
+            if (ar.isLoading()) {
                 value.sourceFmt = {};
             }
-            transformFText(buffer, value.sourceFmt, toSav);
+            transformFText(ar, value.sourceFmt);
 
             // Arguments
-            if (!toSav) {
+            if (ar.isLoading()) {
                 value.arguments = [];
             }
-            const argumentCount = {count: value.arguments.length};
-            buffer.transformInt(argumentCount, 'count', toSav);
+            const argumentCount = { count: value.arguments.length };
+            ar.transformInt(argumentCount, 'count');
 
             for (let i = 0; i < argumentCount.count; i++) {
-                if (!toSav) {
+                if (ar.isLoading()) {
                     value.arguments[i] = {};
                 }
 
-                buffer.transformString(value.arguments[i], 'argumentName', toSav);
-                buffer.transformByte(value.arguments[i], 'argumentValueType', toSav);
+                ar.transformString(value.arguments[i], 'argumentName');
+                ar.transformByte(value.arguments[i], 'argumentValueType');
                 switch (value.arguments[i].argumentValueType) {
                     case FORMATARGUMENTTYPE_TEXT:
-                        if (!toSav) {
+                        if (ar.isLoading()) {
                             value.arguments[i].argumentValue = {};
                         }
-                        transformFText(buffer, value.arguments[i].argumentValue, toSav);
+                        transformFText(ar, value.arguments[i].argumentValue);
                         break;
                     default:
                         throw new Error('Unhandled FormatArgumentType: ' +
-                        value.arguments[i].argumentValueType);
+                            value.arguments[i].argumentValueType);
                 }
 
             }

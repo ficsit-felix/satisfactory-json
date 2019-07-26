@@ -1,16 +1,16 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Property } from '../../types';
 
 export default function transformByteProperty(
-    buffer: DataBuffer, property: Property, toSav: boolean) {
-    if (!toSav) {
+    ar: Archive, property: Property) {
+    if (ar.isLoading()) {
         property.value = {};
     }
-    buffer.transformString(property.value, 'enumName', toSav); // Tag.EnumName
-    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
+    ar.transformString(property.value, 'enumName'); // Tag.EnumName
+    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
     if (property.value.enumName === 'None') {
-        buffer.transformByte(property.value, 'value', toSav);
+        ar.transformByte(property.value, 'value');
     } else {
-        buffer.transformString(property.value, 'valueName', toSav);
+        ar.transformString(property.value, 'valueName');
     }
 }

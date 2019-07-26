@@ -1,42 +1,43 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive, SavingArchive, LoadingArchive } from '../../Archive';
 import { Property } from '../../types';
 import transformProperty from '../Property';
 
 export default function transformMapProperty(
-    buffer: DataBuffer, property: Property, toSav: boolean) {
+    ar: Archive, property: Property) {
 
-    if (!toSav) {
+    if (ar.isLoading()) {
         property.value = {};
     }
-    buffer.transformString(property.value, 'name', toSav, false); // Tag.InnerType
-    buffer.transformString(property.value, 'type', toSav, false); // Tag.ValueType
-    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
-    const nullInt = {value: 0};
-    buffer.transformInt(nullInt, 'value', toSav);
+    ar.transformString(property.value, 'name', false); // Tag.InnerType
+    ar.transformString(property.value, 'type', false); // Tag.ValueType
+    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
+    const nullInt = { value: 0 };
+    ar.transformInt(nullInt, 'value');
     if (nullInt.value !== 0) {
         throw Error(`Not 0, but ${nullInt.value}`);
     }
 
     // TODO find a better way to make this bidirectional?
-    if (toSav) {
+    if (ar.isSaving()) {
+        const sar = ar as SavingArchive;
         const keys = Object.keys(property.value.values);
-        buffer.writeInt(keys.length);
+        sar.writeInt(keys.length);
         for (const key of keys) {
-            // (let [key, value] of property.value.values) {
             const value = property.value.values[key];
-            buffer.writeInt(+key); // parse key to int
+            sar.writeInt(+key); // parse key to int
             for (const element of value) {
-                buffer.transformString(element, 'name', toSav); // Tag.Name
-                transformProperty(buffer, element, toSav);
+                ar.transformString(element, 'name'); // Tag.Name
+                transformProperty(ar, element);
             }
-            buffer.writeLengthPrefixedString('None'); // end of properties
+            sar.writeLengthPrefixedString('None'); // end of properties
         }
     } else {
-        const count = buffer.readInt();
+        const lar = ar as LoadingArchive;
+        const count = lar.readInt();
         // console.log('counti', count);
         const mapValues: { [id: string]: Property[] } = {};
         for (let i = 0; i < count; i++) {
-            const key = buffer.readInt();
+            const key = lar.readInt();
             const props: Property[] = [];
             while (true) {
                 const innerProperty: Property = {
@@ -45,14 +46,14 @@ export default function transformMapProperty(
                     index: 0,
                     value: ''
                 };
-                buffer.transformString(innerProperty, 'name', toSav); // Tag.Name
+                ar.transformString(innerProperty, 'name'); // Tag.Name
                 if (innerProperty.name === 'None') {
                     break; // end of properties
                 }
 
-                transformProperty(buffer, innerProperty, toSav);
+                transformProperty(ar, innerProperty);
                 props.push(innerProperty);
-               // console.log('inner', innerProperty);
+                // console.log('inner', innerProperty);
             }
 
             mapValues[key] = props;

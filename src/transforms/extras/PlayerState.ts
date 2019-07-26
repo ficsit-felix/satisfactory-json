@@ -1,16 +1,16 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive, LoadingArchive } from '../../Archive';
 import { Entity } from '../../types';
 
 export default function transformPlayerState(
-    buffer: DataBuffer, entity: Entity, toSav: boolean, length: number) {
-    if (!toSav) {
+    ar: Archive, entity: Entity, length: number) {
+    if (ar.isLoading()) {
         entity.extra = {
         };
     }
     // read remaining data
     let count = 0;
-    if (!toSav) {
-        count = length - buffer.bytesRead;
+    if (ar.isLoading()) {
+        count = length - (ar as LoadingArchive).bytesRead;
     }
-    buffer.transformHex(entity.extra, 'unknown', count, toSav);
+    ar.transformHex(entity.extra, 'unknown', count);
 }

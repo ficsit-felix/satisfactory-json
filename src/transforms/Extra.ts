@@ -1,4 +1,4 @@
-import { DataBuffer } from '../DataBuffer';
+import { Archive } from '../Archive';
 import { Entity } from '../types';
 import transformPowerLine from './extras/PowerLine';
 import transformCircuitSubsystem from './extras/CircuitSubsystem';
@@ -11,32 +11,32 @@ import transformRailroadSubsystem from './extras/RailroadSubsystem';
 import transformTrain from './extras/Train';
 
 export default function transformExtra(
-    buffer: DataBuffer,
-    entity: Entity, toSav: boolean, className: string,
+    ar: Archive,
+    entity: Entity, className: string,
     length: number) {
     switch (className) {
         case '/Game/FactoryGame/Buildable/Factory/PowerLine/Build_PowerLine.Build_PowerLine_C':
-            transformPowerLine(buffer, entity, toSav);
+            transformPowerLine(ar, entity);
             break;
         case '/Game/FactoryGame/-Shared/Blueprint/BP_CircuitSubsystem.BP_CircuitSubsystem_C':
-            transformCircuitSubsystem(buffer, entity, toSav);
+            transformCircuitSubsystem(ar, entity);
             break;
         case '/Game/FactoryGame/-Shared/Blueprint/BP_GameMode.BP_GameMode_C':
-            transformGameMode(buffer, entity, toSav);
+            transformGameMode(ar, entity);
             break;
         case '/Game/FactoryGame/-Shared/Blueprint/BP_GameState.BP_GameState_C':
-            transformGameState(buffer, entity, toSav);
+            transformGameState(ar, entity);
             break;
         case '/Game/FactoryGame/-Shared/Blueprint/BP_RailroadSubsystem.BP_RailroadSubsystem_C':
-            transformRailroadSubsystem(buffer, entity, toSav, length);
+            transformRailroadSubsystem(ar, entity, length);
             break;
         case '/Game/FactoryGame/Character/Player/BP_PlayerState.BP_PlayerState_C':
-            transformPlayerState(buffer, entity, toSav, length);
+            transformPlayerState(ar, entity, length);
             break;
         case '/Game/FactoryGame/Buildable/Vehicle/Tractor/BP_Tractor.BP_Tractor_C':
         case '/Game/FactoryGame/Buildable/Vehicle/Truck/BP_Truck.BP_Truck_C':
         case '/Game/FactoryGame/Buildable/Vehicle/Explorer/BP_Explorer.BP_Explorer_C':
-            transformVehicle(buffer, entity, toSav);
+            transformVehicle(ar, entity);
             break;
         // tslint:disable: max-line-length
         case '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk1/Build_ConveyorBeltMk1.Build_ConveyorBeltMk1_C':
@@ -52,11 +52,11 @@ export default function transformExtra(
         case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk5/Build_ConveyorLiftMk5.Build_ConveyorLiftMk5_C':
         case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk6/Build_ConveyorLiftMk6.Build_ConveyorLiftMk6_C':
             // tslint:enable
-            transformConveyorBelt(buffer, entity, toSav, length);
+            transformConveyorBelt(ar, entity, length);
             break;
         case '/Game/FactoryGame/Buildable/Vehicle/Train/Wagon/BP_FreightWagon.BP_FreightWagon_C':
         case '/Game/FactoryGame/Buildable/Vehicle/Train/Locomotive/BP_Locomotive.BP_Locomotive_C':
-            transformTrain(buffer, entity, toSav, length);
+            transformTrain(ar, entity, length);
             break;
 
     }

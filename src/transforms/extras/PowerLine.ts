@@ -1,13 +1,13 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Entity } from '../../types';
 
-export default function transformPowerLine(buffer: DataBuffer, entity: Entity, toSav: boolean) {
-    if (!toSav) {
+export default function transformPowerLine(ar: Archive, entity: Entity) {
+    if (ar.isLoading()) {
         entity.extra = {
         };
     }
-    buffer.transformString(entity.extra, 'sourceLevelName', toSav);
-    buffer.transformString(entity.extra, 'sourcePathName', toSav);
-    buffer.transformString(entity.extra, 'targetLevelName', toSav);
-    buffer.transformString(entity.extra, 'targetPathName', toSav);
+    ar.transformString(entity.extra, 'sourceLevelName');
+    ar.transformString(entity.extra, 'sourcePathName');
+    ar.transformString(entity.extra, 'targetLevelName');
+    ar.transformString(entity.extra, 'targetPathName');
 }

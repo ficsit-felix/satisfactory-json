@@ -1,8 +1,8 @@
-import { DataBuffer } from '../../../DataBuffer';
+import { Archive } from '../../../Archive';
 import { Property } from '../../../types';
-export function transformQuat(buffer: DataBuffer, property: Property, toSav: boolean) {
-    buffer.transformFloat(property.value, 'r', toSav);
-    buffer.transformFloat(property.value, 'g', toSav);
-    buffer.transformFloat(property.value, 'b', toSav);
-    buffer.transformFloat(property.value, 'a', toSav);
+export function transformQuat(ar: Archive, property: Property) {
+    ar.transformFloat(property.value, 'x');
+    ar.transformFloat(property.value, 'y');
+    ar.transformFloat(property.value, 'z');
+    ar.transformFloat(property.value, 'w');
 }

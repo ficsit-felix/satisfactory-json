@@ -1,16 +1,17 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive, LoadingArchive } from '../../Archive';
 import { Entity } from '../../types';
 
 export default function transformRailroadSubsystem(
-    buffer: DataBuffer, entity: Entity, toSav: boolean, length: number) {
-    if (toSav) {
+    ar: Archive, entity: Entity, length: number) {
+    if (ar.isSaving()) {
         // Workaround for broken savegames in the experimental version
         if (entity.extra === undefined) { // TODO if saveHeaderVersion >= 6
             return;
         }
     } else {
         // Workaround for broken savegames in the experimental version
-        if (buffer.bytesRead >= length) { // TODO replace with if saveHeaderType >= 6
+        if ((ar as LoadingArchive).bytesRead >= length) {
+            // TODO replace with if saveHeaderType >= 6
             return;
         }
         entity.extra = {
@@ -18,19 +19,19 @@ export default function transformRailroadSubsystem(
         };
     }
     const trains = { length: entity.extra.trains.length };
-    buffer.transformInt(trains, 'length', toSav);
+    ar.transformInt(trains, 'length');
 
     for (let i = 0; i < trains.length; i++) {
-        if (!toSav) {
+        if (ar.isLoading()) {
             entity.extra.trains.push({});
         }
 
-        buffer.transformHex(entity.extra.trains[i], 'unknown', 4, toSav);
-        buffer.transformString(entity.extra.trains[i], 'firstLevelName', toSav);
-        buffer.transformString(entity.extra.trains[i], 'firstPathName', toSav);
-        buffer.transformString(entity.extra.trains[i], 'secondLevelName', toSav);
-        buffer.transformString(entity.extra.trains[i], 'secondPathName', toSav);
-        buffer.transformString(entity.extra.trains[i], 'timetableLevelName', toSav);
-        buffer.transformString(entity.extra.trains[i], 'timetablePathName', toSav);
+        ar.transformHex(entity.extra.trains[i], 'unknown', 4);
+        ar.transformString(entity.extra.trains[i], 'firstLevelName');
+        ar.transformString(entity.extra.trains[i], 'firstPathName');
+        ar.transformString(entity.extra.trains[i], 'secondLevelName');
+        ar.transformString(entity.extra.trains[i], 'secondPathName');
+        ar.transformString(entity.extra.trains[i], 'timetableLevelName');
+        ar.transformString(entity.extra.trains[i], 'timetablePathName');
     }
 }

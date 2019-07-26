@@ -1,13 +1,13 @@
-import { DataBuffer } from '../../../DataBuffer';
+import { Archive, SavingArchive } from '../../../Archive';
 import { Property } from '../../../types';
 import transformProperty from '../../Property';
-export function transformArbitraryStruct(buffer: DataBuffer, property: Property, toSav: boolean) {
-    if (toSav) {
+export function transformArbitraryStruct(ar: Archive, property: Property) {
+    if (ar.isSaving()) {
         for (const property2 of property.value.properties) {
-            buffer.transformString(property2, 'name', toSav); // Tag.Name
-            transformProperty(buffer, property2, toSav);
+            ar.transformString(property2, 'name'); // Tag.Name
+            transformProperty(ar, property2);
         }
-        buffer.writeLengthPrefixedString('None'); // end of properties
+        (ar as SavingArchive).writeLengthPrefixedString('None'); // end of properties
     } else {
         property.value.properties = [];
         // read properties
@@ -18,11 +18,11 @@ export function transformArbitraryStruct(buffer: DataBuffer, property: Property,
                 index: 0,
                 value: ''
             };
-            buffer.transformString(property2, 'name', toSav); // Tag.Name
+            ar.transformString(property2, 'name'); // Tag.Name
             if (property2.name === 'None') {
                 break; // end of properties
             }
-            transformProperty(buffer, property2, toSav);
+            transformProperty(ar, property2);
             property.value.properties.push(property2);
         }
     }

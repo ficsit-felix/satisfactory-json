@@ -1,66 +1,66 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive, LoadingArchive, SavingArchive } from '../../Archive';
 import { Property } from '../../types';
 import transformProperty from '../Property';
 
 export default function transformArrayProperty(
-    buffer: DataBuffer, property: Property, toSav: boolean) {
-    if (!toSav) {
+    ar: Archive, property: Property) {
+    if (ar.isLoading()) {
         property.value = {
             values: []
         };
     }
-    buffer.transformString(property.value, 'type', toSav, false); // Tag.InnerType
-    buffer.transformAssertNullByte(toSav, false);   // Tag.HasPropertyGuid
+    ar.transformString(property.value, 'type', false); // Tag.InnerType
+    ar.transformAssertNullByte(false);   // Tag.HasPropertyGuid
     const itemCount = { count: property.value.values.length };
-    buffer.transformInt(itemCount, 'count', toSav);
+    ar.transformInt(itemCount, 'count');
 
     switch (property.value.type) {
         case 'IntProperty':
             for (let i = 0; i < itemCount.count; i++) {
-                buffer.transformInt(property.value.values, i, toSav);
+                ar.transformInt(property.value.values, i);
             }
             break;
         case 'ByteProperty':
             for (let i = 0; i < itemCount.count; i++) {
-                buffer.transformByte(property.value.values, i, toSav);
+                ar.transformByte(property.value.values, i);
             }
             break;
         case 'EnumProperty':
             for (let i = 0; i < itemCount.count; i++) {
-                buffer.transformString(property.value.values, i, toSav);
+                ar.transformString(property.value.values, i);
             }
             break;
         case 'ObjectProperty':
             for (let i = 0; i < itemCount.count; i++) {
-                if (!toSav) {
+                if (ar.isLoading()) {
                     property.value.values[i] = {};
                 }
-                buffer.transformString(property.value.values[i], 'levelName', toSav);
-                buffer.transformString(property.value.values[i], 'pathName', toSav);
+                ar.transformString(property.value.values[i], 'levelName');
+                ar.transformString(property.value.values[i], 'pathName');
             }
             break;
         case 'StructProperty':
-            buffer.transformString(property, 'structName', toSav);
-            buffer.transformString(property, 'structType', toSav);
-            buffer.transformBufferStart(toSav, false);
+            ar.transformString(property, 'structName');
+            ar.transformString(property, 'structType');
+            ar.transformBufferStart(false);
             const zero = { zero: 0 };
-            buffer.transformInt(zero, 'zero', toSav, false);
+            ar.transformInt(zero, 'zero', false);
             if (zero.zero !== 0) {
                 throw new Error(`Not zero, but ${zero.zero}`);
             }
-            buffer.transformString(property, 'structInnerType', toSav);
-            buffer.transformHex(property.value, 'unknown', 16, toSav, false);
-            buffer.transformAssertNullByte(toSav, false);
+            ar.transformString(property, 'structInnerType');
+            ar.transformHex(property.value, 'unknown', 16, false);
+            ar.transformAssertNullByte(false);
 
             // TODO find a better way to make this bidirectional?
-            if (toSav) {
+            if (ar.isSaving()) {
                 for (const prop of property.value.values) {
                     const obj = prop;
                     for (const innerProp of obj.properties) {
-                        buffer.transformString(innerProp, 'name', toSav); // Tag.Name
-                        transformProperty(buffer, innerProp, toSav);
+                        ar.transformString(innerProp, 'name'); // Tag.Name
+                        transformProperty(ar, innerProp);
                     }
-                    buffer.writeLengthPrefixedString('None'); // end of properties
+                    (ar as SavingArchive).writeLengthPrefixedString('None'); // end of properties
                 }
 
             } else {
@@ -73,13 +73,13 @@ export default function transformArrayProperty(
                             index: 0,
                             value: ''
                         };
-                        buffer.transformString(innerProperty, 'name', toSav); // Tag.Name
+                        ar.transformString(innerProperty, 'name'); // Tag.Name
                         if (innerProperty.name === 'None') {
                             break; // end of properties
                         }
                         // console.log(property);
                         // console.log('building...',innerProperty.name,j);
-                        transformProperty(buffer, innerProperty, toSav);
+                        transformProperty(ar, innerProperty);
                         props.push(innerProperty);
                     }
                     property.value.values.push({
@@ -88,7 +88,7 @@ export default function transformArrayProperty(
                 }
             }
 
-            buffer.transformBufferEnd(toSav);
+            ar.transformBufferEnd();
             break;
         default:
             throw Error(`Unknown array type: ${property.value.type}`);

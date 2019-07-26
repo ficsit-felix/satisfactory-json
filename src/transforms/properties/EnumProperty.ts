@@ -1,12 +1,12 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Property } from '../../types';
 
 export default function transformEnumProperty(
-    buffer: DataBuffer, property: Property, toSav: boolean) {
-    if (!toSav) {
+    ar: Archive, property: Property) {
+    if (ar.isLoading()) {
         property.value = {};
     }
-    buffer.transformString(property.value, 'enum', toSav, false); // Tag.EnumName
-    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
-    buffer.transformString(property.value, 'value', toSav);
+    ar.transformString(property.value, 'enum', false); // Tag.EnumName
+    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
+    ar.transformString(property.value, 'value');
 }

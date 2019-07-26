@@ -1,16 +1,16 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Entity } from '../../types';
 
 export default function transformTrain(
-  buffer: DataBuffer, entity: Entity, toSav: boolean, length: number) {
-  if (!toSav) {
+  ar: Archive, entity: Entity, length: number) {
+  if (ar.isLoading()) {
     entity.extra = {
     };
   }
 
-  buffer.transformAssertNullInt(toSav);
-  buffer.transformString(entity.extra, 'previousLevelName', toSav);
-  buffer.transformString(entity.extra, 'previousPathName', toSav);
-  buffer.transformString(entity.extra, 'nextLevelName', toSav);
-  buffer.transformString(entity.extra, 'nextPathName', toSav);
+  ar.transformAssertNullInt();
+  ar.transformString(entity.extra, 'previousLevelName');
+  ar.transformString(entity.extra, 'previousPathName');
+  ar.transformString(entity.extra, 'nextLevelName');
+  ar.transformString(entity.extra, 'nextPathName');
 }

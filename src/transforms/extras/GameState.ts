@@ -1,20 +1,20 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Entity } from '../../types';
 
-export default function transformGameState(buffer: DataBuffer, entity: Entity, toSav: boolean) {
-    if (!toSav) {
+export default function transformGameState(ar: Archive, entity: Entity) {
+    if (ar.isLoading()) {
         entity.extra = {
             objects: []
         };
     }
     const objects = { length: entity.extra.objects.length };
-    buffer.transformInt(objects, 'length', toSav);
+    ar.transformInt(objects, 'length');
 
     for (let i = 0; i < objects.length; i++) {
-        if (!toSav) {
+        if (ar.isLoading()) {
             entity.extra.objects.push({});
         }
-        buffer.transformString(entity.extra.objects[i], 'levelName', toSav);
-        buffer.transformString(entity.extra.objects[i], 'pathName', toSav);
+        ar.transformString(entity.extra.objects[i], 'levelName');
+        ar.transformString(entity.extra.objects[i], 'pathName');
     }
 }

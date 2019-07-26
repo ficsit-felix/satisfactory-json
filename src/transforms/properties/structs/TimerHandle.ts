@@ -1,5 +1,5 @@
-import { DataBuffer } from '../../../DataBuffer';
+import { Archive } from '../../../Archive';
 import { Property } from '../../../types';
-export function transformTimerHandle(buffer: DataBuffer, property: Property, toSav: boolean) {
-    buffer.transformString(property.value, 'handle', toSav);
+export function transformTimerHandle(ar: Archive, property: Property) {
+    ar.transformString(property.value, 'handle');
 }

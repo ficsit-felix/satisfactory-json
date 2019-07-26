@@ -1,22 +1,22 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Entity } from '../../types';
 
 export default function transformCircuitSubsystem(
-    buffer: DataBuffer, entity: Entity, toSav: boolean) {
-    if (!toSav) {
+    ar: Archive, entity: Entity) {
+    if (ar.isLoading()) {
         entity.extra = {
             circuits: []
         };
     }
     const circuits = { length: entity.extra.circuits.length };
-    buffer.transformInt(circuits, 'length', toSav);
+    ar.transformInt(circuits, 'length');
 
     for (let i = 0; i < circuits.length; i++) {
-        if (!toSav) {
+        if (ar.isLoading()) {
             entity.extra.circuits.push({});
         }
-        buffer.transformInt(entity.extra.circuits[i], 'circuitId', toSav);
-        buffer.transformString(entity.extra.circuits[i], 'levelName', toSav);
-        buffer.transformString(entity.extra.circuits[i], 'pathName', toSav);
+        ar.transformInt(entity.extra.circuits[i], 'circuitId');
+        ar.transformString(entity.extra.circuits[i], 'levelName');
+        ar.transformString(entity.extra.circuits[i], 'pathName');
     }
 }

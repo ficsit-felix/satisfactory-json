@@ -5,24 +5,89 @@ interface OutputBufferBuffer {
     bytes: string;
     length: number;
 }
+export interface Archive {
+    isSaving(): boolean;
+    isLoading(): boolean;
+    transformInt(obj: any, key: string | number, count?: boolean): void;
+    transformString(obj: any, key: string | number, count?: boolean): void;
+    transformFloat(obj: any, key: string | number): void;
+    transformLong(obj: any, key: string | number): void;
+    transformByte(obj: any, key: Key, count?: boolean): void;
+    transformBufferStart(resetBytesRead: boolean): number;
+    transformBufferEnd(): void;
+    transformAssertNullByte(count?: boolean): void;
+    transformAssertNullInt(count?: boolean): void;
+    transformHex(obj: any, key: Key, count: number, shouldCount?: boolean): void;
+}
 
-export class DataBuffer {
-    public buffer: Buffer;
-
+export class LoadingArchive implements Archive {
+    public buffer: Buffer; // TODO make private
     //#region read buffer
     public cursor: number;
     public bytesRead: number;
-
     //#endregion
 
-    //#region write buffer
-    public bytes: string = '';
-    public buffers: OutputBufferBuffer[] = [];
     constructor(buffer: Buffer) {
         this.buffer = buffer;
         this.cursor = 0;
         this.bytesRead = 0;
     }
+
+    public isSaving(): boolean {
+        return false;
+    }
+
+    public isLoading(): boolean {
+        return true;
+    }
+
+    public transformInt(obj: any, key: string | number, count: boolean = true): void {
+        obj[key] = this.readInt();
+    }
+
+    public transformString(obj: any, key: string | number, count: boolean = true): void {
+        obj[key] = this.readLengthPrefixedString();
+    }
+
+    public transformFloat(obj: any, key: string | number): void {
+        obj[key] = this.readFloat();
+    }
+
+    public transformLong(obj: any, key: string | number): void {
+        obj[key] = this.readLong();
+    }
+
+    public transformByte(obj: any, key: Key, count: boolean = true): void {
+        obj[key] = this.readByte();
+    }
+
+    public transformBufferStart(resetBytesRead: boolean): number {
+        const length = this.readInt();
+        if (resetBytesRead) {
+            // is currently only true for the Entity as we don't add
+            // missing sections anywhere else
+            this.resetBytesRead();
+        }
+        return length;
+    }
+
+    public transformBufferEnd(): void {
+        // TODO write missing?
+    }
+
+    public transformAssertNullByte(count: boolean = true): void {
+        this.assertNullByte();
+    }
+
+    public transformAssertNullInt(count: boolean = true): void {
+        this.assertNullInt();
+    }
+
+    public transformHex(obj: any, key: Key, count: number, shouldCount: boolean = true): void {
+        obj[key] = this.readHex(count);
+    }
+
+    //#region should be private
     public readInt(): number {
         const result = this.buffer.readInt32LE(this.cursor);
         this.cursor += 4;
@@ -131,7 +196,85 @@ export class DataBuffer {
     public resetBytesRead() {
         this.bytesRead = 0;
     }
+    //#endregion
+}
 
+/**
+ * Archive that handles serializing the data when transforming json2sav.
+ *
+ * TODO: make more efficient by not using a bunch of string concatenations?
+ * Maybe have a way to seek back to the position where the length of the next position is stored as
+ * in the C++ code and then replace it there?
+ */
+export class SavingArchive implements Archive {
+    public buffer: Buffer; // TODO make private
+
+    //#region write buffer
+    public buffers: OutputBufferBuffer[] = []; // TODO make private
+    private bytes: string = '';
+    //#endregion
+
+    constructor(buffer: Buffer) {
+        this.buffer = buffer;
+    }
+
+    public isSaving(): boolean {
+        return true;
+    }
+
+    public isLoading(): boolean {
+        return false;
+    }
+
+    /**
+     * Returns the final output after the transform is finished.
+     */
+    public getOutput(): string {
+        return this.bytes;
+    }
+
+    public transformInt(obj: any, key: string | number, count: boolean = true): void {
+        this.writeInt(obj[key], count);
+    }
+
+    public transformString(obj: any, key: string | number, count: boolean = true): void {
+        this.writeLengthPrefixedString(obj[key], count);
+    }
+
+    public transformFloat(obj: any, key: string | number): void {
+        this.writeFloat(obj[key]);
+    }
+
+    public transformLong(obj: any, key: string | number): void {
+        this.writeLong(obj[key]);
+    }
+
+    public transformByte(obj: any, key: Key, count: boolean = true): void {
+        this.writeByte(obj[key], count);
+    }
+
+    public transformBufferStart(resetBytesRead: boolean): number {
+        this.addBuffer();
+        return 0;
+    }
+
+    public transformBufferEnd(): void {
+        this.endBufferAndWriteSize();
+    }
+
+    public transformAssertNullByte(count: boolean = true): void {
+        this.writeByte(0, count);
+    }
+
+    public transformAssertNullInt(count: boolean = true): void {
+        this.writeInt(0, count);
+    }
+
+    public transformHex(obj: any, key: Key, count: number, shouldCount: boolean = true): void {
+        this.writeHex(obj[key], shouldCount);
+    }
+
+    //#region should be private
     public write(bytes: string, count = true) {
         if (this.buffers.length === 0) {
             this.bytes += bytes;
@@ -199,89 +342,6 @@ export class DataBuffer {
                 this.writeByte(0, count);
                 this.writeByte(0, count);
             }
-        }
-    }
-    //#endregion
-
-    //#region transforms
-    public transformInt(obj: any, key: string | number, toSav: boolean, count: boolean = true) {
-        if (toSav) {
-            this.writeInt(obj[key], count);
-        } else {
-            obj[key] = this.readInt();
-        }
-    }
-    public transformString(obj: any, key: string | number, toSav: boolean, count: boolean = true) {
-        if (toSav) {
-            this.writeLengthPrefixedString(obj[key], count);
-        } else {
-            obj[key] = this.readLengthPrefixedString();
-        }
-    }
-    public transformFloat(obj: any, key: string | number, toSav: boolean) {
-        if (toSav) {
-            this.writeFloat(obj[key]);
-        } else {
-            obj[key] = this.readFloat();
-        }
-    }
-    public transformLong(obj: any, key: string | number, toSav: boolean) {
-        if (toSav) {
-            this.writeLong(obj[key]);
-        } else {
-            obj[key] = this.readLong();
-        }
-    }
-    public transformByte(obj: any, key: Key, toSav: boolean, count: boolean = true) {
-        if (toSav) {
-            this.writeByte(obj[key], count);
-        } else {
-            obj[key] = this.readByte();
-        }
-    }
-    public transformBufferStart(toSav: boolean, resetBytesRead: boolean): number {
-        if (toSav) {
-            this.addBuffer();
-            return 0;
-        } else {
-            const length = this.readInt();
-            if (resetBytesRead) {
-                // is currently only true for the Entity as we don't add
-                // missing sections anywhere else
-                this.resetBytesRead();
-            }
-            return length;
-        }
-    }
-    public transformBufferEnd(toSav: boolean) {
-        if (toSav) {
-            this.endBufferAndWriteSize();
-        } else {
-            // TODO write missing?
-        }
-    }
-    public transformAssertNullByte(toSav: boolean, count: boolean = true) {
-        if (toSav) {
-            this.writeByte(0, count);
-        } else {
-            this.assertNullByte();
-        }
-    }
-
-    public transformAssertNullInt(toSav: boolean, count: boolean = true) {
-        if (toSav) {
-            this.writeInt(0, count);
-        } else {
-            this.assertNullInt();
-        }
-    }
-
-    public transformHex(obj: any, key: Key,
-                        count: number, toSav: boolean, shouldCount: boolean = true) {
-        if (toSav) {
-            this.writeHex(obj[key], shouldCount);
-        } else {
-            obj[key] = this.readHex(count);
         }
     }
     //#endregion

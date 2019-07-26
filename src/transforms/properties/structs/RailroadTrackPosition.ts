@@ -1,9 +1,9 @@
-import { DataBuffer } from '../../../DataBuffer';
+import { Archive } from '../../../Archive';
 import { Property } from '../../../types';
 export function transformRailroadTrackPosition(
-    buffer: DataBuffer, property: Property, toSav: boolean) {
-    buffer.transformString(property.value, 'levelName', toSav);
-    buffer.transformString(property.value, 'pathName', toSav);
-    buffer.transformFloat(property.value, 'offset', toSav);
-    buffer.transformFloat(property.value, 'forward', toSav);
+    ar: Archive, property: Property) {
+    ar.transformString(property.value, 'levelName');
+    ar.transformString(property.value, 'pathName');
+    ar.transformFloat(property.value, 'offset');
+    ar.transformFloat(property.value, 'forward');
 }

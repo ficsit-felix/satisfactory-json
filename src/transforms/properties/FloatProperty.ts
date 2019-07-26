@@ -1,8 +1,8 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Property } from '../../types';
 
 export default function transformFloatProperty(
-    buffer: DataBuffer, property: Property, toSav: boolean) {
-    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
-    buffer.transformFloat(property, 'value', toSav);
+    ar: Archive, property: Property) {
+    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
+    ar.transformFloat(property, 'value');
 }

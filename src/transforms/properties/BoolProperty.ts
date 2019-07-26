@@ -1,8 +1,8 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Property } from '../../types';
 
 export default function transformBoolProperty(
-    buffer: DataBuffer, property: Property, toSav: boolean) {
-    buffer.transformByte(property, 'value', toSav, false); // Tag.BoolVal
-    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
+    ar: Archive, property: Property) {
+    ar.transformByte(property, 'value', false); // Tag.BoolVal
+    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
 }

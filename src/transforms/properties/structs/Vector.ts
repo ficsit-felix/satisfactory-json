@@ -1,7 +1,7 @@
-import { DataBuffer } from '../../../DataBuffer';
+import { Archive } from '../../../Archive';
 import { Property } from '../../../types';
-export function transformVector(buffer: DataBuffer, property: Property, toSav: boolean) {
-    buffer.transformFloat(property.value, 'x', toSav);
-    buffer.transformFloat(property.value, 'y', toSav);
-    buffer.transformFloat(property.value, 'z', toSav);
+export function transformVector(ar: Archive, property: Property) {
+    ar.transformFloat(property.value, 'x');
+    ar.transformFloat(property.value, 'y');
+    ar.transformFloat(property.value, 'z');
 }

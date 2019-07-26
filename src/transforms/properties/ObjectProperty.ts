@@ -1,12 +1,12 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Property } from '../../types';
 
 export default function transformObjectProperty(
-    buffer: DataBuffer, property: Property, toSav: boolean) {
-    if (!toSav) {
+    ar: Archive, property: Property) {
+    if (ar.isLoading()) {
         property.value = {};
     }
-    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
-    buffer.transformString(property.value, 'levelName', toSav);
-    buffer.transformString(property.value, 'pathName', toSav);
+    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
+    ar.transformString(property.value, 'levelName');
+    ar.transformString(property.value, 'pathName');
 }

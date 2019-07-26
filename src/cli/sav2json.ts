@@ -2,7 +2,7 @@
 import * as fs from 'fs';
 import * as program from 'commander';
 
-import { transform, sav2json } from '../transform';
+import { sav2json } from '../transform';
 
 let sourceValue: string | undefined;
 let targetValue: string | undefined;

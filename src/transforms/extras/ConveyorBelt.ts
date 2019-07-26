@@ -1,20 +1,19 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive, LoadingArchive } from '../../Archive';
 import { Entity } from '../../types';
 
 export default function transformConveyorBelt(
-    buffer: DataBuffer, entity: Entity, toSav: boolean, length: number) {
-    if (!toSav) {
+    ar: Archive, entity: Entity, length: number) {
+    if (ar.isLoading()) {
         entity.extra = {
             items: []
         };
     }
     const items = { length: entity.extra.items.length };
-    buffer.transformInt(items, 'length', toSav);
+    ar.transformInt(items, 'length');
 
     for (let i = 0; i < items.length; i++) {
-
-        if (!toSav) {
-            if (buffer.bytesRead >= length) {
+        if (ar.isLoading()) {
+            if ((ar as LoadingArchive).bytesRead >= length) {
                 console.warn('Item count is ' + items.length +
                     ' while there are only ' + i + ' items in there');
                 break;
@@ -22,10 +21,10 @@ export default function transformConveyorBelt(
             entity.extra.items.push({});
         }
 
-        buffer.transformAssertNullInt(toSav);
-        buffer.transformString(entity.extra.items[i], 'name', toSav);
-        buffer.transformAssertNullInt(toSav);
-        buffer.transformAssertNullInt(toSav);
-        buffer.transformFloat(entity.extra.items[i], 'position', toSav);
+        ar.transformAssertNullInt();
+        ar.transformString(entity.extra.items[i], 'name');
+        ar.transformAssertNullInt();
+        ar.transformAssertNullInt();
+        ar.transformFloat(entity.extra.items[i], 'position');
     }
 }

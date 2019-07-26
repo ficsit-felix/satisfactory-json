@@ -1,8 +1,8 @@
-import { DataBuffer } from '../../../DataBuffer';
+import { Archive } from '../../../Archive';
 import { Property } from '../../../types';
-export function transformColor(buffer: DataBuffer, property: Property, toSav: boolean) {
-    buffer.transformByte(property.value, 'b', toSav);
-    buffer.transformByte(property.value, 'g', toSav);
-    buffer.transformByte(property.value, 'r', toSav);
-    buffer.transformByte(property.value, 'a', toSav);
+export function transformColor(ar: Archive, property: Property) {
+    ar.transformByte(property.value, 'b');
+    ar.transformByte(property.value, 'g');
+    ar.transformByte(property.value, 'r');
+    ar.transformByte(property.value, 'a');
 }

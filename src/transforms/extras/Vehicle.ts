@@ -1,21 +1,21 @@
-import { DataBuffer } from '../../DataBuffer';
+import { Archive } from '../../Archive';
 import { Entity } from '../../types';
 
-export default function transformVehicle(buffer: DataBuffer, entity: Entity, toSav: boolean) {
-    if (!toSav) {
+export default function transformVehicle(ar: Archive, entity: Entity) {
+    if (ar.isLoading()) {
         entity.extra = {
             objects: []
         };
     }
     const objects = { length: entity.extra.objects.length };
-    buffer.transformInt(objects, 'length', toSav);
+    ar.transformInt(objects, 'length');
 
     for (let i = 0; i < objects.length; i++) {
 
-        if (!toSav) {
+        if (ar.isLoading()) {
             entity.extra.objects.push({});
         }
-        buffer.transformString(entity.extra.objects[i], 'name', toSav);
-        buffer.transformHex(entity.extra.objects[i], 'unknown', 53, toSav);
+        ar.transformString(entity.extra.objects[i], 'name');
+        ar.transformHex(entity.extra.objects[i], 'unknown', 53);
     }
 }
