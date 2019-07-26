@@ -6,7 +6,7 @@ export default function transformObjectProperty(
     if (!toSav) {
         property.value = {};
     }
-    buffer.transformAssertNullByte(toSav, false);
+    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
     buffer.transformString(property.value, 'levelName', toSav);
     buffer.transformString(property.value, 'pathName', toSav);
 }

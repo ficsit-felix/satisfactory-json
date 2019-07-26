@@ -9,7 +9,7 @@ export function transformInventoryItem(buffer: DataBuffer, property: Property, t
     if (toSav) {
         const oldval = buffer.buffers[buffer.buffers.length - 1]
             .length;
-        buffer.transformString(property.value.properties[0], 'name', toSav);
+        buffer.transformString(property.value.properties[0], 'name', toSav); // Tag.Name
         transformProperty(buffer, property.value.properties[0], toSav);
         // Dirty hack to make in this one case the inner property
         // only take up 4 bytes
@@ -23,7 +23,7 @@ export function transformInventoryItem(buffer: DataBuffer, property: Property, t
             index: 0,
             value: ''
         };
-        buffer.transformString(property2, 'name', toSav);
+        buffer.transformString(property2, 'name', toSav); // Tag.Name
         if (property2.name === 'None') {
             return; // end of properties
         }

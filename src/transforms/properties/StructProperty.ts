@@ -15,16 +15,16 @@ export default function transformStructProperty(
     if (!toSav) {
         property.value = {};
     }
-    buffer.transformString(property.value, 'type', toSav);
+    buffer.transformString(property.value, 'type', toSav); // Tag.StructName
 
     const zero = { zero: 0 };
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 4; i++) { // Tag.StructGuid
         buffer.transformInt(zero, 'zero', toSav, false);
         if (zero.zero !== 0) {
             throw new Error(`Not zero, but ${zero.zero}`);
         }
     }
-    buffer.transformAssertNullByte(toSav, false);
+    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
 
     switch (property.value.type) {
         case 'Vector':

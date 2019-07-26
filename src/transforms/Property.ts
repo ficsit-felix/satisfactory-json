@@ -12,10 +12,11 @@ import transformMapProperty from './properties/MapProperty';
 import transformArrayProperty from './properties/ArrayProperty';
 import transformStructProperty from './properties/StructProperty';
 
+// compare to FPropertyTag
 export default function transformProperty(buffer: DataBuffer, property: Property, toSav: boolean) {
-    buffer.transformString(property, 'type', toSav);
-    buffer.transformBufferStart(toSav, false);
-    buffer.transformInt(property, 'index', toSav, false);
+    buffer.transformString(property, 'type', toSav); // Tag.Type
+    buffer.transformBufferStart(toSav, false); // Tag.Size
+    buffer.transformInt(property, 'index', toSav, false); // Tag.ArrayIndex
     switch (property.type) {
         case 'IntProperty':
             transformIntProperty(buffer, property, toSav);

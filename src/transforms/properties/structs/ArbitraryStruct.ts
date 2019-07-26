@@ -4,7 +4,7 @@ import transformProperty from '../../Property';
 export function transformArbitraryStruct(buffer: DataBuffer, property: Property, toSav: boolean) {
     if (toSav) {
         for (const property2 of property.value.properties) {
-            buffer.transformString(property2, 'name', toSav);
+            buffer.transformString(property2, 'name', toSav); // Tag.Name
             transformProperty(buffer, property2, toSav);
         }
         buffer.writeLengthPrefixedString('None'); // end of properties
@@ -18,7 +18,7 @@ export function transformArbitraryStruct(buffer: DataBuffer, property: Property,
                 index: 0,
                 value: ''
             };
-            buffer.transformString(property2, 'name', toSav);
+            buffer.transformString(property2, 'name', toSav); // Tag.Name
             if (property2.name === 'None') {
                 break; // end of properties
             }

@@ -8,9 +8,9 @@ export default function transformMapProperty(
     if (!toSav) {
         property.value = {};
     }
-    buffer.transformString(property.value, 'name', toSav, false);
-    buffer.transformString(property.value, 'type', toSav, false);
-    buffer.transformAssertNullByte(toSav, false);
+    buffer.transformString(property.value, 'name', toSav, false); // Tag.InnerType
+    buffer.transformString(property.value, 'type', toSav, false); // Tag.ValueType
+    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
     const nullInt = {value: 0};
     buffer.transformInt(nullInt, 'value', toSav);
     if (nullInt.value !== 0) {
@@ -26,7 +26,7 @@ export default function transformMapProperty(
             const value = property.value.values[key];
             buffer.writeInt(+key); // parse key to int
             for (const element of value) {
-                buffer.transformString(element, 'name', toSav);
+                buffer.transformString(element, 'name', toSav); // Tag.Name
                 transformProperty(buffer, element, toSav);
             }
             buffer.writeLengthPrefixedString('None'); // end of properties
@@ -45,7 +45,7 @@ export default function transformMapProperty(
                     index: 0,
                     value: ''
                 };
-                buffer.transformString(innerProperty, 'name', toSav);
+                buffer.transformString(innerProperty, 'name', toSav); // Tag.Name
                 if (innerProperty.name === 'None') {
                     break; // end of properties
                 }

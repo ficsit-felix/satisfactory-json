@@ -6,7 +6,7 @@ export default function transformEnumProperty(
     if (!toSav) {
         property.value = {};
     }
-    buffer.transformString(property.value, 'enum', toSav, false);
-    buffer.transformAssertNullByte(toSav, false);
+    buffer.transformString(property.value, 'enum', toSav, false); // Tag.EnumName
+    buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
     buffer.transformString(property.value, 'value', toSav);
 }

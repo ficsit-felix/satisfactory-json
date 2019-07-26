@@ -9,8 +9,8 @@ export default function transformArrayProperty(
             values: []
         };
     }
-    buffer.transformString(property.value, 'type', toSav, false);
-    buffer.transformAssertNullByte(toSav, false);
+    buffer.transformString(property.value, 'type', toSav, false); // Tag.InnerType
+    buffer.transformAssertNullByte(toSav, false);   // Tag.HasPropertyGuid
     const itemCount = { count: property.value.values.length };
     buffer.transformInt(itemCount, 'count', toSav);
 
@@ -57,7 +57,7 @@ export default function transformArrayProperty(
                 for (const prop of property.value.values) {
                     const obj = prop;
                     for (const innerProp of obj.properties) {
-                        buffer.transformString(innerProp, 'name', toSav);
+                        buffer.transformString(innerProp, 'name', toSav); // Tag.Name
                         transformProperty(buffer, innerProp, toSav);
                     }
                     buffer.writeLengthPrefixedString('None'); // end of properties
@@ -73,7 +73,7 @@ export default function transformArrayProperty(
                             index: 0,
                             value: ''
                         };
-                        buffer.transformString(innerProperty, 'name', toSav);
+                        buffer.transformString(innerProperty, 'name', toSav); // Tag.Name
                         if (innerProperty.name === 'None') {
                             break; // end of properties
                         }

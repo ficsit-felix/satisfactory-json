@@ -243,7 +243,7 @@ function transformProperties(
   //    console.log(entity);
   if (toSav) {
     for (const property of entity.properties) {
-      buffer.transformString(property, 'name', toSav);
+      buffer.transformString(property, 'name', toSav); // Tag.Name
       transformProperty(buffer, property, toSav);
     }
     buffer.writeLengthPrefixedString('None'); // end of properties
@@ -256,7 +256,7 @@ function transformProperties(
         index: 0,
         value: ''
       };
-      buffer.transformString(property, 'name', toSav);
+      buffer.transformString(property, 'name', toSav); // Tag.Name
       if (property.name === 'None') {
         break; // end of properties
       }
