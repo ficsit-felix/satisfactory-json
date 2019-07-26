@@ -6,11 +6,11 @@ export default function transformByteProperty(
     if (!toSav) {
         property.value = {};
     }
-    buffer.transformString(property.value, 'unk1', toSav); // Tag.EnumName
+    buffer.transformString(property.value, 'enumName', toSav); // Tag.EnumName
     buffer.transformAssertNullByte(toSav, false); // Tag.HasPropertyGuid
-    if (property.value.unk1 === 'None') {
-        buffer.transformByte(property.value, 'unk2', toSav);
+    if (property.value.enumName === 'None') {
+        buffer.transformByte(property.value, 'value', toSav);
     } else {
-        buffer.transformString(property.value, 'unk2', toSav);
+        buffer.transformString(property.value, 'valueName', toSav);
     }
 }
