@@ -90,6 +90,7 @@ export interface ByteProperty extends BaseProperty {
     value: {
         unk1: string;
         unk2: number;
+        value: number;
     };
 }
 

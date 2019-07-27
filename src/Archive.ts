@@ -8,6 +8,7 @@ interface OutputBufferBuffer {
 export interface Archive {
     isSaving(): boolean;
     isLoading(): boolean;
+    _Int?(obj: number, count?: boolean): void;
     transformInt(obj: any, key: string | number, count?: boolean): void;
     transformString(obj: any, key: string | number, count?: boolean): void;
     transformFloat(obj: any, key: string | number): void;

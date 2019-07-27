@@ -86,7 +86,8 @@ function transformHeader(
   buffer: Archive,
   saveGame: SaveGame
 ) {
-  buffer.transformInt(saveGame, 'saveHeaderType');
+  //buffer.transformInt(saveGame, 'saveHeaderType');
+  buffer._Int(saveGame.saveHeaderType);
   buffer.transformInt(saveGame, 'saveVersion');
   buffer.transformInt(saveGame, 'buildVersion');
   buffer.transformString(saveGame, 'mapName');
