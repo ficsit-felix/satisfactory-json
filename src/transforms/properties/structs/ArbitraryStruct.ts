@@ -1,10 +1,10 @@
 import { Archive, SavingArchive } from '../../../Archive';
-import { Property } from '../../../types';
+import { StructProperty, Property } from '../../../types';
 import transformProperty from '../../Property';
-export function transformArbitraryStruct(ar: Archive, property: Property) {
+export function transformArbitraryStruct(ar: Archive, property: StructProperty) {
     if (ar.isSaving()) {
         for (const property2 of property.value.properties) {
-            ar._String(property2, 'name'); // Tag.Name
+            ar.transformString(property2.name); // Tag.Name
             transformProperty(ar, property2);
         }
         (ar as SavingArchive).writeLengthPrefixedString('None'); // end of properties
@@ -18,7 +18,7 @@ export function transformArbitraryStruct(ar: Archive, property: Property) {
                 index: 0,
                 value: ''
             };
-            ar._String(property2, 'name'); // Tag.Name
+            ar.transformString(property2.name); // Tag.Name
             if (property2.name === 'None') {
                 break; // end of properties
             }

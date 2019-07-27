@@ -1,5 +1,5 @@
 import { Archive } from '../../Archive';
-import { Property } from '../../types';
+import { StructProperty } from '../../types';
 import { transformVector } from './structs/Vector';
 import { transformTimerHandle } from './structs/TimerHandle';
 import { transformRailroadTrackPosition } from './structs/RailroadTrackPosition';
@@ -11,15 +11,15 @@ import { transformArbitraryStruct } from './structs/ArbitraryStruct';
 import { transformBox } from './structs/Box';
 
 export default function transformStructProperty(
-    ar: Archive, property: Property) {
+    ar: Archive, property: StructProperty) {
     if (ar.isLoading()) {
         property.value = {};
     }
-    ar._String(property.value, 'type'); // Tag.StructName
+    ar.transformString(property.value.type); // Tag.StructName
 
     const zero = { zero: 0 };
     for (let i = 0; i < 4; i++) { // Tag.StructGuid
-        ar._Int(zero, 'zero', false);
+        ar.transformInt(zero.zero, false);
         if (zero.zero !== 0) {
             throw new Error(`Not zero, but ${zero.zero}`);
         }

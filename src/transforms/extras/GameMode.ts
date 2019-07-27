@@ -8,13 +8,13 @@ export default function transformGameMode(ar: Archive, entity: Entity) {
         };
     }
     const objects = { length: entity.extra.objects.length };
-    ar._Int(objects, 'length');
+    ar.transformInt(objects.length);
 
     for (let i = 0; i < objects.length; i++) {
         if (ar.isLoading()) {
             entity.extra.objects.push({});
         }
-        ar._String(entity.extra.objects[i], 'levelName');
-        ar._String(entity.extra.objects[i], 'pathName');
+        ar.transformString(entity.extra.objects[i].levelName);
+        ar.transformString(entity.extra.objects[i].pathName);
     }
 }

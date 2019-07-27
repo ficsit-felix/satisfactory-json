@@ -1,12 +1,15 @@
 import { Archive } from '../../Archive';
-import { Property } from '../../types';
+import { ObjectProperty } from '../../types';
 
 export default function transformObjectProperty(
-    ar: Archive, property: Property) {
+    ar: Archive, property: ObjectProperty) {
     if (ar.isLoading()) {
-        property.value = {};
+        property.value = {
+            levelName: '',
+            pathName: ''
+        };
     }
     ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    ar._String(property.value, 'levelName');
-    ar._String(property.value, 'pathName');
+    ar.transformString(property.value.levelName);
+    ar.transformString(property.value.pathName);
 }

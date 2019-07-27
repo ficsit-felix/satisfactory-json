@@ -1,5 +1,5 @@
 import { Archive } from '../../../Archive';
-import { Property } from '../../../types';
-export function transformTimerHandle(ar: Archive, property: Property) {
-    ar._String(property.value, 'handle');
+import { StructProperty } from '../../../types';
+export function transformTimerHandle(ar: Archive, property: StructProperty) {
+    ar.transformString(property.value.handle);
 }

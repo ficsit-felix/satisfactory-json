@@ -32,7 +32,6 @@
     "json2sav": "./lib/json2sav.js"
   },
   "dependencies": {
-    "commander": "^2.20.0",
-    "merge2": "^1.2.3"
+    "commander": "^2.20.0"
   }
 }

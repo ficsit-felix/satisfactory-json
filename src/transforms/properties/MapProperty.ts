@@ -1,18 +1,18 @@
 import { Archive, SavingArchive, LoadingArchive } from '../../Archive';
-import { Property } from '../../types';
+import { MapProperty, Property } from '../../types';
 import transformProperty from '../Property';
 
 export default function transformMapProperty(
-    ar: Archive, property: Property) {
+    ar: Archive, property: MapProperty) {
 
     if (ar.isLoading()) {
         property.value = {};
     }
-    ar._String(property.value, 'name', false); // Tag.InnerType
-    ar._String(property.value, 'type', false); // Tag.ValueType
+    ar.transformString(property.value.name, false); // Tag.InnerType
+    ar.transformString(property.value.type, false); // Tag.ValueType
     ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
     const nullInt = { value: 0 };
-    ar._Int(nullInt, 'value');
+    ar.transformInt(nullInt.value);
     if (nullInt.value !== 0) {
         throw Error(`Not 0, but ${nullInt.value}`);
     }
@@ -26,7 +26,7 @@ export default function transformMapProperty(
             const value = property.value.values[key];
             sar.writeInt(+key); // parse key to int
             for (const element of value) {
-                ar._String(element, 'name'); // Tag.Name
+                ar.transformString(element.name); // Tag.Name
                 transformProperty(ar, element);
             }
             sar.writeLengthPrefixedString('None'); // end of properties
@@ -46,7 +46,7 @@ export default function transformMapProperty(
                     index: 0,
                     value: ''
                 };
-                ar._String(innerProperty, 'name'); // Tag.Name
+                ar.transformString(innerProperty.name); // Tag.Name
                 if (innerProperty.name === 'None') {
                     break; // end of properties
                 }

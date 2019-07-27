@@ -1,7 +1,5 @@
 import { SaveGame, Actor, Entity, Component, Property } from './types';
 import { Archive, LoadingArchive, SavingArchive } from './Archive';
-import transformProperty from './transforms/Property';
-import transformExtra from './transforms/Extra';
 import transformActor from './transforms/Actor';
 import transformEntity from './transforms/Entity';
 import transformComponent from './transforms/Component';
@@ -32,10 +30,6 @@ export function json2sav(saveGame: SaveGame): string {
   return buffer.getOutput();
 }
 
-/**
- *
- * @param toSav direction in which to transform. false: sav2json, true: json2sav
- */
 function transform(
   ar: Archive,
   saveGame: SaveGame
@@ -45,13 +39,13 @@ function transform(
   const entryCount = {
     entryCount: saveGame.actors.length + saveGame.components.length
   };
-  ar._Int(entryCount, 'entryCount');
+  ar.transformInt(entryCount.entryCount);
 
   for (let i = 0; i < entryCount.entryCount; i++) {
     transformActorOrComponent(ar, saveGame, i);
   }
 
-  ar._Int(entryCount, 'entryCount');
+  ar.transformInt(entryCount.entryCount);
   for (let i = 0; i < entryCount.entryCount; i++) {
     if (i < saveGame.actors.length) {
       const actor = saveGame.actors[i];
@@ -70,13 +64,13 @@ function transform(
   const collectedCount = {
     count: saveGame.collected.length
   };
-  ar._Int(collectedCount, 'count');
+  ar.transformInt(collectedCount.count);
   for (let i = 0; i < collectedCount.count; i++) {
     if (ar.isLoading()) {
       saveGame.collected.push({ levelName: '', pathName: '' });
     }
-    ar._String(saveGame.collected[i], 'levelName');
-    ar._String(saveGame.collected[i], 'pathName');
+    ar.transformString(saveGame.collected[i].levelName);
+    ar.transformString(saveGame.collected[i].pathName);
   }
 
   // TODO missing
@@ -106,7 +100,7 @@ function transformActorOrComponent(
   id: number
 ) {
   const type = { type: id < saveGame.actors.length ? 1 : 0 };
-  ar._Int(type, 'type');
+  ar.transformInt(type.type);
   if (ar.isLoading()) {
     if (type.type === 1) {
       const actor = {

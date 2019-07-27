@@ -70,7 +70,7 @@ export interface FloatProperty extends BaseProperty {
     value: number;
 }
 
-export interface StrProperty extends BaseProperty {
+export interface StringProperty extends BaseProperty {
     value: string;
 }
 
@@ -79,24 +79,41 @@ export interface NameProperty extends BaseProperty {
 }
 
 export interface TextProperty extends BaseProperty {
-    unknown1: number;
-    unknown2: number;
-    unknown3: number;
-    unknown4: string;
-    value: string;
+    value: FText;
+}
+
+export interface FText {
+    flags: number;
+    historyType: number;
+    // HISTORYTYPE_BASE
+    namespace?: string;
+    key?: string;
+    sourceString?: string;
+    // HISTORYTYPE_ARGUMENTFORMAT
+    sourceFmt?: FText;
+    arguments?: TextArgument[];
+}
+
+export interface TextArgument {
+    argumentName: string;
+    argumentValueType: number;
+    // FORMATARGUMENTTYPE_TEXT
+    argumentValue?: FText;
 }
 
 export interface ByteProperty extends BaseProperty {
     value: {
-        unk1: string;
-        unk2: number;
-        value: number;
+        enumName: string;
+        valueName?: string;
+        value?: number;
     };
 }
 
 export interface EnumProperty extends BaseProperty {
-    enum: string;
-    value: string;
+    value: {
+        enum: string;
+        value: string;
+    };
 }
 
 export interface ObjectProperty extends BaseProperty {
@@ -120,14 +137,16 @@ export interface ArrayProperty extends BaseProperty {
 }
 
 export interface MapProperty extends BaseProperty {
-    value: any; // TODO!!
+    value: {
+        [key: string]: any
+    }; // TODO!!
 }
 
 export type Property =
     | IntProperty
     | BoolProperty
     | FloatProperty
-    | StrProperty
+    | StringProperty
     | NameProperty
     | TextProperty
     | ByteProperty

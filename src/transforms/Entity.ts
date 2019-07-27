@@ -12,23 +12,23 @@ export default function transformEntity(
   const length = ar.transformBufferStart(true);
 
   if (withNames) {
-    ar._String(entity, 'levelName');
-    ar._String(entity, 'pathName');
+    ar.transformString(entity.levelName!);
+    ar.transformString(entity.pathName!);
     const childCount = { count: entity.children!.length };
-    ar._Int(childCount, 'count');
+    ar.transformInt(childCount.count);
     for (let i = 0; i < childCount.count; i++) {
       if (ar.isLoading()) {
         entity.children!.push({ levelName: '', pathName: '' });
       }
-      ar._String(entity.children![i], 'levelName');
-      ar._String(entity.children![i], 'pathName');
+      ar.transformString(entity.children![i].levelName);
+      ar.transformString(entity.children![i].pathName);
     }
   }
 
   transformProperties(ar, entity);
 
   const extraObjectCount = { count: 0 };
-  ar._Int(extraObjectCount, 'count');
+  ar.transformInt(extraObjectCount.count);
   if (extraObjectCount.count !== 0) {
     throw Error(`Extra object count not zero, but ${extraObjectCount.count}`);
   }
@@ -69,7 +69,7 @@ function transformProperties(
 ) {
   if (ar.isSaving()) {
     for (const property of entity.properties) {
-      ar._String(property, 'name'); // Tag.Name
+      ar.transformString(property.name); // Tag.Name
       transformProperty(ar, property);
     }
     (ar as SavingArchive).writeLengthPrefixedString('None'); // end of properties
@@ -82,7 +82,7 @@ function transformProperties(
         index: 0,
         value: ''
       };
-      ar._String(property, 'name'); // Tag.Name
+      ar.transformString(property.name); // Tag.Name
       if (property.name === 'None') {
         break; // end of properties
       }

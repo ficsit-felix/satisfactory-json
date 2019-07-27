@@ -1,9 +1,21 @@
 var gulp = require('gulp');
 var ts = require('gulp-typescript');
-var merge = require('merge2');
 var through2 = require('through2');
-var fs = require('fs');
 var tsProject = ts.createProject('tsconfig.json');
+
+/*
+
+TODOS
+
+- This could be improved a lot by actually parsing the code
+   ->Would not 
+
+- Building does not seem to trigger the file change watches of the vue-cli --watch in ficsit-felix,
+  so watch mode here is currently useless
+
+- Remove ! at the end of the last accessor of the variable
+
+ */
 
 function replaceFunctionCall(oldFunction, newFunction, code, filepath) {
   return code.replace(new RegExp(oldFunction + '\\(([^,)]+)', 'gm'), function (_, group1) {
@@ -16,10 +28,7 @@ function replaceFunctionCall(oldFunction, newFunction, code, filepath) {
   });
 }
 
-/*
- This could be improved a lot by actually parsing the code
- -> Would not 
- */
+
 function preprocess(file, cb) {
   if (file.isBuffer()) {
 
@@ -73,12 +82,7 @@ gulp.task('default', function (cb) {
   return build('src/**/*.ts');
 });
 
-/*gulp.task('scripts', function () {
-  return gulp.src('lib/*.ts')
-    .pipe(tsProject())
-    .pipe(gulp.dest('dist'));
-});
-*/
+// TODO catch errors, so the watch task can continue
 gulp.task('watch', function () {
   // initially build all files
   try {
@@ -90,11 +94,7 @@ gulp.task('watch', function () {
   // then only build incrementally
   gulp.watch('src/**/*.ts').on('change', function (file) {
     console.log(`Rebuild ${file} ...`);
-    build(file).on('error', function (error) {
-      console.error(error);
-      this.emit('end');
-    });
-    //gulp.src(file).pipe(tsProject()).pipe(gulp.dest('dist'));
+    build(file)
   });
 });
 

@@ -32,8 +32,6 @@ export interface Archive {
     transformAssertNullByte(count?: boolean): void;
     transformAssertNullInt(count?: boolean): void;
 
-
-
 }
 
 /**
@@ -52,8 +50,8 @@ abstract class BaseArchive implements Archive {
     public abstract transformBufferEnd(): void;
     public abstract transformAssertNullByte(count?: boolean): void;
     public abstract transformAssertNullInt(count?: boolean): void;
-    public abstract _Hex(obj: any, key: string | number,
-        count: number, shouldCount?: boolean): void;
+    public abstract _Hex(
+        obj: any, key: string | number, count: number, shouldCount?: boolean): void;
 
     public transformInt(obj: number, count?: boolean): void {
         throw new Error('transformInt should be removed by preprocessor.');

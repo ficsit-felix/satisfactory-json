@@ -1,7 +1,7 @@
 import { Archive } from '../../../Archive';
-import { Property } from '../../../types';
-export function transformVector(ar: Archive, property: Property) {
-    ar._Float(property.value, 'x');
-    ar._Float(property.value, 'y');
-    ar._Float(property.value, 'z');
+import { StructProperty } from '../../../types';
+export function transformVector(ar: Archive, property: StructProperty) {
+    ar.transformFloat(property.value.x);
+    ar.transformFloat(property.value.y);
+    ar.transformFloat(property.value.z);
 }

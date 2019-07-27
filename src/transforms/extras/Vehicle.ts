@@ -8,14 +8,14 @@ export default function transformVehicle(ar: Archive, entity: Entity) {
         };
     }
     const objects = { length: entity.extra.objects.length };
-    ar._Int(objects, 'length');
+    ar.transformInt(objects.length);
 
     for (let i = 0; i < objects.length; i++) {
 
         if (ar.isLoading()) {
             entity.extra.objects.push({});
         }
-        ar._String(entity.extra.objects[i], 'name');
-        ar._Hex(entity.extra.objects[i], 'unknown', 53);
+        ar.transformString(entity.extra.objects[i].name);
+        ar.transformHex(entity.extra.objects[i].unknown, 53);
     }
 }

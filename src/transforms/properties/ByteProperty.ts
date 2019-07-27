@@ -1,16 +1,18 @@
 import { Archive } from '../../Archive';
-import { Property } from '../../types';
+import { ByteProperty } from '../../types';
 
 export default function transformByteProperty(
-    ar: Archive, property: Property) {
+    ar: Archive, property: ByteProperty) {
     if (ar.isLoading()) {
-        property.value = {};
+        property.value = {
+            enumName: ''
+        };
     }
-    ar._String(property.value, 'enumName'); // Tag.EnumName
+    ar.transformString(property.value.enumName); // Tag.EnumName
     ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
     if (property.value.enumName === 'None') {
-        ar._Byte(property.value, 'value');
+        ar.transformByte(property.value.value!);
     } else {
-        ar._String(property.value, 'valueName');
+        ar.transformString(property.value.valueName!);
     }
 }

@@ -1,8 +1,8 @@
 import { Archive } from '../../Archive';
-import { Property } from '../../types';
+import { IntProperty } from '../../types';
 
 export default function transformIntProperty(
-    ar: Archive, property: Property) {
+    ar: Archive, property: IntProperty) {
     ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    ar._Int(property, 'value');
+    ar.transformInt(property.value);
 }

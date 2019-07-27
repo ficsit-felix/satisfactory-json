@@ -1,12 +1,15 @@
 import { Archive } from '../../Archive';
-import { Property } from '../../types';
+import { EnumProperty } from '../../types';
 
 export default function transformEnumProperty(
-    ar: Archive, property: Property) {
+    ar: Archive, property: EnumProperty) {
     if (ar.isLoading()) {
-        property.value = {};
+        property.value = {
+            enum: '',
+            value: ''
+        };
     }
-    ar._String(property.value, 'enum', false); // Tag.EnumName
+    ar.transformString(property.value.enum, false); // Tag.EnumName
     ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    ar._String(property.value, 'value');
+    ar.transformString(property.value.value);
 }
