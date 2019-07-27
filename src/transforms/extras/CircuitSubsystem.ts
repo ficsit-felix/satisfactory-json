@@ -9,14 +9,14 @@ export default function transformCircuitSubsystem(
         };
     }
     const circuits = { length: entity.extra.circuits.length };
-    ar.transformInt(circuits, 'length');
+    ar._Int(circuits, 'length');
 
     for (let i = 0; i < circuits.length; i++) {
         if (ar.isLoading()) {
             entity.extra.circuits.push({});
         }
-        ar.transformInt(entity.extra.circuits[i], 'circuitId');
-        ar.transformString(entity.extra.circuits[i], 'levelName');
-        ar.transformString(entity.extra.circuits[i], 'pathName');
+        ar._Int(entity.extra.circuits[i], 'circuitId');
+        ar._String(entity.extra.circuits[i], 'levelName');
+        ar._String(entity.extra.circuits[i], 'pathName');
     }
 }

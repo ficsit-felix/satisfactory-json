@@ -45,13 +45,13 @@ function transform(
   const entryCount = {
     entryCount: saveGame.actors.length + saveGame.components.length
   };
-  ar.transformInt(entryCount, 'entryCount');
+  ar._Int(entryCount, 'entryCount');
 
   for (let i = 0; i < entryCount.entryCount; i++) {
     transformActorOrComponent(ar, saveGame, i);
   }
 
-  ar.transformInt(entryCount, 'entryCount');
+  ar._Int(entryCount, 'entryCount');
   for (let i = 0; i < entryCount.entryCount; i++) {
     if (i < saveGame.actors.length) {
       const actor = saveGame.actors[i];
@@ -70,13 +70,13 @@ function transform(
   const collectedCount = {
     count: saveGame.collected.length
   };
-  ar.transformInt(collectedCount, 'count');
+  ar._Int(collectedCount, 'count');
   for (let i = 0; i < collectedCount.count; i++) {
     if (ar.isLoading()) {
       saveGame.collected.push({ levelName: '', pathName: '' });
     }
-    ar.transformString(saveGame.collected[i], 'levelName');
-    ar.transformString(saveGame.collected[i], 'pathName');
+    ar._String(saveGame.collected[i], 'levelName');
+    ar._String(saveGame.collected[i], 'pathName');
   }
 
   // TODO missing
@@ -86,17 +86,17 @@ function transformHeader(
   ar: Archive,
   saveGame: SaveGame
 ) {
-  // buffer.transformInt(saveGame, 'saveHeaderType');
-  ar._Int(saveGame.saveHeaderType);
-  ar.transformInt(saveGame, 'saveVersion');
-  ar.transformInt(saveGame, 'buildVersion');
-  ar.transformString(saveGame, 'mapName');
-  ar.transformString(saveGame, 'mapOptions');
-  ar.transformString(saveGame, 'sessionName');
-  ar.transformInt(saveGame, 'playDurationSeconds');
-  ar.transformLong(saveGame, 'saveDateTime');
+
+  ar.transformInt(saveGame.saveHeaderType);
+  ar.transformInt(saveGame.saveVersion);
+  ar.transformInt(saveGame.buildVersion);
+  ar.transformString(saveGame.mapName);
+  ar.transformString(saveGame.mapOptions);
+  ar.transformString(saveGame.sessionName);
+  ar.transformInt(saveGame.playDurationSeconds);
+  ar.transformLong(saveGame.saveDateTime);
   if (saveGame.saveHeaderType > 4) {
-    ar.transformByte(saveGame, 'sessionVisibility');
+    ar.transformByte(saveGame.sessionVisibility);
   }
 }
 
@@ -106,7 +106,7 @@ function transformActorOrComponent(
   id: number
 ) {
   const type = { type: id < saveGame.actors.length ? 1 : 0 };
-  ar.transformInt(type, 'type');
+  ar._Int(type, 'type');
   if (ar.isLoading()) {
     if (type.type === 1) {
       const actor = {

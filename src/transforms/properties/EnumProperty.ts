@@ -6,7 +6,7 @@ export default function transformEnumProperty(
     if (ar.isLoading()) {
         property.value = {};
     }
-    ar.transformString(property.value, 'enum', false); // Tag.EnumName
+    ar._String(property.value, 'enum', false); // Tag.EnumName
     ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    ar.transformString(property.value, 'value');
+    ar._String(property.value, 'value');
 }

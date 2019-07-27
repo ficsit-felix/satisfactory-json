@@ -9,7 +9,7 @@ export default function transformConveyorBelt(
         };
     }
     const items = { length: entity.extra.items.length };
-    ar.transformInt(items, 'length');
+    ar._Int(items, 'length');
 
     for (let i = 0; i < items.length; i++) {
         if (ar.isLoading()) {
@@ -22,9 +22,9 @@ export default function transformConveyorBelt(
         }
 
         ar.transformAssertNullInt();
-        ar.transformString(entity.extra.items[i], 'name');
+        ar._String(entity.extra.items[i], 'name');
         ar.transformAssertNullInt();
         ar.transformAssertNullInt();
-        ar.transformFloat(entity.extra.items[i], 'position');
+        ar._Float(entity.extra.items[i], 'position');
     }
 }

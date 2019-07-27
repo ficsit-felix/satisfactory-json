@@ -5,11 +5,11 @@ export function transformBox(ar: Archive, property: Property) {
         property.value.min = {};
         property.value.max = {};
     }
-    ar.transformFloat(property.value.min, 0);
-    ar.transformFloat(property.value.min, 1);
-    ar.transformFloat(property.value.min, 2);
-    ar.transformFloat(property.value.max, 0);
-    ar.transformFloat(property.value.max, 1);
-    ar.transformFloat(property.value.max, 2);
-    ar.transformByte(property.value, 'isValid');
+    ar._Float(property.value.min, 0);
+    ar._Float(property.value.min, 1);
+    ar._Float(property.value.min, 2);
+    ar._Float(property.value.max, 0);
+    ar._Float(property.value.max, 1);
+    ar._Float(property.value.max, 2);
+    ar._Byte(property.value, 'isValid');
 }

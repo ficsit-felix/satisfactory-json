@@ -34,16 +34,16 @@ export default function transformTextProperty(
 }
 
 function transformFText(ar: Archive, value: any) {
-    ar.transformInt(value, 'flags'); // Value.Flags
+    ar._Int(value, 'flags'); // Value.Flags
 
-    ar.transformByte(value, 'historyType'); // HistoryType
+    ar._Byte(value, 'historyType'); // HistoryType
 
     // parse the TextHistory according to TextHistory.cpp
     switch (value.historyType) {
         case HISTORYTYPE_BASE:
-            ar.transformString(value, 'namespace');
-            ar.transformString(value, 'key');
-            ar.transformString(value, 'sourceString');
+            ar._String(value, 'namespace');
+            ar._String(value, 'key');
+            ar._String(value, 'sourceString');
             break;
 
         case HISTORYTYPE_NONE:
@@ -60,15 +60,15 @@ function transformFText(ar: Archive, value: any) {
                 value.arguments = [];
             }
             const argumentCount = { count: value.arguments.length };
-            ar.transformInt(argumentCount, 'count');
+            ar._Int(argumentCount, 'count');
 
             for (let i = 0; i < argumentCount.count; i++) {
                 if (ar.isLoading()) {
                     value.arguments[i] = {};
                 }
 
-                ar.transformString(value.arguments[i], 'argumentName');
-                ar.transformByte(value.arguments[i], 'argumentValueType');
+                ar._String(value.arguments[i], 'argumentName');
+                ar._Byte(value.arguments[i], 'argumentValueType');
                 switch (value.arguments[i].argumentValueType) {
                     case FORMATARGUMENTTYPE_TEXT:
                         if (ar.isLoading()) {

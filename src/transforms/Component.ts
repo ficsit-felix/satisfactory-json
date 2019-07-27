@@ -5,8 +5,8 @@ export default function transformComponent(
   ar: Archive,
   component: Component
 ) {
-  ar.transformString(component, 'className');
-  ar.transformString(component, 'levelName');
-  ar.transformString(component, 'pathName');
-  ar.transformString(component, 'outerPathName');
+  ar._String(component, 'className');
+  ar._String(component, 'levelName');
+  ar._String(component, 'pathName');
+  ar._String(component, 'outerPathName');
 }

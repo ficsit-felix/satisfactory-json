@@ -19,19 +19,19 @@ export default function transformRailroadSubsystem(
         };
     }
     const trains = { length: entity.extra.trains.length };
-    ar.transformInt(trains, 'length');
+    ar._Int(trains, 'length');
 
     for (let i = 0; i < trains.length; i++) {
         if (ar.isLoading()) {
             entity.extra.trains.push({});
         }
 
-        ar.transformHex(entity.extra.trains[i], 'unknown', 4);
-        ar.transformString(entity.extra.trains[i], 'firstLevelName');
-        ar.transformString(entity.extra.trains[i], 'firstPathName');
-        ar.transformString(entity.extra.trains[i], 'secondLevelName');
-        ar.transformString(entity.extra.trains[i], 'secondPathName');
-        ar.transformString(entity.extra.trains[i], 'timetableLevelName');
-        ar.transformString(entity.extra.trains[i], 'timetablePathName');
+        ar._Hex(entity.extra.trains[i], 'unknown', 4);
+        ar._String(entity.extra.trains[i], 'firstLevelName');
+        ar._String(entity.extra.trains[i], 'firstPathName');
+        ar._String(entity.extra.trains[i], 'secondLevelName');
+        ar._String(entity.extra.trains[i], 'secondPathName');
+        ar._String(entity.extra.trains[i], 'timetableLevelName');
+        ar._String(entity.extra.trains[i], 'timetablePathName');
     }
 }

@@ -7,6 +7,6 @@ export default function transformObjectProperty(
         property.value = {};
     }
     ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    ar.transformString(property.value, 'levelName');
-    ar.transformString(property.value, 'pathName');
+    ar._String(property.value, 'levelName');
+    ar._String(property.value, 'pathName');
 }

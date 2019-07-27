@@ -9,8 +9,8 @@ export default function transformTrain(
   }
 
   ar.transformAssertNullInt();
-  ar.transformString(entity.extra, 'previousLevelName');
-  ar.transformString(entity.extra, 'previousPathName');
-  ar.transformString(entity.extra, 'nextLevelName');
-  ar.transformString(entity.extra, 'nextPathName');
+  ar._String(entity.extra, 'previousLevelName');
+  ar._String(entity.extra, 'previousPathName');
+  ar._String(entity.extra, 'nextLevelName');
+  ar._String(entity.extra, 'nextPathName');
 }

@@ -8,11 +8,11 @@ export default function transformMapProperty(
     if (ar.isLoading()) {
         property.value = {};
     }
-    ar.transformString(property.value, 'name', false); // Tag.InnerType
-    ar.transformString(property.value, 'type', false); // Tag.ValueType
+    ar._String(property.value, 'name', false); // Tag.InnerType
+    ar._String(property.value, 'type', false); // Tag.ValueType
     ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
     const nullInt = { value: 0 };
-    ar.transformInt(nullInt, 'value');
+    ar._Int(nullInt, 'value');
     if (nullInt.value !== 0) {
         throw Error(`Not 0, but ${nullInt.value}`);
     }
@@ -26,7 +26,7 @@ export default function transformMapProperty(
             const value = property.value.values[key];
             sar.writeInt(+key); // parse key to int
             for (const element of value) {
-                ar.transformString(element, 'name'); // Tag.Name
+                ar._String(element, 'name'); // Tag.Name
                 transformProperty(ar, element);
             }
             sar.writeLengthPrefixedString('None'); // end of properties
@@ -46,7 +46,7 @@ export default function transformMapProperty(
                     index: 0,
                     value: ''
                 };
-                ar.transformString(innerProperty, 'name'); // Tag.Name
+                ar._String(innerProperty, 'name'); // Tag.Name
                 if (innerProperty.name === 'None') {
                     break; // end of properties
                 }

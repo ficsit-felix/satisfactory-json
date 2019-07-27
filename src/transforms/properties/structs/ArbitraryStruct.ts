@@ -4,7 +4,7 @@ import transformProperty from '../../Property';
 export function transformArbitraryStruct(ar: Archive, property: Property) {
     if (ar.isSaving()) {
         for (const property2 of property.value.properties) {
-            ar.transformString(property2, 'name'); // Tag.Name
+            ar._String(property2, 'name'); // Tag.Name
             transformProperty(ar, property2);
         }
         (ar as SavingArchive).writeLengthPrefixedString('None'); // end of properties
@@ -18,7 +18,7 @@ export function transformArbitraryStruct(ar: Archive, property: Property) {
                 index: 0,
                 value: ''
             };
-            ar.transformString(property2, 'name'); // Tag.Name
+            ar._String(property2, 'name'); // Tag.Name
             if (property2.name === 'None') {
                 break; // end of properties
             }

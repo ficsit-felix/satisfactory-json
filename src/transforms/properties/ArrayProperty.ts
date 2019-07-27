@@ -9,25 +9,25 @@ export default function transformArrayProperty(
             values: []
         };
     }
-    ar.transformString(property.value, 'type', false); // Tag.InnerType
+    ar._String(property.value, 'type', false); // Tag.InnerType
     ar.transformAssertNullByte(false);   // Tag.HasPropertyGuid
     const itemCount = { count: property.value.values.length };
-    ar.transformInt(itemCount, 'count');
+    ar._Int(itemCount, 'count');
 
     switch (property.value.type) {
         case 'IntProperty':
             for (let i = 0; i < itemCount.count; i++) {
-                ar.transformInt(property.value.values, i);
+                ar._Int(property.value.values, i);
             }
             break;
         case 'ByteProperty':
             for (let i = 0; i < itemCount.count; i++) {
-                ar.transformByte(property.value.values, i);
+                ar._Byte(property.value.values, i);
             }
             break;
         case 'EnumProperty':
             for (let i = 0; i < itemCount.count; i++) {
-                ar.transformString(property.value.values, i);
+                ar._String(property.value.values, i);
             }
             break;
         case 'ObjectProperty':
@@ -35,21 +35,21 @@ export default function transformArrayProperty(
                 if (ar.isLoading()) {
                     property.value.values[i] = {};
                 }
-                ar.transformString(property.value.values[i], 'levelName');
-                ar.transformString(property.value.values[i], 'pathName');
+                ar._String(property.value.values[i], 'levelName');
+                ar._String(property.value.values[i], 'pathName');
             }
             break;
         case 'StructProperty':
-            ar.transformString(property, 'structName');
-            ar.transformString(property, 'structType');
+            ar._String(property, 'structName');
+            ar._String(property, 'structType');
             ar.transformBufferStart(false);
             const zero = { zero: 0 };
-            ar.transformInt(zero, 'zero', false);
+            ar._Int(zero, 'zero', false);
             if (zero.zero !== 0) {
                 throw new Error(`Not zero, but ${zero.zero}`);
             }
-            ar.transformString(property, 'structInnerType');
-            ar.transformHex(property.value, 'unknown', 16, false);
+            ar._String(property, 'structInnerType');
+            ar._Hex(property.value, 'unknown', 16, false);
             ar.transformAssertNullByte(false);
 
             // TODO find a better way to make this bidirectional?
@@ -57,7 +57,7 @@ export default function transformArrayProperty(
                 for (const prop of property.value.values) {
                     const obj = prop;
                     for (const innerProp of obj.properties) {
-                        ar.transformString(innerProp, 'name'); // Tag.Name
+                        ar._String(innerProp, 'name'); // Tag.Name
                         transformProperty(ar, innerProp);
                     }
                     (ar as SavingArchive).writeLengthPrefixedString('None'); // end of properties
@@ -73,7 +73,7 @@ export default function transformArrayProperty(
                             index: 0,
                             value: ''
                         };
-                        ar.transformString(innerProperty, 'name'); // Tag.Name
+                        ar._String(innerProperty, 'name'); // Tag.Name
                         if (innerProperty.name === 'None') {
                             break; // end of properties
                         }

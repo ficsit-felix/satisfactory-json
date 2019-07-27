@@ -15,11 +15,11 @@ export default function transformStructProperty(
     if (ar.isLoading()) {
         property.value = {};
     }
-    ar.transformString(property.value, 'type'); // Tag.StructName
+    ar._String(property.value, 'type'); // Tag.StructName
 
     const zero = { zero: 0 };
     for (let i = 0; i < 4; i++) { // Tag.StructGuid
-        ar.transformInt(zero, 'zero', false);
+        ar._Int(zero, 'zero', false);
         if (zero.zero !== 0) {
             throw new Error(`Not zero, but ${zero.zero}`);
         }

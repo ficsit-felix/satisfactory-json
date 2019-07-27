@@ -14,9 +14,9 @@ import transformStructProperty from './properties/StructProperty';
 
 // compare to FPropertyTag
 export default function transformProperty(ar: Archive, property: Property) {
-    ar.transformString(property, 'type'); // Tag.Type
+    ar._String(property, 'type'); // Tag.Type
     ar.transformBufferStart(false); // Tag.Size
-    ar.transformInt(property, 'index', false); // Tag.ArrayIndex
+    ar._Int(property, 'index', false); // Tag.ArrayIndex
     switch (property.type) {
         case 'IntProperty':
             transformIntProperty(ar, property);

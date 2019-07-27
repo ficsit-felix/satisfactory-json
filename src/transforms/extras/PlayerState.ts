@@ -12,5 +12,5 @@ export default function transformPlayerState(
     if (ar.isLoading()) {
         count = length - (ar as LoadingArchive).bytesRead;
     }
-    ar.transformHex(entity.extra, 'unknown', count);
+    ar._Hex(entity.extra, 'unknown', count);
 }

@@ -9,41 +9,70 @@ export interface Archive {
     isSaving(): boolean;
     isLoading(): boolean;
 
-    transformInt(obj: any, key: string | number, count?: boolean): void;
-    transformString(obj: any, key: string | number, count?: boolean): void;
-    transformFloat(obj: any, key: string | number): void;
-    transformLong(obj: any, key: string | number): void;
-    transformByte(obj: any, key: Key, count?: boolean): void;
+    //#region Functions that will be removed by the preprocessor
+    transformInt(obj: number, count?: boolean): void;
+    transformString(obj: string, count?: boolean): void;
+    transformFloat(obj: number): void;
+    transformLong(obj: string): void;
+    transformByte(obj: number, count?: boolean): void;
+    transformHex(obj: string, count: number, shouldCount?: boolean): void;
+    //#endregion
+
+    //#region Actual functions that the functions above will be replaced with
+    _Int(obj: any, key: string | number, count?: boolean): void;
+    _String(obj: any, key: string | number, count?: boolean): void;
+    _Float(obj: any, key: string | number): void;
+    _Long(obj: any, key: string | number): void;
+    _Byte(obj: any, key: Key, count?: boolean): void;
+    _Hex(obj: any, key: Key, count: number, shouldCount?: boolean): void;
+    //#endregion
+
     transformBufferStart(resetBytesRead: boolean): number;
     transformBufferEnd(): void;
     transformAssertNullByte(count?: boolean): void;
     transformAssertNullInt(count?: boolean): void;
-    transformHex(obj: any, key: Key, count: number, shouldCount?: boolean): void;
 
-    // functions that will be removed by the preprocessor
-    _Int(obj: number, count?: boolean): void;
+
+
 }
 
 /**
  * Base class that implements all the functions that will be removed by the preprocessor
  */
 abstract class BaseArchive implements Archive {
+
     public abstract isSaving(): boolean;
     public abstract isLoading(): boolean;
-    public abstract transformInt(obj: any, key: string | number, count?: boolean): void;
-    public abstract transformString(obj: any, key: string | number, count?: boolean): void;
-    public abstract transformFloat(obj: any, key: string | number): void;
-    public abstract transformLong(obj: any, key: string | number): void;
-    public abstract transformByte(obj: any, key: string | number, count?: boolean): void;
+    public abstract _Int(obj: any, key: string | number, count?: boolean): void;
+    public abstract _String(obj: any, key: string | number, count?: boolean): void;
+    public abstract _Float(obj: any, key: string | number): void;
+    public abstract _Long(obj: any, key: string | number): void;
+    public abstract _Byte(obj: any, key: string | number, count?: boolean): void;
     public abstract transformBufferStart(resetBytesRead: boolean): number;
     public abstract transformBufferEnd(): void;
     public abstract transformAssertNullByte(count?: boolean): void;
     public abstract transformAssertNullInt(count?: boolean): void;
-    public abstract transformHex(obj: any, key: string | number,
-                                 count: number, shouldCount?: boolean): void;
+    public abstract _Hex(obj: any, key: string | number,
+        count: number, shouldCount?: boolean): void;
 
-    public _Int(obj: number, count?: boolean): void {
-        throw new Error('_Int should be removed by preprocessor.');
+    public transformInt(obj: number, count?: boolean): void {
+        throw new Error('transformInt should be removed by preprocessor.');
+    }
+
+    public transformString(obj: string, count?: boolean): void {
+        throw new Error('transformString should be removed by preprocessor.');
+    }
+    public transformFloat(obj: number): void {
+        throw new Error('transformFloat should be removed by preprocessor.');
+    }
+    public transformLong(obj: string): void {
+        throw new Error('transformLong should be removed by preprocessor.');
+    }
+    public transformByte(obj: number, count?: boolean): void {
+        throw new Error('transformByte should be removed by preprocessor.');
+    }
+    public transformHex(obj: string, count: number, shouldCount?: boolean): void {
+        throw new Error('transformHex should be removed by preprocessor.');
     }
 }
 
@@ -69,23 +98,23 @@ export class LoadingArchive extends BaseArchive {
         return true;
     }
 
-    public transformInt(obj: any, key: string | number, count: boolean = true): void {
+    public _Int(obj: any, key: string | number, count: boolean = true): void {
         obj[key] = this.readInt();
     }
 
-    public transformString(obj: any, key: string | number, count: boolean = true): void {
+    public _String(obj: any, key: string | number, count: boolean = true): void {
         obj[key] = this.readLengthPrefixedString();
     }
 
-    public transformFloat(obj: any, key: string | number): void {
+    public _Float(obj: any, key: string | number): void {
         obj[key] = this.readFloat();
     }
 
-    public transformLong(obj: any, key: string | number): void {
+    public _Long(obj: any, key: string | number): void {
         obj[key] = this.readLong();
     }
 
-    public transformByte(obj: any, key: Key, count: boolean = true): void {
+    public _Byte(obj: any, key: Key, count: boolean = true): void {
         obj[key] = this.readByte();
     }
 
@@ -111,7 +140,7 @@ export class LoadingArchive extends BaseArchive {
         this.assertNullInt();
     }
 
-    public transformHex(obj: any, key: Key, count: number, shouldCount: boolean = true): void {
+    public _Hex(obj: any, key: Key, count: number, shouldCount: boolean = true): void {
         obj[key] = this.readHex(count);
     }
 
@@ -262,23 +291,23 @@ export class SavingArchive extends BaseArchive {
         return this.bytes;
     }
 
-    public transformInt(obj: any, key: string | number, count: boolean = true): void {
+    public _Int(obj: any, key: string | number, count: boolean = true): void {
         this.writeInt(obj[key], count);
     }
 
-    public transformString(obj: any, key: string | number, count: boolean = true): void {
+    public _String(obj: any, key: string | number, count: boolean = true): void {
         this.writeLengthPrefixedString(obj[key], count);
     }
 
-    public transformFloat(obj: any, key: string | number): void {
+    public _Float(obj: any, key: string | number): void {
         this.writeFloat(obj[key]);
     }
 
-    public transformLong(obj: any, key: string | number): void {
+    public _Long(obj: any, key: string | number): void {
         this.writeLong(obj[key]);
     }
 
-    public transformByte(obj: any, key: Key, count: boolean = true): void {
+    public _Byte(obj: any, key: Key, count: boolean = true): void {
         this.writeByte(obj[key], count);
     }
 
@@ -299,7 +328,7 @@ export class SavingArchive extends BaseArchive {
         this.writeInt(0, count);
     }
 
-    public transformHex(obj: any, key: Key, count: number, shouldCount: boolean = true): void {
+    public _Hex(obj: any, key: Key, count: number, shouldCount: boolean = true): void {
         this.writeHex(obj[key], shouldCount);
     }
 

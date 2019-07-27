@@ -6,11 +6,11 @@ export default function transformByteProperty(
     if (ar.isLoading()) {
         property.value = {};
     }
-    ar.transformString(property.value, 'enumName'); // Tag.EnumName
+    ar._String(property.value, 'enumName'); // Tag.EnumName
     ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
     if (property.value.enumName === 'None') {
-        ar.transformByte(property.value, 'value');
+        ar._Byte(property.value, 'value');
     } else {
-        ar.transformString(property.value, 'valueName');
+        ar._String(property.value, 'valueName');
     }
 }

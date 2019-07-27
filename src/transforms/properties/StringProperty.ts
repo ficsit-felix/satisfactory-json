@@ -4,5 +4,5 @@ import { Property } from '../../types';
 export default function transformStringProperty(
     ar: Archive, property: Property) {
     ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    ar.transformString(property, 'value');
+    ar._String(property, 'value');
 }
