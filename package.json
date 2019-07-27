@@ -16,8 +16,8 @@
     "typescript": "^3.5.1"
   },
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "gulp",
+    "build:watch": "gulp watch",
     "lint": "tslint --project \"./tsconfig.json\"",
     "prepublish": "yarn build",
     "postversion": "git push && git push --tags",

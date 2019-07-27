@@ -8,7 +8,7 @@ interface OutputBufferBuffer {
 export interface Archive {
     isSaving(): boolean;
     isLoading(): boolean;
-    _Int?(obj: number, count?: boolean): void;
+
     transformInt(obj: any, key: string | number, count?: boolean): void;
     transformString(obj: any, key: string | number, count?: boolean): void;
     transformFloat(obj: any, key: string | number): void;
@@ -19,9 +19,35 @@ export interface Archive {
     transformAssertNullByte(count?: boolean): void;
     transformAssertNullInt(count?: boolean): void;
     transformHex(obj: any, key: Key, count: number, shouldCount?: boolean): void;
+
+    // functions that will be removed by the preprocessor
+    _Int(obj: number, count?: boolean): void;
 }
 
-export class LoadingArchive implements Archive {
+/**
+ * Base class that implements all the functions that will be removed by the preprocessor
+ */
+abstract class BaseArchive implements Archive {
+    public abstract isSaving(): boolean;
+    public abstract isLoading(): boolean;
+    public abstract transformInt(obj: any, key: string | number, count?: boolean): void;
+    public abstract transformString(obj: any, key: string | number, count?: boolean): void;
+    public abstract transformFloat(obj: any, key: string | number): void;
+    public abstract transformLong(obj: any, key: string | number): void;
+    public abstract transformByte(obj: any, key: string | number, count?: boolean): void;
+    public abstract transformBufferStart(resetBytesRead: boolean): number;
+    public abstract transformBufferEnd(): void;
+    public abstract transformAssertNullByte(count?: boolean): void;
+    public abstract transformAssertNullInt(count?: boolean): void;
+    public abstract transformHex(obj: any, key: string | number,
+                                 count: number, shouldCount?: boolean): void;
+
+    public _Int(obj: number, count?: boolean): void {
+        throw new Error('_Int should be removed by preprocessor.');
+    }
+}
+
+export class LoadingArchive extends BaseArchive {
     public buffer: Buffer; // TODO make private
     //#region read buffer
     public cursor: number;
@@ -29,6 +55,7 @@ export class LoadingArchive implements Archive {
     //#endregion
 
     constructor(buffer: Buffer) {
+        super();
         this.buffer = buffer;
         this.cursor = 0;
         this.bytesRead = 0;
@@ -207,7 +234,7 @@ export class LoadingArchive implements Archive {
  * Maybe have a way to seek back to the position where the length of the next position is stored as
  * in the C++ code and then replace it there?
  */
-export class SavingArchive implements Archive {
+export class SavingArchive extends BaseArchive {
     public buffer: Buffer; // TODO make private
 
     //#region write buffer
@@ -216,6 +243,7 @@ export class SavingArchive implements Archive {
     //#endregion
 
     constructor(buffer: Buffer) {
+        super();
         this.buffer = buffer;
     }
 

@@ -83,20 +83,20 @@ function transform(
 }
 
 function transformHeader(
-  buffer: Archive,
+  ar: Archive,
   saveGame: SaveGame
 ) {
-  //buffer.transformInt(saveGame, 'saveHeaderType');
-  buffer._Int(saveGame.saveHeaderType);
-  buffer.transformInt(saveGame, 'saveVersion');
-  buffer.transformInt(saveGame, 'buildVersion');
-  buffer.transformString(saveGame, 'mapName');
-  buffer.transformString(saveGame, 'mapOptions');
-  buffer.transformString(saveGame, 'sessionName');
-  buffer.transformInt(saveGame, 'playDurationSeconds');
-  buffer.transformLong(saveGame, 'saveDateTime');
+  // buffer.transformInt(saveGame, 'saveHeaderType');
+  ar._Int(saveGame.saveHeaderType);
+  ar.transformInt(saveGame, 'saveVersion');
+  ar.transformInt(saveGame, 'buildVersion');
+  ar.transformString(saveGame, 'mapName');
+  ar.transformString(saveGame, 'mapOptions');
+  ar.transformString(saveGame, 'sessionName');
+  ar.transformInt(saveGame, 'playDurationSeconds');
+  ar.transformLong(saveGame, 'saveDateTime');
   if (saveGame.saveHeaderType > 4) {
-    buffer.transformByte(saveGame, 'sessionVisibility');
+    ar.transformByte(saveGame, 'sessionVisibility');
   }
 }
 
