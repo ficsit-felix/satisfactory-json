@@ -18,12 +18,26 @@ TODOS
 
 function replaceFunctionCall(oldFunction, newFunction, code, filepath) {
   return code.replace(new RegExp(oldFunction + '\\(([^,)]+)', 'gm'), function (_, group1) {
+
     const lastDot = group1.lastIndexOf('.');
-    if (lastDot < 0) {
+    const lastBracket = group1.lastIndexOf('[');
+    if (lastDot < 0 && lastBracket < 0) {
       throw new Error('`' + group1 + '` needs to be a variable access, so that it can be converted into a reference in `' + oldFunction + '(' + group1 + ')` in file ' + filepath);
     }
 
-    return newFunction + '(' + group1.substring(0, lastDot) + ",'" + group1.substring(lastDot + 1) + "'";
+    if (lastDot > lastBracket) {
+      // last segment is separated by a .
+      return newFunction + '(' + group1.substring(0, lastDot) + ",'" + group1.substring(lastDot + 1) + "'";
+    } else {
+      const lastClosingBracket = group1.lastIndexOf(']');
+      if (lastClosingBracket < 0 || lastBracket > lastClosingBracket) {
+        throw new Error('Missing ] in `' + oldFunction + '(' + group1 + ')` in file ' + filepath);
+      }
+      // last segment is separated by a [
+      return newFunction + '(' + group1.substring(0, lastBracket) + "," + group1.substring(lastBracket + 1, lastClosingBracket);
+    }
+
+
   });
 }
 
