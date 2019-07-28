@@ -1,6 +1,8 @@
 var gulp = require('gulp');
 var ts = require('gulp-typescript');
 var through2 = require('through2');
+var plumber = require('gulp-plumber');
+
 var tsProject = ts.createProject('tsconfig.json');
 
 /*
@@ -8,10 +10,7 @@ var tsProject = ts.createProject('tsconfig.json');
 TODOS
 
 - This could be improved a lot by actually parsing the code
-   ->Would not 
-
-- Building does not seem to trigger the file change watches of the vue-cli --watch in ficsit-felix,
-  so watch mode here is currently useless
+   ->Would not stop on wrong code in comments
 
 - Remove ! at the end of the last accessor of the variable
 
@@ -65,25 +64,35 @@ function preprocess(file, cb) {
 }
 
 function build(glob) {
+  let gotError = false;
   return gulp.src(glob, { base: 'src/' })
+    .pipe(plumber({
+      errorHandler: function (error) {
+        gotError = true;
+        console.error('❌ ' + error);
+      }
+    }))
     .pipe(through2.obj(function (file, _, cb) {
-
       // preprocessor for bidirectional transforms
       preprocess(file, cb);
-
-    }
-    ))
+    }))
     .pipe(tsProject())
-
-    .pipe(gulp.dest('lib'));
+    .pipe(gulp.dest('lib'))
+    .on('end', function () {
+      if (!gotError) {
+        console.log('✔️  Build finished sucessfully.');
+      }
+    })
 }
 
 gulp.task('default', function (cb) {
+  console.log('🏗️  Run full build...')
   return build('src/**/*.ts');
 });
 
 // TODO catch errors, so the watch task can continue
 gulp.task('watch', function () {
+  console.log('🏗️  Initially run full build...')
   // initially build all files
   try {
     build('src/**/*.ts');
@@ -93,7 +102,7 @@ gulp.task('watch', function () {
 
   // then only build incrementally
   gulp.watch('src/**/*.ts').on('change', function (file) {
-    console.log(`Rebuild ${file} ...`);
+    console.log(`🏗️  Rebuild ${file}...`);
     build(file)
   });
 });

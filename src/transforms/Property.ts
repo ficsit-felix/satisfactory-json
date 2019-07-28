@@ -19,7 +19,6 @@ import transformObjectProperty from './properties/ObjectProperty';
 import transformMapProperty from './properties/MapProperty';
 import transformArrayProperty from './properties/ArrayProperty';
 import transformStructProperty from './properties/StructProperty';
-
 // compare to FPropertyTag
 export default function transformProperty(ar: Archive, property: Property) {
     ar.transformString(property.type); // Tag.Type
