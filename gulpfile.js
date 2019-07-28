@@ -6,14 +6,9 @@ var plumber = require('gulp-plumber');
 var tsProject = ts.createProject('tsconfig.json');
 
 /*
-
-TODOS
-
-- This could be improved a lot by actually parsing the code
-   ->Would not stop on wrong code in comments
-
-- Remove ! at the end of the last accessor of the variable
-
+TODO
+- This could be improved by actually parsing the code
+   -> Would not stop on wrong code in comments
  */
 
 function replaceFunctionCall(oldFunction, newFunction, code, filepath) {
@@ -26,8 +21,13 @@ function replaceFunctionCall(oldFunction, newFunction, code, filepath) {
     }
 
     if (lastDot > lastBracket) {
+      let end = group1.length;
+      // if the last char is a ! it's only there to force 
+      if (group1.charAt(group1.length - 1) === '!') {
+        end--;
+      }
       // last segment is separated by a .
-      return newFunction + '(' + group1.substring(0, lastDot) + ",'" + group1.substring(lastDot + 1) + "'";
+      return newFunction + '(' + group1.substring(0, lastDot) + ",'" + group1.substring(lastDot + 1, end) + "'";
     } else {
       const lastClosingBracket = group1.lastIndexOf(']');
       if (lastClosingBracket < 0 || lastBracket > lastClosingBracket) {
@@ -36,19 +36,13 @@ function replaceFunctionCall(oldFunction, newFunction, code, filepath) {
       // last segment is separated by a [
       return newFunction + '(' + group1.substring(0, lastBracket) + "," + group1.substring(lastBracket + 1, lastClosingBracket);
     }
-
-
   });
 }
 
-
 function preprocess(file, cb) {
   if (file.isBuffer()) {
-
-    //console.log(Object.getOwnPropertyNames(Object.getPrototypeOf(file)));
     const name = file.relative;
     let code = file.contents.toString();
-    //console.log(name);
 
     if (name !== 'Archive.ts') {
 
@@ -67,12 +61,10 @@ function preprocess(file, cb) {
 
     }
 
-
-    file.contents = Buffer.from(code)
+    file.contents = Buffer.from(code);
   } else {
     throw new Error('file is not a Buffer');
   }
-
 
   cb(null, file);
 }
@@ -96,28 +88,27 @@ function build(glob) {
       if (!gotError) {
         console.log('✔️  Build finished sucessfully.');
       }
-    })
+    });
 }
 
 gulp.task('default', function (cb) {
-  console.log('🏗️  Run full build...')
+  console.log('🏗️  Run full build...');
   return build('src/**/*.ts');
 });
 
 // TODO catch errors, so the watch task can continue
 gulp.task('watch', function () {
-  console.log('🏗️  Initially run full build...')
+  console.log('🏗️  Initially run full build...');
   // initially build all files
-  try {
-    build('src/**/*.ts');
-  } catch (e) {
-    console.error(e);
-  }
+  build('src/**/*.ts').on('end', function () {
+    console.log('⌚  Watching for file changes...');
 
-  // then only build incrementally
-  gulp.watch('src/**/*.ts').on('change', function (file) {
-    console.log(`🏗️  Rebuild ${file}...`);
-    build(file)
+    // then only build incrementally
+    gulp.watch('src/**/*.ts').on('change', function (file) {
+      console.log(`🏗️  Rebuild ${file}...`);
+      build(file);
+    });
+
   });
 });
 
