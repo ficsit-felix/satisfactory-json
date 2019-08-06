@@ -6,6 +6,7 @@ export default function transformArrayProperty(
     ar: Archive, property: ArrayProperty) {
     if (ar.isLoading()) {
         property.value = {
+            type: '',
             values: []
         };
     }
@@ -40,16 +41,16 @@ export default function transformArrayProperty(
             }
             break;
         case 'StructProperty':
-            ar.transformString(property.value.structName);
-            ar.transformString(property.value.structType);
+            ar.transformString(property.value.structName!);
+            ar.transformString(property.value.structType!);
             ar.transformBufferStart(false);
             const zero = { zero: 0 };
             ar.transformInt(zero.zero, false);
             if (zero.zero !== 0) {
                 throw new Error(`Not zero, but ${zero.zero}`);
             }
-            ar.transformString(property.value.structInnerType);
-            ar.transformHex(property.value.propertyGuid, 16, false);
+            ar.transformString(property.value.structInnerType!);
+            ar.transformHex(property.value.propertyGuid!, 16, false);
             ar.transformAssertNullByte(false);
 
             // TODO find a better way to make this bidirectional?

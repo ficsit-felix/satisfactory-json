@@ -124,22 +124,37 @@ export interface ObjectProperty extends BaseProperty {
 }
 
 export interface StructProperty extends BaseProperty {
-    structUnknown: string;
-    value: any; // TODO!!
+    value: {
+        type: string,
+        [id: string]: any,
+    }; // TODO!!
 }
 
 export interface ArrayProperty extends BaseProperty {
-    structName?: string;
-    structType?: string;
-    structInnerType?: string;
-    structUnknown?: string;
-    value: any; // TODO!!
+    value: {
+        type: string,
+        structName?: string,
+        structType?: string,
+        structInnerType?: string,
+        structUnknown?: string,
+        propertyGuid?: string,
+        values: any[]
+    }; // TODO!!
 }
 
 export interface MapProperty extends BaseProperty {
     value: {
-        [key: string]: any
+        keyType: string,
+        valueType: string,
+        values: MapEntry[]
     }; // TODO!!
+}
+interface MapEntry {
+    // {[key: string]: any}
+
+    key: any; // keys don't have to be a string (e.g. ObjectProperty), so we cannot
+    // simply use an object as a map as was done previously
+    value: any;
 }
 
 export type Property =

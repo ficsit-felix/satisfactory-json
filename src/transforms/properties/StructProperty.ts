@@ -13,7 +13,9 @@ import { transformBox } from './structs/Box';
 export default function transformStructProperty(
     ar: Archive, property: StructProperty) {
     if (ar.isLoading()) {
-        property.value = {};
+        property.value = {
+            type: ''
+        };
     }
     ar.transformString(property.value.type); // Tag.StructName
 
