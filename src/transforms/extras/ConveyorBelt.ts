@@ -22,9 +22,9 @@ export default function transformConveyorBelt(
         }
 
         ar.transformAssertNullInt();
-        ar.transformString(entity.extra.items[i].name);
-        ar.transformAssertNullInt();
-        ar.transformAssertNullInt();
+        ar.transformString(entity.extra.items[i].resourceName);
+        ar.transformString(entity.extra.items[i].levelName);
+        ar.transformString(entity.extra.items[i].pathName);
         ar.transformFloat(entity.extra.items[i].position);
     }
 }
