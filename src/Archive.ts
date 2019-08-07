@@ -75,11 +75,10 @@ abstract class BaseArchive implements Archive {
 }
 
 export class LoadingArchive extends BaseArchive {
-    public buffer: Buffer; // TODO make private
-    //#region read buffer
-    public cursor: number;
     public bytesRead: number;
-    //#endregion
+    private buffer: Buffer;
+    private cursor: number;
+
 
     constructor(buffer: Buffer) {
         super();
