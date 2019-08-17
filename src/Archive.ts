@@ -76,9 +76,8 @@ abstract class BaseArchive implements Archive {
 
 export class LoadingArchive extends BaseArchive {
     public bytesRead: number;
+    public cursor: number;
     private buffer: Buffer;
-    private cursor: number;
-
 
     constructor(buffer: Buffer) {
         super();
