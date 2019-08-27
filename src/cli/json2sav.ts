@@ -16,6 +16,7 @@ program
   .description('Converts from the more readable format (.json) ' +
     'back to a Satisfactory save game (.sav)')
   .arguments('<source> <target>')
+  .option('-t, --time', 'time program')
   .action((source, target) => {
     sourceValue = source;
     targetValue = target;
@@ -37,7 +38,13 @@ fs.readFile(sourceValue!, 'utf8', (error, data) => {
     quitWithError(error);
   }
   const json = JSON.parse(data);
+  if (program.time) {
+    console.time('json2sav');
+  }
   const output = json2sav(json);
+  if (program.time) {
+    console.timeEnd('json2sav');
+  }
 
   fs.writeFile(targetValue!, output, 'binary', (error2) => {
     if (error2) {
