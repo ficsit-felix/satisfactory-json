@@ -31,6 +31,11 @@ export default function transformArrayProperty(
                 ar.transformString(property.value.values[i]);
             }
             break;
+        case 'StrProperty':
+            for (let i = 0; i < itemCount.count; i++) {
+                ar.transformString(property.value.values[i]);
+            }
+            break;
         case 'ObjectProperty':
             for (let i = 0; i < itemCount.count; i++) {
                 if (ar.isLoading()) {
