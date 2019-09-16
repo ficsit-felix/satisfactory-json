@@ -39,10 +39,12 @@ fs.readFile(sourceValue!, 'utf8', (error, data) => {
   }
   const json = JSON.parse(data);
   if (program.time) {
+    // tslint:disable-next-line: no-console
     console.time('json2sav');
   }
   const output = json2sav(json);
   if (program.time) {
+    // tslint:disable-next-line: no-console
     console.timeEnd('json2sav');
   }
 

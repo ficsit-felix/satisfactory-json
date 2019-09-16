@@ -38,11 +38,13 @@ fs.readFile(sourceValue!, 'binary', (error, data) => {
   }
   const binaryData = Buffer.from(data, 'binary');
   if (program.time) {
+    // tslint:disable-next-line: no-console
     console.time('sav2json');
   }
   const transformed = sav2json(binaryData);
 
   if (program.time) {
+    // tslint:disable-next-line: no-console
     console.timeEnd('sav2json');
   }
   const output = JSON.stringify(transformed);
