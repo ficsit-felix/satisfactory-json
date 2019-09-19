@@ -225,8 +225,13 @@ export class LoadingArchive extends BaseArchive {
     public assertNullByteString(length: number, result: string) {
         const zero = this.buffer.readInt8(this.cursor);
         if (zero !== 0) {
-            throw new Error('string (length: ' + length +
-                ') does not end with zero, but with ' + zero + ': ' + result);
+            if (length < 100) {
+                throw new Error('string (length: ' + length +
+                    ') does not end with zero, but with ' + zero + ': ' + result);
+            } else {
+                throw new Error('string (length: ' + length +
+                    ') does not end with zero, but with ' + zero);
+            }
         }
         this.cursor += 1;
         this.bytesRead += 1;
