@@ -68,8 +68,12 @@ export default function transformMapProperty(
           isEnum = typeof property.value.values[0].value === 'string';
         }
       } else {
+        // Currently the enum version is only used by LightItUp mod
+        // this is the only one that also uses a StrProperty as the key (yet)
+        isEnum = property.value.keyType === 'StrProperty';
         // we need to determine whether the value is a string or just a byte
-        if (count.count > 0) { // with 0 elements it does not matter
+        // The following is a heuristic which will always have cases where it fails
+        /*if (count.count > 0) { // with 0 elements it does not matter
           isEnum = true;
 
           const lar = (ar as LoadingArchive);
@@ -106,7 +110,7 @@ export default function transformMapProperty(
           // reset cursor
           lar.bytesRead = bytesRead;
           lar.cursor = cursor;
-        }
+        }*/
       }
 
       if (isEnum) {

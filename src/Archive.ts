@@ -226,11 +226,12 @@ export class LoadingArchive extends BaseArchive {
         const zero = this.buffer.readInt8(this.cursor);
         if (zero !== 0) {
             if (length < 100) {
-                throw new Error('string (length: ' + length +
-                    ') does not end with zero, but with ' + zero + ': ' + result);
+                throw new Error(`string (length: ${length}) does not` +
+                    ` end with zero, but with ${zero}: ${result}`);
             } else {
                 throw new Error('string (length: ' + length +
-                    ') does not end with zero, but with ' + zero);
+                    ') does not end with zero, but with ' + zero +
+                    ': ' + result.substring(0, 100) + ' [...]');
             }
         }
         this.cursor += 1;
