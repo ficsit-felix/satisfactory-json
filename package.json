@@ -1,6 +1,6 @@
 {
   "name": "satisfactory-json",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "Convert Satisfactory save files to JSON and back",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
