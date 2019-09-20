@@ -9,6 +9,7 @@ import { transformColor } from './structs/Color';
 import { transformInventoryItem } from './structs/IventoryItem';
 import { transformArbitraryStruct } from './structs/ArbitraryStruct';
 import { transformBox } from './structs/Box';
+import { transformGuuid } from './structs/Guuid';
 
 export default function transformStructProperty(
     ar: Archive, property: StructProperty) {
@@ -59,6 +60,9 @@ export default function transformStructProperty(
         case 'InventoryStack':
         case 'ProjectileData':
             transformArbitraryStruct(ar, property);
+            break;
+        case 'Guid':
+            transformGuuid(ar, property);
             break;
         default:
             throw new Error(`Unknown struct type ${property.value.type}`);

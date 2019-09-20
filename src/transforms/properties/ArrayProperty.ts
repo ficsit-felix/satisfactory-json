@@ -1,6 +1,7 @@
 import { Archive, LoadingArchive, SavingArchive } from '../../Archive';
 import { ArrayProperty, Property } from '../../types';
 import transformProperty from '../Property';
+import { transformArbitraryStruct } from './structs/ArbitraryStruct';
 
 export default function transformArrayProperty(
     ar: Archive, property: ArrayProperty) {
@@ -62,6 +63,13 @@ export default function transformArrayProperty(
             if (ar.isSaving()) {
                 for (const prop of property.value.values) {
                     const obj = prop;
+
+                    if (property.value.structInnerType === 'Guid') {
+                        // Guids are stored without Tag.Name
+                        ar.transformHex(prop.guid, 16);
+                        continue;
+                    }
+
                     for (const innerProp of obj.properties) {
                         ar.transformString(innerProp.name); // Tag.Name
                         transformProperty(ar, innerProp);
@@ -72,6 +80,15 @@ export default function transformArrayProperty(
             } else {
                 for (let j = 0; j < itemCount.count; j++) {
                     const props: Property[] = [];
+
+                    if (property.value.structInnerType === 'Guid') {
+                        // Guids are stored without Tag.Name
+                        const guid = { guid: '' };
+                        ar.transformHex(guid.guid, 16);
+                        property.value.values.push(guid);
+                        continue;
+                    }
+
                     while (true) {
                         const innerProperty: Property = {
                             name: '',
@@ -79,7 +96,9 @@ export default function transformArrayProperty(
                             index: 0,
                             value: ''
                         };
+
                         ar.transformString(innerProperty.name); // Tag.Name
+
                         if (innerProperty.name === 'None') {
                             break; // end of properties
                         }

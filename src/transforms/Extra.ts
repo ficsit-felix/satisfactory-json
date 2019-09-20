@@ -51,6 +51,9 @@ export default function transformExtra(
         case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk4/Build_ConveyorLiftMk4.Build_ConveyorLiftMk4_C':
         case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk5/Build_ConveyorLiftMk5.Build_ConveyorLiftMk5_C':
         case '/Game/FactoryGame/Buildable/Factory/ConveyorLiftMk6/Build_ConveyorLiftMk6.Build_ConveyorLiftMk6_C':
+        // Mk6_Mod
+        case '/Game/FactoryGame/Mk6_Mod/Build_ConveyorLiftMk61.Build_ConveyorLiftMk61_C':
+        case '/Game/FactoryGame/Mk6_Mod/Build_BeltMk61.Build_BeltMk61_C':
             // tslint:enable
             transformConveyorBelt(ar, entity, length);
             break;
