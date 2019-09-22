@@ -1,38 +1,17 @@
 {
-  "name": "satisfactory-json",
-  "version": "0.0.23",
-  "description": "Convert Satisfactory save files to JSON and back",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "repository": "https://github.com/bitowl/satisfactory-json",
-  "author": "bitowl",
-  "license": "MIT",
   "devDependencies": {
-    "@types/node": "^12.0.4",
-    "gulp": "^4.0.2",
-    "gulp-plumber": "^1.2.1",
-    "gulp-typescript": "^5.0.1",
-    "ts-node": "^8.3.0",
-    "tslint": "^5.17.0",
-    "typescript": "^3.5.1"
+    "@types/node": "^12.7.5",
+    "commander": "^3.0.1",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.3"
   },
+  "name": "json-factory2",
+  "version": "1.0.0",
+  "description": "asdf",
+  "main": "index.js",
+  "author": "bitowl <git@bitowl.de>",
+  "license": "MIT",
   "scripts": {
-    "build": "gulp",
-    "build:watch": "gulp watch",
-    "lint": "tslint --project \"./tsconfig.json\"",
-    "prepublish": "yarn build",
-    "postversion": "git push && git push --tags",
-    "sav2json": "node lib/cli/sav2json.js",
-    "json2sav": "node lib/cli/json2sav.js"
-  },
-  "files": [
-    "lib/**/*"
-  ],
-  "bin": {
-    "sav2json": "./lib/sav2json.js",
-    "json2sav": "./lib/json2sav.js"
-  },
-  "dependencies": {
-    "commander": "^2.20.0"
+    "sav2json": "ts-node src/cli/sav2json.ts"
   }
 }

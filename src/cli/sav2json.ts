@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
-import * as program from 'commander';
-
-import { sav2json } from '../transform';
+import program from 'commander';
+import { Sav2JsonTransform } from '../Sav2JsonTransform';
 
 let sourceValue: string | undefined;
 let targetValue: string | undefined;
@@ -32,27 +31,39 @@ if (targetValue === undefined) {
   quitWithError('No target file specified.');
 }
 
+if (program.time) {
+  console.time('readFile');
+}
+
+const stream = fs.createReadStream(sourceValue!, { highWaterMark: 1024 * 1024 });
+/*
+
 fs.readFile(sourceValue!, 'binary', (error, data) => {
   if (error) {
     quitWithError(error);
   }
-  const binaryData = Buffer.from(data, 'binary');
-  if (program.time) {
-    // tslint:disable-next-line: no-console
-    console.time('sav2json');
-  }
-  const transformed = sav2json(binaryData);
+  const binaryData = Buffer.from(data, 'binary');*/
 
+if (program.time) {
+  console.timeEnd('readFile');
+  console.time('sav2json');
+}
+
+
+const sav2json = new Sav2JsonTransform();
+
+stream.pipe(sav2json).on('finish', () => {
   if (program.time) {
-    // tslint:disable-next-line: no-console
     console.timeEnd('sav2json');
+    //console.time('writeFile');
   }
-  const output = JSON.stringify(transformed);
+  /*const output = JSON.stringify(transformed);
 
   fs.writeFile(targetValue!, output, 'utf8', (error2) => {
     if (error2) {
       quitWithError(error2);
     }
+    console.timeEnd('writeFile');
     console.log('Converted ' + sourceValue + ' to ' + targetValue);
-  });
+  });*/
 });
