@@ -58,27 +58,27 @@ function transformHeader(builder: Builder) {
 
 function transformActorOrComponent(builder: Builder) {
   builder
-    .int('_type', ctx => ctx.vars._index < ctx.obj.actors.lenght ? 1 : 0)
-    .cond(ctx => ctx.obj.type === 1,
+    .int('_type', ctx => ctx.vars._index < ctx.obj.actors.length ? 1 : 0)
+    .cond(ctx => ctx.vars._type === 1,
       bldr => {
         // actor
         bldr
-          .obj('actors')
+          .arr('actors')
           .elem('_index');
         transformActor(bldr);
         bldr
           .endElem()
-          .endObj();
+          .endArr();
       },
       bldr => {
         // component
         bldr
-          .obj('components')
+          .arr('components')
           .elem('_index');
         transformComponent(bldr);
         bldr
           .endElem()
-          .endObj();
+          .endArr();
       });
 
 }
@@ -90,22 +90,22 @@ function transformActor(builder: Builder) {
     .str('pathName')
     .int('needTransform')
     .obj('transform')
-    .obj('rotation')
+    .arr('rotation')
     .float(0)
     .float(1)
     .float(2)
     .float(3)
-    .endObj()
-    .obj('translation')
+    .endArr()
+    .arr('translation')
     .float(0)
     .float(1)
     .float(2)
-    .endObj()
-    .obj('scale3d')
+    .endArr()
+    .arr('scale3d')
     .float(0)
     .float(1)
     .float(2)
-    .endObj()
+    .endArr()
     .int('wasPlacedInLevel');
 }
 

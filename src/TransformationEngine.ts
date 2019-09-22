@@ -53,6 +53,16 @@ export class TransformationEngine {
     while (true) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
+      if (frame.currentCommand >= frame.commands.length) {
+        // move one stack frame up
+        this.stack.pop();
+        if (this.stack.length === 0) {
+          // End of program?
+          break;
+        }
+        continue;
+      }
+
       const cmd = frame.commands[frame.currentCommand];
       console.log('executing', cmd);
       const needBytes = cmd.exec(this.isLoading, frame.ctx, chunk, commands => {
@@ -60,24 +70,24 @@ export class TransformationEngine {
         this.stack.push({
           commands,
           currentCommand: 0,
-          ctx: frame.ctx
+          ctx: {
+            obj: frame.ctx.obj,
+            vars: Object.assign({}, frame.ctx.vars), // shallow copy the variables so that the old ones still will be there when the stack is popped
+            parent: frame.ctx.parent
+          }
         });
       });
       if (needBytes > 0) { // This command needs more bytes to successfully execute
-
+        console.error(`Need ${needBytes} more bytes.`);
+        throw new Error(`Need ${needBytes} more bytes.`);
         break;
       }
-      frame.currentCommand++;
-      if (frame.currentCommand >= frame.commands.length) {
-        // TODO move one stack frame up
-        break;
+      if (needBytes !== -1) { // -1 indicates that the command pointer should not advance
+        frame.currentCommand++;
       }
 
-      console.log(frame.ctx);
+      //console.log(frame.ctx);
     }
-
-
     console.log(saveGame);
   }
-
 }

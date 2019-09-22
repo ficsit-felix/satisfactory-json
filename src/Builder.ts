@@ -1,5 +1,5 @@
 import { TransformationEngine } from './TransformationEngine';
-import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand } from './commands';
+import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand } from './commands';
 
 
 
@@ -29,10 +29,27 @@ export class Builder {
   }
 
   /**
+   * Descend down into an array
+   * @param name name of the variable
+   */
+  public arr(name: string): Builder {
+    this.commands.push(new EnterArrayCommand(name));
+    return this;
+  }
+  /**
+   * Ascend back up to the parent object
+   */
+  public endArr(): Builder {
+    this.commands.push(new LeaveArrayCommand());
+    return this;
+  }
+
+  /**
    * Ascend down into an array
    * @param index index in the array
    */
   public elem(index: Name): Builder {
+    this.commands.push(new EnterElemCommand(index));
     return this;
   }
 
@@ -40,6 +57,7 @@ export class Builder {
    * Ascend back up to the parent of the array
    */
   public endElem(): Builder {
+    this.commands.push(new LeaveElemCommand());
     return this;
   }
 
@@ -60,6 +78,7 @@ export class Builder {
     return this;
   }
   public float(name: Name): Builder {
+    this.commands.push(new FloatCommand(name));
     return this;
   }
 

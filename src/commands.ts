@@ -17,6 +17,7 @@ export interface Command {
   /**
    * Executes this command
    * Returns the number of bytes this function needs to complete
+   * or -1 to indicate that the command pointer should not advance (only useful if the newStackFrameCallback was called)
    * 
    * @param isLoading 
    * @param ctx 
@@ -63,11 +64,101 @@ export class LeaveObjectCommand implements Command {
   }
 }
 
-function setVar(ctx: Context, name: Name, value: any) {
+
+export class EnterArrayCommand implements Command {
+
+  private name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+
+  exec(isLoading: boolean, ctx: Context): number {
+    if (isLoading) {
+      // Make sure the array is created
+      if (ctx.obj[this.name] === undefined) {
+        ctx.obj[this.name] = []
+      }
+    } else {
+    }
+
+    // Descend to the child array
+    ctx.parent = {
+      obj: ctx.obj,
+      vars: ctx.vars,
+      parent: ctx.parent
+    };
+    ctx.obj = ctx.obj[this.name];
+    return 0;
+  }
+}
+
+export class LeaveArrayCommand implements Command {
+  exec(isLoading: boolean, ctx: Context): number {
+    // Ascend to the parent context
+    // TODO check that we actually ended an array?
+    assert(ctx.parent !== undefined);
+    ctx.obj = ctx.parent!.obj;
+    ctx.vars = ctx.parent!.vars;
+    ctx.parent = ctx.parent!.parent;
+    return 0;
+  }
+}
+
+export class EnterElemCommand implements Command {
+
+  private index: Name;
+  constructor(index: Name) {
+    this.index = index;
+  }
+
+  exec(isLoading: boolean, ctx: Context): number {
+    const index = getVar(ctx, this.index);
+
+    if (isLoading) {
+      // Make sure the array element is created
+      if (ctx.obj[index] === undefined) {
+        ctx.obj[index] = {}
+      }
+    } else {
+    }
+
+    // Descend to the child array
+    ctx.parent = {
+      obj: ctx.obj,
+      vars: ctx.vars,
+      parent: ctx.parent
+    };
+    ctx.obj = ctx.obj[index];
+    return 0;
+  }
+}
+
+export class LeaveElemCommand implements Command {
+  exec(isLoading: boolean, ctx: Context): number {
+    // Ascend to the parent context
+    // TODO check that we actually ended an element?
+    assert(ctx.parent !== undefined);
+    ctx.obj = ctx.parent!.obj;
+    ctx.vars = ctx.parent!.vars;
+    ctx.parent = ctx.parent!.parent;
+    return 0;
+  }
+}
+
+
+function setVar(ctx: Context, name: Name, value: any): void {
   if (name.toString().charAt(0) === '_') {
     ctx.vars[name] = value;
   } else {
     ctx.obj[name] = value;
+  }
+}
+
+function getVar(ctx: Context, name: Name): any {
+  if (name.toString().charAt(0) === '_') {
+    return ctx.vars[name];
+  } else {
+    return ctx.obj[name];
   }
 }
 
@@ -156,7 +247,10 @@ export class StrCommand implements Command {
           // TODO rewind
           return result;
         }
-        assert(result.readInt8(0) === 0);
+        const zero = result.readInt8(0);
+        if (zero !== 0) {
+          throw new Error(`string(len: ${length}) does not end with zero, but with ${zero}`);
+        }
       }
 
       const result = chunk.read(1);
@@ -164,7 +258,10 @@ export class StrCommand implements Command {
         // TODO rewind
         return result;
       }
-      assert(result.readInt8(0) === 0);
+      const zero = result.readInt8(0);
+      if (zero !== 0) {
+        throw new Error(`string(len: ${length}) does not end with zero, but with ${zero}`);
+      }
 
       setVar(ctx, this.name, resultStr);
       return 0;
@@ -218,6 +315,28 @@ export class ByteCommand implements Command {
   }
 }
 
+export class FloatCommand implements Command {
+  private name: Name;
+  constructor(name: Name) {
+    this.name = name;
+  }
+  exec(isLoading: boolean, ctx: Context, chunk: Chunk): number {
+    if (isLoading) {
+      const result = chunk.read(4);
+      if (typeof result === 'number') {
+        // return the amount of missing bytes
+        return result;
+      }
+      setVar(ctx, this.name, result.readFloatLE(0));
+      return 0;
+    } else {
+      // TODO writing
+      return 0;
+    }
+  }
+}
+
+
 export class LoopCommand implements Command {
   private times: Name;
   private loopBodyCommands: Command[];
@@ -225,8 +344,20 @@ export class LoopCommand implements Command {
     this.times = times;
     this.loopBodyCommands = loopBodyCommands;
   }
-  exec(isLoading: boolean, ctx: Context): number {
-    throw new Error('Method not implemented.');
+  exec(isLoading: boolean, ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
+    const iterations = getVar(ctx, this.times);
+
+    if (ctx.vars._index === undefined) {
+      ctx.vars._index = 0;
+    } else {
+      ctx.vars._index++;
+    }
+
+    if (ctx.vars._index < iterations) {
+      newStackFrameCallback(this.loopBodyCommands);
+    }
+    // pls keep the current command pointer the same, so that we can execute the next iteration
+    return -1;
   }
 }
 
@@ -241,6 +372,7 @@ export class CondCommand implements Command {
   }
   exec(isLoading: boolean, ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
     const result = this.cond(ctx);
+    console.log(`----------COND: ${result}`);
     if (result) {
       // execute then branch
       newStackFrameCallback(this.thenCommands);
