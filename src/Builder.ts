@@ -1,5 +1,5 @@
 import { TransformationEngine } from './TransformationEngine';
-import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand } from './commands';
+import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand } from './commands';
 
 
 
@@ -92,7 +92,8 @@ export class Builder {
    * Execute arbitrary javascript code when the TransformEngine gets to this point
    * @param code 
    */
-  public exec(code: (ctx: Context, builder: Builder) => void) {
+  public exec(code: (ctx: Context) => void) {
+    this.commands.push(new ExecCommand(code));
     return this;
   }
 

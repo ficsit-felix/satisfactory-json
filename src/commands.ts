@@ -193,6 +193,7 @@ export class StrCommand implements Command {
   }
   exec(isLoading: boolean, ctx: Context, chunk: Chunk): number {
     if (isLoading) {
+      chunk.setRollbackPoint();
       // TODO store rewind point in case something gets wrong in the middle of this
 
       const lengthBytes = chunk.read(4);
@@ -223,16 +224,16 @@ export class StrCommand implements Command {
       if (utf16) {
         const result = chunk.read(length - 2);
         if (typeof result === 'number') {
-          // TODO rewind
-          return result;
+          // rewind
+          return chunk.rollback() + result;
         }
         // .slice(this.cursor, this.cursor + length - 2);
         resultStr = decodeUTF16LE(result.toString('binary'));
       } else {
         const result = chunk.read(length - 1);
         if (typeof result === 'number') {
-          // TODO rewind
-          return result;
+          // rewind
+          return chunk.rollback() + result;
         }
         // .slice(this.cursor, this.cursor + length - 1);
         resultStr = result.toString('utf8');
@@ -244,8 +245,8 @@ export class StrCommand implements Command {
       if (utf16) {
         const result = chunk.read(1);
         if (typeof result === 'number') {
-          // TODO rewind
-          return result;
+          // rewind
+          return chunk.rollback() + result;
         }
         const zero = result.readInt8(0);
         if (zero !== 0) {
@@ -255,8 +256,8 @@ export class StrCommand implements Command {
 
       const result = chunk.read(1);
       if (typeof result === 'number') {
-        // TODO rewind
-        return result;
+        // rewind
+        return chunk.rollback() + result;
       }
       const zero = result.readInt8(0);
       if (zero !== 0) {
@@ -355,9 +356,12 @@ export class LoopCommand implements Command {
 
     if (ctx.vars._index < iterations) {
       newStackFrameCallback(this.loopBodyCommands);
+      // pls keep the current command pointer the same, so that we can execute the next iteration
+      return -1;
+    } else {
+      // continue after the loop
+      return 0;
     }
-    // pls keep the current command pointer the same, so that we can execute the next iteration
-    return -1;
   }
 }
 
@@ -372,7 +376,7 @@ export class CondCommand implements Command {
   }
   exec(isLoading: boolean, ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
     const result = this.cond(ctx);
-    console.log(`----------COND: ${result}`);
+    //console.log(`----------COND: ${result}`);
     if (result) {
       // execute then branch
       newStackFrameCallback(this.thenCommands);
@@ -384,6 +388,16 @@ export class CondCommand implements Command {
   }
 }
 
+export class ExecCommand implements Command {
+  private code: (ctx: Context) => void;
+  constructor(code: (ctx: Context) => void) {
+    this.code = code;
+  }
+  exec(isLoading: boolean, ctx: Context, chunk: Chunk): number {
+    this.code(ctx);
+    return 0;
+  }
+}
 
 
 // https://stackoverflow.com/a/14601808
