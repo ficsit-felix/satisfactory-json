@@ -1,32 +1,35 @@
+import { Builder } from './Builder';
 
 
-function transform(builder: Builder) {
-  transformHeader(builder);
+export function transform(builder: Builder) {
   builder
-    .int('_entryCount', ctx => ctx.actors.length + ctx.components.length)
-    .loop('_entryCount', (builder, index, ctx) => transformActorOrComponent(builder, index, ctx))
+    .call(transformHeader)
+    .int('_entryCount', ctx => ctx.obj.actors.length + ctx.obj.components.length)
+    .loop('_entryCount', builder => builder.call(transformActorOrComponent))
     .int('_entryCount')
-    .loop('_entryCount', (builder, index, ctx) => {
-      if (index < ctx.actors.length) {
-        const actor = ctx.actors[index];
-        builder
-          .obj('actors')
-          .elem(index);
-        transformEntity(builder, true, actor.className)
-        builder
-          .endElem()
-          .endObj();
-      } else {
-        const componentIndex = index - ctx.actors.length;
-        const component = ctx.components[componentIndex];
-        builder
-          .obj('components')
-          .elem(componentIndex);
-        transformEntity(builder, false, component.className);
-        builder
-          .endElem()
-          .endObj();
-      }
+    .loop('_entryCount', builder => {
+      builder.cond(
+        ctx => ctx.vars._index < ctx.obj.actors.length,
+        builder => {
+          builder
+            .exec(ctx => {
+              ctx.vars._actor = ctx.obj.actors[ctx.vars._index];
+            })
+            .obj('actors')
+            .elem('_index')
+            .call(transformEntity)
+            .endElem()
+            .endObj();
+        },
+        builder => {
+          builder
+            .exec(ctx => ctx.vars._componentIndex = ctx.vars._index - ctx.obj.actors.lenght)
+            .obj('components')
+            .elem('_componentIndex')
+            .call(transformEntity)
+            .endElem()
+            .endObj();
+        });
     });
 
 
@@ -45,7 +48,7 @@ function transformHeader(builder: Builder) {
     .int('playDurationSeconds')
     .long('saveDateTime')
     .cond(ctx => {
-      return ctx.saveHeaderType > 4;
+      return ctx.obj.saveHeaderType > 4;
     }, bldr => {
       bldr.byte('sessionVisibility');
     })
@@ -53,15 +56,15 @@ function transformHeader(builder: Builder) {
 }
 
 
-function transformActorOrComponent(builder: Builder, index: number, ctx: any) {
+function transformActorOrComponent(builder: Builder) {
   builder
-    .int('_type', ctx => index < ctx.actors.lenght ? 1 : 0)
-    .cond(ctx => ctx.type === 1,
+    .int('_type', ctx => ctx.vars._index < ctx.obj.actors.lenght ? 1 : 0)
+    .cond(ctx => ctx.obj.type === 1,
       bldr => {
         // actor
         bldr
           .obj('actors')
-          .elem(index);
+          .elem('_index');
         transformActor(bldr);
         bldr
           .endElem()
@@ -71,7 +74,7 @@ function transformActorOrComponent(builder: Builder, index: number, ctx: any) {
         // component
         bldr
           .obj('components')
-          .elem(index);
+          .elem('_index');
         transformComponent(bldr);
         bldr
           .endElem()
@@ -115,6 +118,6 @@ function transformComponent(builder: Builder) {
 }
 
 
-function transformEntity(builder: Builder, isActor: boolean, className: string) {
+function transformEntity(builder: Builder) {
 
 }

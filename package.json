@@ -12,6 +12,7 @@
   "author": "bitowl <git@bitowl.de>",
   "license": "MIT",
   "scripts": {
-    "sav2json": "ts-node src/cli/sav2json.ts"
+    "sav2json": "ts-node src/cli/sav2json.ts",
+    "sav2json:debug": "ts-node --inspect=5858 --debug-brk --ignore false src/cli/sav2json.ts"
   }
 }
