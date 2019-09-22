@@ -1,6 +1,7 @@
 import { assert } from 'console';
 import { Chunk } from './Chunk';
 import { readdirSync } from 'fs';
+import { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } from 'constants';
 
 /**
  * Name used to access a property or an array element
@@ -11,29 +12,45 @@ export interface Context {
   obj: { [id: string]: any };
   vars: { [id: string]: any };
   parent?: Context;
+  isLoading: boolean;
 }
 
-export interface Command {
+// Generate global ids for all commands
+let __veryGlobalId: number = 0;
+function genCmdId(): number {
+  return __veryGlobalId++;
+}
+
+
+export abstract class Command {
+  protected id: number;
+
+  constructor() {
+    this.id = genCmdId();
+  }
   /**
    * Executes this command
    * Returns the number of bytes this function needs to complete
    * or -1 to indicate that the command pointer should not advance (only useful if the newStackFrameCallback was called)
-   * 
-   * @param isLoading 
-   * @param ctx 
+
    */
-  exec(isLoading: boolean, ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number;
+  abstract exec(ctx: Context,
+    chunk: Chunk,
+    newStackFrameCallback: (commands: Command[]) => void,
+    dropStackFrameCallback: () => void
+  ): number;
 }
 
-export class EnterObjectCommand implements Command {
+export class EnterObjectCommand extends Command {
 
   private name: string;
   constructor(name: string) {
+    super();
     this.name = name;
   }
 
-  exec(isLoading: boolean, ctx: Context): number {
-    if (isLoading) {
+  exec(ctx: Context): number {
+    if (ctx.isLoading) {
       // Make sure the object is created
       if (ctx.obj[this.name] === undefined) {
         ctx.obj[this.name] = {};
@@ -45,15 +62,16 @@ export class EnterObjectCommand implements Command {
     ctx.parent = {
       obj: ctx.obj,
       vars: ctx.vars,
-      parent: ctx.parent
+      parent: ctx.parent,
+      isLoading: ctx.isLoading
     };
     ctx.obj = ctx.obj[this.name];
     return 0;
   }
 }
 
-export class LeaveObjectCommand implements Command {
-  exec(isLoading: boolean, ctx: Context): number {
+export class LeaveObjectCommand extends Command {
+  exec(ctx: Context): number {
     // Ascend to the parent context
     // TODO check that we actually ended an object?
     assert(ctx.parent !== undefined);
@@ -65,15 +83,16 @@ export class LeaveObjectCommand implements Command {
 }
 
 
-export class EnterArrayCommand implements Command {
+export class EnterArrayCommand extends Command {
 
   private name: string;
   constructor(name: string) {
+    super();
     this.name = name;
   }
 
-  exec(isLoading: boolean, ctx: Context): number {
-    if (isLoading) {
+  exec(ctx: Context): number {
+    if (ctx.isLoading) {
       // Make sure the array is created
       if (ctx.obj[this.name] === undefined) {
         ctx.obj[this.name] = []
@@ -85,15 +104,16 @@ export class EnterArrayCommand implements Command {
     ctx.parent = {
       obj: ctx.obj,
       vars: ctx.vars,
-      parent: ctx.parent
+      parent: ctx.parent,
+      isLoading: ctx.isLoading
     };
     ctx.obj = ctx.obj[this.name];
     return 0;
   }
 }
 
-export class LeaveArrayCommand implements Command {
-  exec(isLoading: boolean, ctx: Context): number {
+export class LeaveArrayCommand extends Command {
+  exec(ctx: Context): number {
     // Ascend to the parent context
     // TODO check that we actually ended an array?
     assert(ctx.parent !== undefined);
@@ -104,17 +124,18 @@ export class LeaveArrayCommand implements Command {
   }
 }
 
-export class EnterElemCommand implements Command {
+export class EnterElemCommand extends Command {
 
   private index: Name;
   constructor(index: Name) {
+    super();
     this.index = index;
   }
 
-  exec(isLoading: boolean, ctx: Context): number {
+  exec(ctx: Context): number {
     const index = getVar(ctx, this.index);
 
-    if (isLoading) {
+    if (ctx.isLoading) {
       // Make sure the array element is created
       if (ctx.obj[index] === undefined) {
         ctx.obj[index] = {}
@@ -126,15 +147,16 @@ export class EnterElemCommand implements Command {
     ctx.parent = {
       obj: ctx.obj,
       vars: ctx.vars,
-      parent: ctx.parent
+      parent: ctx.parent,
+      isLoading: ctx.isLoading
     };
     ctx.obj = ctx.obj[index];
     return 0;
   }
 }
 
-export class LeaveElemCommand implements Command {
-  exec(isLoading: boolean, ctx: Context): number {
+export class LeaveElemCommand extends Command {
+  exec(ctx: Context): number {
     // Ascend to the parent context
     // TODO check that we actually ended an element?
     assert(ctx.parent !== undefined);
@@ -162,16 +184,19 @@ function getVar(ctx: Context, name: Name): any {
   }
 }
 
-export class IntCommand implements Command {
+export class IntCommand extends Command {
   private name: Name;
   private defaultValue?: (ctx: Context) => number;
-  constructor(name: Name, defaultValue?: (ctx: Context) => number) {
+  private shouldCount: boolean;
+  constructor(name: Name, defaultValue?: (ctx: Context) => number, shouldCount: boolean = true) {
+    super();
     this.name = name;
     this.defaultValue = defaultValue;
+    this.shouldCount = shouldCount;
   }
-  exec(isLoading: boolean, ctx: Context, chunk: Chunk): number {
-    if (isLoading) {
-      const result = chunk.read(4);
+  exec(ctx: Context, chunk: Chunk): number {
+    if (ctx.isLoading) {
+      const result = chunk.read(4, this.shouldCount);
       if (typeof result === 'number') {
         // return the amount of missing bytes
         return result;
@@ -180,19 +205,21 @@ export class IntCommand implements Command {
       return 0;
     } else {
       // TODO writing
+      throw Error('Unimplemented');
       return 0;
     }
   }
 }
 
 
-export class StrCommand implements Command {
+export class StrCommand extends Command {
   private name: Name;
   constructor(name: Name) {
+    super();
     this.name = name;
   }
-  exec(isLoading: boolean, ctx: Context, chunk: Chunk): number {
-    if (isLoading) {
+  exec(ctx: Context, chunk: Chunk): number {
+    if (ctx.isLoading) {
       chunk.setRollbackPoint();
       // TODO store rewind point in case something gets wrong in the middle of this
 
@@ -269,18 +296,20 @@ export class StrCommand implements Command {
 
     } else {
       // TODO writing
+      throw Error('Unimplemented');
       return 0;
     }
   }
 }
 
-export class LongCommand implements Command {
+export class LongCommand extends Command {
   private name: Name;
   constructor(name: Name) {
+    super();
     this.name = name;
   }
-  exec(isLoading: boolean, ctx: Context, chunk: Chunk): number {
-    if (isLoading) {
+  exec(ctx: Context, chunk: Chunk): number {
+    if (ctx.isLoading) {
       const result = chunk.read(8);
       if (typeof result === 'number') {
         // return the amount of missing bytes
@@ -290,18 +319,20 @@ export class LongCommand implements Command {
       return 0;
     } else {
       // TODO writing
+      throw Error('Unimplemented');
       return 0;
     }
   }
 }
 
-export class ByteCommand implements Command {
+export class ByteCommand extends Command {
   private name: Name;
   constructor(name: Name) {
+    super();
     this.name = name;
   }
-  exec(isLoading: boolean, ctx: Context, chunk: Chunk): number {
-    if (isLoading) {
+  exec(ctx: Context, chunk: Chunk): number {
+    if (ctx.isLoading) {
       const result = chunk.read(1);
       if (typeof result === 'number') {
         // return the amount of missing bytes
@@ -311,18 +342,20 @@ export class ByteCommand implements Command {
       return 0;
     } else {
       // TODO writing
+      throw Error('Unimplemented');
       return 0;
     }
   }
 }
 
-export class FloatCommand implements Command {
+export class FloatCommand extends Command {
   private name: Name;
   constructor(name: Name) {
+    super();
     this.name = name;
   }
-  exec(isLoading: boolean, ctx: Context, chunk: Chunk): number {
-    if (isLoading) {
+  exec(ctx: Context, chunk: Chunk): number {
+    if (ctx.isLoading) {
       const result = chunk.read(4);
       if (typeof result === 'number') {
         // return the amount of missing bytes
@@ -332,49 +365,54 @@ export class FloatCommand implements Command {
       return 0;
     } else {
       // TODO writing
+      throw Error('Unimplemented');
       return 0;
     }
   }
 }
 
 
-export class LoopCommand implements Command {
+export class LoopCommand extends Command {
   private times: Name;
   private loopBodyCommands: Command[];
   constructor(times: Name, loopBodyCommands: Command[]) {
+    super();
     this.times = times;
     this.loopBodyCommands = loopBodyCommands;
   }
-  exec(isLoading: boolean, ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
+  exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
     const iterations = getVar(ctx, this.times);
 
-    if (ctx.vars._index === undefined) {
-      ctx.vars._index = 0;
-    } else {
-      ctx.vars._index++;
+    // The _index variable might be set from an enclosing loop
+    if (ctx.vars._loopIndex !== this.id) {
+      ctx.vars._loopIndex = this.id;
+      ctx.vars._index = -1;
     }
+    ctx.vars._index++;
 
     if (ctx.vars._index < iterations) {
       newStackFrameCallback(this.loopBodyCommands);
       // pls keep the current command pointer the same, so that we can execute the next iteration
       return -1;
     } else {
+      ctx.vars._index = undefined;
       // continue after the loop
       return 0;
     }
   }
 }
 
-export class CondCommand implements Command {
+export class CondCommand extends Command {
   private cond: (ctx: Context) => boolean;
   private thenCommands: Command[];
   private elseCommands?: Command[];
   constructor(cond: (ctx: Context) => boolean, thenCommands: Command[], elseCommands?: Command[]) {
+    super();
     this.cond = cond;
     this.thenCommands = thenCommands;
     this.elseCommands = elseCommands;
   }
-  exec(isLoading: boolean, ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
+  exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
     const result = this.cond(ctx);
     //console.log(`----------COND: ${result}`);
     if (result) {
@@ -388,17 +426,91 @@ export class CondCommand implements Command {
   }
 }
 
-export class ExecCommand implements Command {
+export class ExecCommand extends Command {
   private code: (ctx: Context) => void;
   constructor(code: (ctx: Context) => void) {
+    super();
     this.code = code;
   }
-  exec(isLoading: boolean, ctx: Context, chunk: Chunk): number {
+  exec(ctx: Context, chunk: Chunk): number {
     this.code(ctx);
     return 0;
   }
 }
 
+
+export class BufferStartCommand extends Command {
+  private name: Name;
+  private resetBytesRead: boolean;
+  constructor(name: Name, resetBytesRead: boolean) {
+    super();
+    this.name = name;
+    this.resetBytesRead = resetBytesRead;
+  }
+  exec(ctx: Context, chunk: Chunk): number {
+    if (ctx.isLoading) {
+      const result = chunk.read(4);
+      if (typeof result === 'number') {
+        return result;
+      }
+      setVar(ctx, this.name, result.readInt32LE(0));
+
+      // TODO preload the next ${result} bytes?
+
+    } else {
+      // TODO writing
+      throw Error('Unimplemented');
+    }
+    return 0;
+  }
+}
+
+export class BufferEndCommand extends Command {
+
+  exec(ctx: Context, chunk: Chunk): number {
+    if (ctx.isLoading) {
+
+    } else {
+      // TODO writing
+      throw Error('Unimplemented');
+    }
+    return 0;
+  }
+}
+
+export class SwitchCommand extends Command {
+  private name: Name;
+  private cases: { [id: string]: Command[] };
+  constructor(name: Name, cases: { [id: string]: Command[] }) {
+    super();
+    this.name = name;
+    this.cases = cases;
+  }
+  exec(ctx: Context, chunk: Chunk): number {
+    if (ctx.isLoading) {
+
+    } else {
+      // TODO writing
+      throw Error('Unimplemented');
+    }
+    return 0;
+  }
+}
+
+export class BreakCommand extends Command {
+
+  exec(_context: Context, _chunk: Chunk, _newStackFrameCallback: (commands: Command[]) => void, dropStackFrameCallback: () => void): number {
+    dropStackFrameCallback();
+    return 0;
+  }
+}
+
+export class DebuggerCommand extends Command {
+  exec(_context: Context, _chunk: Chunk, _newStackFrameCallback: (commands: Command[]) => void, dropStackFrameCallback: () => void): number {
+    debugger;
+    return 0;
+  }
+}
 
 // https://stackoverflow.com/a/14601808
 function decodeUTF16LE(binaryStr: string): string {

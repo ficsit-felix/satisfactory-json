@@ -1,5 +1,5 @@
 import { Builder } from './Builder';
-import { Command, Context } from './commands';
+import { Command, Context, LoopCommand } from './commands';
 import { inspect } from 'util';
 import { TransformCallback } from 'stream';
 import { Chunk } from './Chunk';
@@ -11,6 +11,7 @@ interface StackFrame {
 };
 
 export class TransformationEngine {
+
 
   private commands: Command[];
   private isLoading: boolean = false;
@@ -68,7 +69,8 @@ export class TransformationEngine {
         currentCommand: 0,
         ctx: {
           obj: saveGame,
-          vars: {}
+          vars: {},
+          isLoading: this.isLoading
         }
       };
       this.stack.push(frame);
@@ -82,6 +84,7 @@ export class TransformationEngine {
         this.stack.pop();
         if (this.stack.length === 0) {
           console.warn('No more stack frames');
+          throw new Error('EOW');
           // End of program?
           break;
         }
@@ -90,7 +93,7 @@ export class TransformationEngine {
 
       const cmd = frame.commands[frame.currentCommand];
       //console.log('executing', cmd);
-      const needBytes = cmd.exec(this.isLoading, frame.ctx, chunk, commands => {
+      const needBytes = cmd.exec(frame.ctx, chunk, commands => {
         // create new stack frame
         this.stack.push({
           commands,
@@ -98,9 +101,22 @@ export class TransformationEngine {
           ctx: {
             obj: frame.ctx.obj,
             vars: Object.assign({}, frame.ctx.vars), // shallow copy the variables so that the old ones still will be there when the stack is popped
-            parent: frame.ctx.parent
+            parent: frame.ctx.parent,
+            isLoading: frame.ctx.isLoading
           }
         });
+      }, () => {
+        // Pop the stack to the previous loop command
+        let frame = this.stack.pop();
+        while (frame !== undefined && !(frame.commands[frame.currentCommand] instanceof LoopCommand)) {
+          frame = this.stack.pop();
+        }
+        if (frame === undefined) {
+          throw new Error('No LoopCommand found on stack that can be broken');
+        }
+        // move command pointer after the loop command
+        frame.currentCommand++;
+        this.stack.push(frame);
       });
       if (needBytes > 0) { // This command needs more bytes to successfully execute
         //@ts-ignore
@@ -123,5 +139,13 @@ export class TransformationEngine {
     }
     callback();
     //console.log(saveGame);
+  }
+
+  end(callback: (error?: Error | null | undefined) => void) {
+    if (this.needBytes !== 0) {
+
+      callback(new Error(`Missing ${this.needBytes} bytes`));
+    }
+
   }
 }

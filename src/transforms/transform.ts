@@ -1,32 +1,45 @@
-import { Builder } from './Builder';
+import { Builder } from '../engine/Builder';
+import { transformEntity } from './Entity';
 
 
 export function transform(builder: Builder) {
   builder
     .call(transformHeader)
+    .exec(() => console.log('Header done'))
     .int('_entryCount', ctx => ctx.obj.actors.length + ctx.obj.components.length)
     .loop('_entryCount', builder => builder.call(transformActorOrComponent))
+    .exec(() => console.log('Actors and Components done'))
     .int('_entryCount')
+    .exec((ctx) => console.log('entryCount', ctx.vars._entryCount))
     .loop('_entryCount', builder => {
-      builder.cond(
+      builder.exec(ctx => console.log(ctx.vars._index));
+      builder.if(
         ctx => ctx.vars._index < ctx.obj.actors.length,
         builder => {
           builder
             .exec(ctx => {
+              ctx.vars._withNames = true;
               ctx.vars._actor = ctx.obj.actors[ctx.vars._index];
             })
             .obj('actors')
             .elem('_index')
+            .obj('entity')
             .call(transformEntity)
+            .endObj()
             .endElem()
             .endObj();
         },
         builder => {
           builder
-            .exec(ctx => ctx.vars._componentIndex = ctx.vars._index - ctx.obj.actors.lenght)
+            .exec(ctx => {
+              ctx.vars._withNames = false;
+              ctx.vars._componentIndex = ctx.vars._index - ctx.obj.actors.lenght
+            })
             .obj('components')
             .elem('_componentIndex')
+            .obj('entity')
             .call(transformEntity)
+            .endObj()
             .endElem()
             .endObj();
         });
@@ -47,7 +60,7 @@ function transformHeader(builder: Builder) {
     .str('sessionName')
     .int('playDurationSeconds')
     .long('saveDateTime')
-    .cond(ctx => {
+    .if(ctx => {
       return ctx.obj.saveHeaderType > 4;
     }, bldr => {
       bldr.byte('sessionVisibility');
@@ -59,7 +72,7 @@ function transformHeader(builder: Builder) {
 function transformActorOrComponent(builder: Builder) {
   builder
     .int('_type', ctx => ctx.vars._index < ctx.obj.actors.length ? 1 : 0)
-    .cond(ctx => ctx.vars._type === 1,
+    .if(ctx => ctx.vars._type === 1,
       bldr => {
         // actor
         bldr
@@ -117,7 +130,3 @@ function transformComponent(builder: Builder) {
     .str('outerPathName');
 }
 
-
-function transformEntity(builder: Builder) {
-
-}

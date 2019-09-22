@@ -1,12 +1,9 @@
-import { TransformationEngine } from './TransformationEngine';
-import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand } from './commands';
+import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand, BufferStartCommand, BufferEndCommand, SwitchCommand, BreakCommand, DebuggerCommand } from './commands';
 
 
 
 export class Builder {
   private commands: Command[] = [];
-
-
 
   public getCommands(): Command[] {
     return this.commands;
@@ -61,8 +58,8 @@ export class Builder {
     return this;
   }
 
-  public int(name: Name, defaultValue?: (ctx: Context) => number): Builder {
-    this.commands.push(new IntCommand(name, defaultValue));
+  public int(name: Name, defaultValue?: (ctx: Context) => number, shouldCount = true): Builder {
+    this.commands.push(new IntCommand(name, defaultValue, shouldCount));
     return this;
   }
   public str(name: Name): Builder {
@@ -97,13 +94,24 @@ export class Builder {
     return this;
   }
 
+  public debug(text: string, code: (ctx: Context) => any) {
+    this.commands.push(new ExecCommand(ctx => console.log(text, code(ctx))));
+    return this;
+  }
+
+  public debugger() {
+    this.commands.push(new DebuggerCommand());
+    return this;
+  }
+
+
   /**
    * Do two different things depending on the condition
    * @param cond 
    * @param thenBranch 
    * @param elseBranch 
    */
-  public cond(cond: (ctx: Context) => boolean,
+  public if(cond: (ctx: Context) => boolean,
     thenBranch: (builder: Builder) => void,
     elseBranch?: (builder: Builder) => void): Builder {
     const thenBuilder = new Builder();
@@ -130,6 +138,32 @@ export class Builder {
     const loopBodyBuilder = new Builder();
     loopBody(loopBodyBuilder);
     this.commands.push(new LoopCommand(times, loopBodyBuilder.getCommands()));
+    return this;
+  }
+
+  public bufferStart(name: Name, resetBytesRead: boolean): Builder {
+    this.commands.push(new BufferStartCommand(name, resetBytesRead));
+    return this;
+  }
+
+  public bufferEnd(): Builder {
+    this.commands.push(new BufferEndCommand());
+    return this;
+  }
+
+  public switch(name: Name, cases: { [id: string]: (builder: Builder) => void }): Builder {
+    const casesCommands: { [id: string]: Command[] } = {};
+    for (const key of Object.keys(cases)) {
+      const builder = new Builder();
+      cases[key](builder);
+      casesCommands[key] = builder.getCommands();
+    }
+    this.commands.push(new SwitchCommand(name, casesCommands))
+    return this;
+  }
+
+  public break(): Builder {
+    this.commands.push(new BreakCommand());
     return this;
   }
 }
