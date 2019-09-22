@@ -1,5 +1,5 @@
 import { TransformationEngine } from './TransformationEngine';
-import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context } from './commands';
+import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand } from './commands';
 
 
 
@@ -48,12 +48,15 @@ export class Builder {
     return this;
   }
   public str(name: Name): Builder {
+    this.commands.push(new StrCommand(name));
     return this;
   }
   public long(name: Name): Builder {
+    this.commands.push(new LongCommand(name));
     return this;
   }
   public byte(name: Name): Builder {
+    this.commands.push(new ByteCommand(name));
     return this;
   }
   public float(name: Name): Builder {
@@ -83,6 +86,17 @@ export class Builder {
   public cond(cond: (ctx: Context) => boolean,
     thenBranch: (builder: Builder) => void,
     elseBranch?: (builder: Builder) => void): Builder {
+    const thenBuilder = new Builder();
+    thenBranch(thenBuilder);
+    let elseBuilder = undefined;
+    if (elseBranch !== undefined) {
+      elseBuilder = new Builder();
+      elseBranch(elseBuilder);
+    }
+
+    this.commands.push(new CondCommand(cond,
+      thenBuilder.getCommands(),
+      elseBuilder === undefined ? undefined : elseBuilder.getCommands()))
     return this;
   }
 

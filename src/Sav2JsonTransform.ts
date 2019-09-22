@@ -9,15 +9,14 @@ export class Sav2JsonTransform extends Transform {
   constructor() {
     super();
     this.transformationEngine = new TransformationEngine(transform);
+    
+    this.transformationEngine.prepare(true);
   }
 
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {
     // We can only handle Buffers
     assert(encoding === 'buffer');
 
-
-
-    console.log(chunk);
-    callback();
+    this.transformationEngine.transform(chunk, callback);
   }
 }
