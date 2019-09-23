@@ -1,4 +1,4 @@
-import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand, BufferStartCommand, BufferEndCommand, SwitchCommand, BreakCommand, DebuggerCommand } from './commands';
+import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand, BufferStartCommand, BufferEndCommand, SwitchCommand, BreakCommand, DebuggerCommand, HexCommand, AssertNullByteCommand } from './commands';
 
 
 
@@ -78,6 +78,15 @@ export class Builder {
     this.commands.push(new FloatCommand(name));
     return this;
   }
+  public hex(name: Name, bytes: number): Builder {
+    this.commands.push(new HexCommand(name, bytes));
+    return this;
+  }
+
+  public assertNullByte(): Builder {
+    this.commands.push(new AssertNullByteCommand());
+    return this;
+  }
 
 
   public call(rulesFunction: (builder: Builder) => void) {
@@ -101,6 +110,11 @@ export class Builder {
 
   public debugger() {
     this.commands.push(new DebuggerCommand());
+    return this;
+  }
+
+  public error(message: (ctx: Context) => string) {
+    this.commands.push(new ExecCommand(ctx => { throw new Error(message(ctx)); }));
     return this;
   }
 

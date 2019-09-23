@@ -1,4 +1,5 @@
 import { Builder } from '../engine/Builder';
+import { transformArrayProperty } from './properties/ArrayProperty';
 
 export function transformProperty(builder: Builder) {
   builder
@@ -7,24 +8,21 @@ export function transformProperty(builder: Builder) {
     .bufferStart('_tagSize', false) // Tag.Size
     .int('index', undefined, false) // Tag.ArrayIndex
     .switch('type', {
-      'IntProperty': (builder: Builder) => builder.call(transformIntProperty),
-      'BoolProperty': (builder: Builder) => builder.call(transformBoolProperty),
-      'FloatProperty': (builder: Builder) => builder.call(transformFloatProperty),
-      'StrProperty': (builder: Builder) => builder.call(transformStringProperty),
-      'NameProperty': (builder: Builder) => builder.call(transformStringProperty),
+      /*'IntProperty': builder => builder.call(transformIntProperty),
+      'BoolProperty': builder => builder.call(transformBoolProperty),
+      'FloatProperty': builder => builder.call(transformFloatProperty),
+      'StrProperty': builder => builder.call(transformStringProperty),
+      'NameProperty': builder => builder.call(transformStringProperty),
+      'TextProperty': builder => builder.call(transformTextProperty),
+      'ByteProperty': builder => builder.call(transformByteProperty),
+      'EnumProperty': builder => builder.call(transformEnumProperty),
+      'ObjectProperty': builder => builder.call(transformObjectProperty),
+      'StructProperty': builder => builder.call(transformStructProperty),*/
+      'ArrayProperty': builder => builder.call(transformArrayProperty),
+      //      'MapProperty': builder => builder.call(transformMapProperty),
+      '$default': builder => builder.error(ctx => `Unknown property ${ctx.obj.type}`)
+
 
     })
-
-}
-function transformIntProperty(builder: Builder) {
-
-}
-function transformBoolProperty(builder: Builder) {
-
-}
-function transformFloatProperty(builder: Builder) {
-
-}
-function transformStringProperty(builder: Builder) {
 
 }

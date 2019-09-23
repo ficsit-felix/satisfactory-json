@@ -19,7 +19,7 @@ export function transform(builder: Builder) {
           builder
             .exec(ctx => {
               ctx.vars._withNames = true;
-              ctx.vars._actor = ctx.obj.actors[ctx.vars._index];
+              ctx.vars._className = ctx.obj.actors[ctx.vars._index].className;
             })
             .obj('actors')
             .elem('_index')
@@ -33,7 +33,8 @@ export function transform(builder: Builder) {
           builder
             .exec(ctx => {
               ctx.vars._withNames = false;
-              ctx.vars._componentIndex = ctx.vars._index - ctx.obj.actors.lenght
+              ctx.vars._componentIndex = ctx.vars._index - ctx.obj.actors.lenght;
+              ctx.vars._className = ctx.obj.components[ctx.vars._componentIndex].className;
             })
             .obj('components')
             .elem('_componentIndex')

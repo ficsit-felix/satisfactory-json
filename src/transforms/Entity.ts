@@ -22,8 +22,8 @@ export function transformEntity(builder: Builder) {
             .endElem();
         });
     })
-    .exec(ctx => console.log('entity', ctx.obj))
     .call(transformProperties)
+    .exec(ctx => console.log('entity', ctx.obj))
     .int('_extraObjectCount', ctx => 0)
     .exec(ctx => {
       if (ctx.vars._extraObjectCount !== 0) {
@@ -41,7 +41,9 @@ export function transformProperties(builder: Builder) {
     .exec(ctx => ctx.vars._propertiesCount = ctx.isLoading ? 999999999 : ctx.obj.properites.length)
     .loop('_propertiesCount', builder => {
       builder.str('_name')
+        .debug('_name', ctx => ctx.vars._name)
         .if(ctx => ctx.vars._name === 'None', builder => builder.break())
+        .debugger()
         .exec(ctx => console.log('properties._index', ctx.vars._index))
         .elem('_index')
         .call(transformProperty)

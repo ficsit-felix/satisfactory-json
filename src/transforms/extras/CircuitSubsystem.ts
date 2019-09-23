@@ -1,22 +1,17 @@
-import { Archive } from '../../Archive';
-import { Entity } from '../../types';
+import { Builder } from '../../engine/Builder';
 
-export default function transformCircuitSubsystem(
-    ar: Archive, entity: Entity) {
-    if (ar.isLoading()) {
-        entity.extra = {
-            circuits: []
-        };
-    }
-    const circuits = { length: entity.extra.circuits.length };
-    ar.transformInt(circuits.length);
-
-    for (let i = 0; i < circuits.length; i++) {
-        if (ar.isLoading()) {
-            entity.extra.circuits.push({});
-        }
-        ar.transformInt(entity.extra.circuits[i].circuitId);
-        ar.transformString(entity.extra.circuits[i].levelName);
-        ar.transformString(entity.extra.circuits[i].pathName);
-    }
+export function transformCircuitSubsystem(builder: Builder) {
+  builder
+    .obj('extra')
+    .int('_circuitCount', ctx => ctx.obj.circuits.length)
+    .arr('circuits')
+    .loop('_circuitCount', builder => {
+      builder.elem('_index')
+        .int('circuitId')
+        .str('levelName')
+        .str('pathName')
+        .endElem()
+    })
+    .endArr()
+    .endObj();
 }

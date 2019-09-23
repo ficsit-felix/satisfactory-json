@@ -1,7 +1,5 @@
 import { assert } from 'console';
 import { Chunk } from './Chunk';
-import { readdirSync } from 'fs';
-import { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } from 'constants';
 
 /**
  * Name used to access a property or an array element
@@ -19,6 +17,33 @@ export interface Context {
 let __veryGlobalId: number = 0;
 function genCmdId(): number {
   return __veryGlobalId++;
+}
+
+
+/*
+if name starts with _ it's a private variable
+if name starts with # it's a redirection
+ -> #_index reads the value from the _index variable and sets/gets at that location
+*/
+
+function setVar(ctx: Context, name: Name, value: any): void {
+  if (name.toString().charAt(0) === '#') {
+    ctx.vars[getVar(ctx, name.toString().substring(1))] = value;
+  } else if (name.toString().charAt(0) === '_') {
+    ctx.vars[name] = value;
+  } else {
+    ctx.obj[name] = value;
+  }
+}
+
+function getVar(ctx: Context, name: Name): any {
+  if (name.toString().charAt(0) === '#') {
+    return ctx.vars[getVar(ctx, name.toString().substring(1))];
+  } else if (name.toString().charAt(0) === '_') {
+    return ctx.vars[name];
+  } else {
+    return ctx.obj[name];
+  }
 }
 
 
@@ -167,22 +192,6 @@ export class LeaveElemCommand extends Command {
   }
 }
 
-
-function setVar(ctx: Context, name: Name, value: any): void {
-  if (name.toString().charAt(0) === '_') {
-    ctx.vars[name] = value;
-  } else {
-    ctx.obj[name] = value;
-  }
-}
-
-function getVar(ctx: Context, name: Name): any {
-  if (name.toString().charAt(0) === '_') {
-    return ctx.vars[name];
-  } else {
-    return ctx.obj[name];
-  }
-}
 
 export class IntCommand extends Command {
   private name: Name;
@@ -371,6 +380,52 @@ export class FloatCommand extends Command {
   }
 }
 
+export class AssertNullByteCommand extends Command {
+
+  exec(ctx: Context, chunk: Chunk): number {
+    if (ctx.isLoading) {
+      const result = chunk.read(1);
+      if (typeof result === 'number') {
+        // return the amount of missing bytes
+        return result;
+      }
+      const zero = result.readInt8(0);
+      if (zero !== 0) {
+        throw new Error(`Byte not 0, but ${zero}`);
+      }
+      return 0;
+    } else {
+      // TODO writing
+      throw Error('Unimplemented');
+      return 0;
+    }
+  }
+}
+
+export class HexCommand extends Command {
+  private name: Name;
+  private bytes: number;
+  constructor(name: Name, bytes: number) {
+    super();
+    this.name = name;
+    this.bytes = bytes;
+  }
+  exec(ctx: Context, chunk: Chunk): number {
+    if (ctx.isLoading) {
+      const result = chunk.read(this.bytes);
+      if (typeof result === 'number') {
+        // return the amount of missing bytes
+        return result;
+      }
+      setVar(ctx, this.name, result.toString('hex'));
+      return 0;
+    } else {
+      // TODO writing
+      throw Error('Unimplemented');
+      return 0;
+    }
+  }
+}
 
 export class LoopCommand extends Command {
   private times: Name;
@@ -486,8 +541,19 @@ export class SwitchCommand extends Command {
     this.name = name;
     this.cases = cases;
   }
-  exec(ctx: Context, chunk: Chunk): number {
+  exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
     if (ctx.isLoading) {
+
+      const value = getVar(ctx, this.name);
+      console.log(`Fetch ${value}`);
+
+      if (this.cases[value] !== undefined) {
+        newStackFrameCallback(this.cases[value]);
+      } else if (this.cases['$default'] !== undefined) {
+        newStackFrameCallback(this.cases['$default']);
+      } else {
+        console.warn(`No case found for ${value} and no default case provided`);
+      }
 
     } else {
       // TODO writing
