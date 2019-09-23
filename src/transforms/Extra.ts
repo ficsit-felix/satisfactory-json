@@ -46,5 +46,6 @@ export function transformExtra(builder: Builder) {
         builder => builder.call(transformTrain),
       '/Game/FactoryGame/Buildable/Vehicle/Train/Locomotive/BP_Locomotive.BP_Locomotive_C':
         builder => builder.call(transformTrain),*/
+      '$default': builder => { }
     })
 }

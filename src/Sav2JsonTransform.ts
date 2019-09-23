@@ -8,9 +8,11 @@ export class Sav2JsonTransform extends Transform {
 
   constructor() {
     super();
+    console.time('buildRules');
     this.transformationEngine = new TransformationEngine(transform);
 
     this.transformationEngine.prepare(true);
+    console.timeEnd('buildRules');
   }
 
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {
@@ -21,6 +23,7 @@ export class Sav2JsonTransform extends Transform {
   }
 
   _final(callback: (error?: Error | null) => void): void {
+
     this.transformationEngine.end(callback);
   }
 }

@@ -5,14 +5,13 @@ import { transformEntity } from './Entity';
 export function transform(builder: Builder) {
   builder
     .call(transformHeader)
-    .exec(() => console.log('Header done'))
+    //.exec(() => console.log('Header done'))
     .int('_entryCount', ctx => ctx.obj.actors.length + ctx.obj.components.length)
     .loop('_entryCount', builder => builder.call(transformActorOrComponent))
-    .exec(() => console.log('Actors and Components done'))
+    //.exec(() => console.log('Actors and Components done'))
     .int('_entryCount')
-    .exec((ctx) => console.log('entryCount', ctx.vars._entryCount))
+    //.exec((ctx) => console.log('entryCount', ctx.vars._entryCount))
     .loop('_entryCount', builder => {
-      builder.exec(ctx => console.log(ctx.vars._index));
       builder.if(
         ctx => ctx.vars._index < ctx.obj.actors.length,
         builder => {
@@ -33,7 +32,7 @@ export function transform(builder: Builder) {
           builder
             .exec(ctx => {
               ctx.vars._withNames = false;
-              ctx.vars._componentIndex = ctx.vars._index - ctx.obj.actors.lenght;
+              ctx.vars._componentIndex = ctx.vars._index - ctx.obj.actors.length;
               ctx.vars._className = ctx.obj.components[ctx.vars._componentIndex].className;
             })
             .obj('components')
@@ -87,8 +86,9 @@ function transformActorOrComponent(builder: Builder) {
       bldr => {
         // component
         bldr
+          .exec(ctx => ctx.vars._componentIndex = ctx.vars._index - ctx.obj.actors.length)
           .arr('components')
-          .elem('_index');
+          .elem('_componentIndex');
         transformComponent(bldr);
         bldr
           .endElem()

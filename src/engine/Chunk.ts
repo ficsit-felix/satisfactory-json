@@ -23,7 +23,7 @@ export class Chunk {
   }
 
   public readUntil(length: number): Buffer | number {
-    console.log('read', length, this.bytesRead);
+    //console.log('read', length, this.bytesRead);
     return this.read(length - this.bytesRead);
   }
 

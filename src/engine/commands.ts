@@ -14,7 +14,7 @@ export interface Context {
   isLoading: boolean;
   path: string;
 
-  
+
 }
 
 // Generate global ids for all commands
@@ -149,7 +149,7 @@ export class LeaveArrayCommand extends Command {
   exec(ctx: Context): number {
     // Ascend to the parent context
     // TODO check that we actually ended an array?
-    assert(ctx.parent !== undefined);
+    // assert(ctx.parent !== undefined);
     ctx.obj = ctx.parent!.obj;
     ctx.vars = ctx.parent!.vars;
     ctx.path = ctx.parent!.path;
@@ -594,7 +594,6 @@ export class HexRemainingCommand extends Command {
         // return the amount of missing bytes
         return result;
       }
-      console.log('-----------', result.toString('hex'));
       setVar(ctx, this.name, result.toString('hex'));
       return 0;
     } else {
@@ -617,7 +616,7 @@ export class SwitchCommand extends Command {
     if (ctx.isLoading) {
 
       const value = getVar(ctx, this.name);
-      console.log(`Fetch ${value}`);
+      //console.log(`Fetch ${value}`);
 
       if (this.cases[value] !== undefined) {
         newStackFrameCallback(this.cases[value]);

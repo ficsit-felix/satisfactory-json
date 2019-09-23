@@ -74,9 +74,9 @@ export function transformArrayProperty(builder: Builder) {
                     .exec(ctx => ctx.vars._propertiesCount = ctx.isLoading ? 999999999 : ctx.obj.length)
                     .loop('_propertiesCount', builder => {
                       builder.str('_name')
-                        .debug('_name', ctx => ctx.vars._name)
+                        //.debug('_name', ctx => ctx.vars._name)
                         .if(ctx => ctx.vars._name === 'None', builder => builder.break())
-                        .exec(ctx => console.log('properties._index', ctx.vars._index))
+                        //.exec(ctx => console.log('properties._index', ctx.vars._index))
                         .elem('_index')
                         .exec(ctx => ctx.obj.name = ctx.vars._name)
                         .call(transformProperty)

@@ -2,6 +2,8 @@
 import * as fs from 'fs';
 import program from 'commander';
 import { Sav2JsonTransform } from '../Sav2JsonTransform';
+//@ts-ignore
+import * as profiler from 'v8-profiler-next';
 
 let sourceValue: string | undefined;
 let targetValue: string | undefined;
@@ -15,6 +17,7 @@ program
   .description('Converts Satisfactory save games (.sav) into a more readable format (.json)')
   .arguments('<source> <target>')
   .option('-t, --time', 'time program')
+  .option('-p --profile', 'export profile as sav2json.cpuprofile')
   .action((source, target) => {
     sourceValue = source;
     targetValue = target;
@@ -35,6 +38,11 @@ if (program.time) {
   console.time('readFile');
 }
 
+if (program.profile) {
+  profiler.startProfiling('probe', true);
+}
+
+
 const stream = fs.createReadStream(sourceValue!, { highWaterMark: 1024 * 1024 });
 /*
 
@@ -53,9 +61,21 @@ if (program.time) {
 const sav2json = new Sav2JsonTransform();
 
 stream.pipe(sav2json).on('finish', () => {
+
   if (program.time) {
     console.timeEnd('sav2json');
     //console.time('writeFile');
+  }
+
+  if (program.profile) {
+    const profile = profiler.stopProfiling('probe');
+    profile.export((error: any, result: any) => {
+      console.log('Profile stored.');
+      fs.writeFileSync(
+        'sav2json.cpuprofile', result);
+      profile.delete();
+      process.exit();
+    });
   }
   /*const output = JSON.stringify(transformed);
 

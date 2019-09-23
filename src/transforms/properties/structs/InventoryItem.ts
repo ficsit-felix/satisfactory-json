@@ -11,10 +11,9 @@ export function transformInventoryItem(builder: Builder) {
 
     .obj('properties')
     .str('_name')
-    .debug('_name', ctx => ctx.vars._name)
+    //.debug('_name', ctx => ctx.vars._name)
     .if(ctx => ctx.vars._name !== 'None', builder => {
       builder
-        .exec(ctx => console.log('properties._index', ctx.vars._index, ctx.vars._name))
         .exec(ctx => ctx.obj.name = ctx.vars._name)
         .call(transformProperty)
     })

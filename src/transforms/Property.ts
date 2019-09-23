@@ -10,7 +10,7 @@ import { transformStructProperty } from './properties/StructProperty';
 
 export function transformProperty(builder: Builder) {
   builder
-    .exec(ctx => { ctx.obj.name = ctx.vars._name; console.log('propertyName', ctx.obj.name) })
+    .exec(ctx => { ctx.obj.name = ctx.vars._name; })
     .str('type') // Tag.Type
     .bufferStart('_tagSize', false) // Tag.Size
     .int('index', undefined, false) // Tag.ArrayIndex
@@ -28,8 +28,5 @@ export function transformProperty(builder: Builder) {
       'ArrayProperty': builder => builder.call(transformArrayProperty),
       //      'MapProperty': builder => builder.call(transformMapProperty),
       '$default': builder => builder.error(ctx => `Unknown property ${ctx.obj.type}`)
-
-
-    })
-
+    });
 }

@@ -92,7 +92,7 @@ export class TransformationEngine {
         this.stack.pop();
         if (this.stack.length === 0) {
           console.warn('No more stack frames');
-          throw new Error('EOW');
+          //throw new Error('EOW');
           // End of program?
           break;
         }
@@ -128,16 +128,15 @@ export class TransformationEngine {
         this.stack.push(frame);
       });
       if (needBytes > 0) { // This command needs more bytes to successfully execute
-        //@ts-ignore
-        console.log(chunk.cursor);
+
+        /*console.log(chunk.cursor);
         console.log('---------------------------');
         console.error(`Need ${needBytes} more bytes.`);
-        console.log(frame.ctx.vars);
+        console.log(frame.ctx.vars);*/
         this.needBytes = needBytes;
 
+        // put remaining bytes into buffer for next iteration
         this.buffers = [chunk.getRemaining()];
-        // put remaining bytes into
-        //throw new Error(`Need ${needBytes} more bytes.`);
         break;
       }
       if (needBytes !== -1) { // -1 indicates that the command pointer should not advance
@@ -154,6 +153,9 @@ export class TransformationEngine {
     if (this.needBytes !== 0) {
 
       callback(new Error(`Missing ${this.needBytes} bytes`));
+    } else {
+      console.log('final');
+      callback();
     }
 
   }
