@@ -1,30 +1,24 @@
-import { Archive, LoadingArchive } from '../../Archive';
-import { Entity } from '../../types';
+import { Builder } from '../../engine/Builder';
 
-export default function transformConveyorBelt(
-    ar: Archive, entity: Entity, length: number) {
-    if (ar.isLoading()) {
-        entity.extra = {
-            items: []
-        };
-    }
-    const items = { length: entity.extra.items.length };
-    ar.transformInt(items.length);
-
-    for (let i = 0; i < items.length; i++) {
-        if (ar.isLoading()) {
-            if ((ar as LoadingArchive).bytesRead >= length) {
-                console.warn('Item count is ' + items.length +
-                    ' while there are only ' + i + ' items in there');
-                break;
-            }
-            entity.extra.items.push({});
-        }
-
-        ar.transformAssertNullInt();
-        ar.transformString(entity.extra.items[i].resourceName);
-        ar.transformString(entity.extra.items[i].levelName);
-        ar.transformString(entity.extra.items[i].pathName);
-        ar.transformFloat(entity.extra.items[i].position);
-    }
+export function transformConveyorBelt(builder: Builder) {
+  builder
+    .obj('extra')
+    .int('_itemCount', ctx => ctx.obj.items.length)
+    .arr('items')
+    .loop('_itemCount', builder => {
+      // TODO add check for less items than the count in here
+      builder
+        .elem('_index')
+        .assertNullByte() // TODO assertnullint
+        .assertNullByte()
+        .assertNullByte()
+        .assertNullByte()
+        .str('resourceName')
+        .str('levelName')
+        .str('pathName')
+        .float('position')
+        .endElem()
+    })
+    .endArr()
+    .endObj();
 }

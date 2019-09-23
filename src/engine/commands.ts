@@ -105,7 +105,6 @@ export class LeaveObjectCommand extends Command {
   exec(ctx: Context): number {
     // Ascend to the parent context
     // TODO check that we actually ended an object?
-    assert(ctx.parent !== undefined);
     ctx.obj = ctx.parent!.obj;
     ctx.vars = ctx.parent!.vars;
     ctx.parent = ctx.parent!.parent;
@@ -149,7 +148,6 @@ export class LeaveArrayCommand extends Command {
   exec(ctx: Context): number {
     // Ascend to the parent context
     // TODO check that we actually ended an array?
-    // assert(ctx.parent !== undefined);
     ctx.obj = ctx.parent!.obj;
     ctx.vars = ctx.parent!.vars;
     ctx.path = ctx.parent!.path;
@@ -195,7 +193,6 @@ export class LeaveElemCommand extends Command {
   exec(ctx: Context): number {
     // Ascend to the parent context
     // TODO check that we actually ended an element?
-    assert(ctx.parent !== undefined);
     ctx.obj = ctx.parent!.obj;
     ctx.vars = ctx.parent!.vars;
     ctx.path = ctx.parent!.path;
@@ -514,6 +511,7 @@ export class CallCommand extends Command {
     this.name = name;
   }
   exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
+
     if (functionCommands[this.name] === undefined) {
       throw new Error(`No commands build for function ${this.name}`);
     }
@@ -615,7 +613,7 @@ export class SwitchCommand extends Command {
   exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
     if (ctx.isLoading) {
 
-      const value = getVar(ctx, this.name);
+      const value = getVar(ctx, this.name).toString();
       //console.log(`Fetch ${value}`);
 
       if (this.cases[value] !== undefined) {

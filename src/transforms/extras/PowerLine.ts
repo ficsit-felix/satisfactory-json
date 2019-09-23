@@ -1,13 +1,11 @@
-import { Archive } from '../../Archive';
-import { Entity } from '../../types';
+import { Builder } from '../../engine/Builder';
 
-export default function transformPowerLine(ar: Archive, entity: Entity) {
-    if (ar.isLoading()) {
-        entity.extra = {
-        };
-    }
-    ar.transformString(entity.extra.sourceLevelName);
-    ar.transformString(entity.extra.sourcePathName);
-    ar.transformString(entity.extra.targetLevelName);
-    ar.transformString(entity.extra.targetPathName);
+export function transformPowerLine(builder: Builder) {
+  builder
+    .obj('extra')
+    .str('sourceLevelName')
+    .str('sourcePathName')
+    .str('targetLevelName')
+    .str('targetPathName')
+    .endObj();
 }

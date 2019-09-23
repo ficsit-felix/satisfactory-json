@@ -16,8 +16,11 @@ export class Sav2JsonTransform extends Transform {
   }
 
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {
+
     // We can only handle Buffers
-    assert(encoding === 'buffer');
+    if (encoding !== 'buffer') {
+      throw new Error(`We can only handle Buffers and not ${encoding}`)
+    }
 
     this.transformationEngine.transform(chunk, callback);
   }

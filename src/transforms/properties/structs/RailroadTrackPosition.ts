@@ -1,9 +1,11 @@
-import { Archive } from '../../../Archive';
-import { StructProperty } from '../../../types';
-export function transformRailroadTrackPosition(
-    ar: Archive, property: StructProperty) {
-    ar.transformString(property.value.levelName);
-    ar.transformString(property.value.pathName);
-    ar.transformFloat(property.value.offset);
-    ar.transformFloat(property.value.forward);
+import { Builder } from '../../../engine/Builder';
+
+export function transformRailroadTrackPosition(builder: Builder) {
+  builder
+    .obj('value')
+    .str('levelName')
+    .str('pathName')
+    .float('offset')
+    .float('forward')
+    .endObj();
 }

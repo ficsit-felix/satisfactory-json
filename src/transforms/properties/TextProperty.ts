@@ -1,5 +1,10 @@
-import { Archive } from '../../Archive';
-import { TextProperty, FText } from '../../types';
+import { Builder } from '../../engine/Builder';
+
+export function transformTextProperty(builder: Builder) {
+  builder
+    .assertNullByte(false) // Tag.HasPropertyGuid
+    .call(transformFText);
+}
 
 // ETextHistoryType
 const HISTORYTYPE_BASE = 0;
@@ -24,79 +29,50 @@ const FORMATARGUMENTTYPE_DOUBLE = 3;
 const FORMATARGUMENTTYPE_TEXT = 4;
 const FORMATARGUMENTTYPE_GENDER = 5;
 
-export default function transformTextProperty(
-    ar: Archive, property: TextProperty) {
-    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    if (ar.isLoading()) {
-        property.value = {
-            flags: 0,
-            historyType: 0
-        };
-    }
-    transformFText(ar, property.value);
-}
-
-function transformFText(ar: Archive, value: FText) {
-    ar.transformInt(value.flags); // Value.Flags
-
-    ar.transformByte(value.historyType); // HistoryType
+function transformFText(builder: Builder) {
+  builder
+    .int('flags') // Value.Flags
+    .byte('historyType') // HistoryType
 
     // parse the TextHistory according to TextHistory.cpp
-    switch (value.historyType) {
-        case HISTORYTYPE_BASE:
-            ar.transformString(value.namespace!);
-            ar.transformString(value.key!);
-            ar.transformString(value.sourceString!);
-            break;
-
-        case HISTORYTYPE_NONE:
-            // this is the end of the  no value ?
-            break;
-        case HISTORYTYPE_ARGUMENTFORMAT:
-            if (ar.isLoading()) {
-                value.sourceFmt = {
-                    flags: 0,
-                    historyType: 0
-                };
-            }
-            transformFText(ar, value.sourceFmt!);
-
-            // Arguments
-            if (ar.isLoading()) {
-                value.arguments = [];
-            }
-            const argumentCount = { count: value.arguments!.length };
-            ar.transformInt(argumentCount.count);
-
-            for (let i = 0; i < argumentCount.count; i++) {
-                if (ar.isLoading()) {
-                    value.arguments![i] = {
-                        argumentName: '',
-                        argumentValueType: 0
-                    };
+    .switch('historyType', {
+      '0'/*HISTORYTYPE_BASE*/: builder => {
+        builder
+          .str('namespace')
+          .str('key')
+          .str('sourceString');
+      },
+      '255'/*HISTORYTYPE_NONE*/: builder => { }, // this is the end of the  no value ?
+      '3'/*HISTORYTYPE_ARGUMENTFORMAT*/: builder => {
+        builder
+          .obj('sourceFmt')
+          .call(transformFText)
+          .endObj()
+          // Arguments
+          .int('_argumentCount', ctx => ctx.obj.arguments.length)
+          .arr('arguments')
+          .loop('_argumentCount', builder => {
+            builder
+              .elem('_index')
+              .str('argumentName')
+              .byte('argumentValueType')
+              .switch('argumentValueType', {
+                '4'/*FORMATARGUMENTTYPE_TEXT*/: builder => {
+                  builder
+                    .obj('argumentValue')
+                    .call(transformFText)
+                    .endObj();
+                },
+                '$default': builder => {
+                  builder.error(ctx => `Unhandled FormatArgumentType: ${ctx.obj.argumentValueType}`);
                 }
-
-                ar.transformString(value.arguments![i].argumentName);
-                ar.transformByte(value.arguments![i].argumentValueType);
-                switch (value.arguments![i].argumentValueType) {
-                    case FORMATARGUMENTTYPE_TEXT:
-                        if (ar.isLoading()) {
-                            value.arguments![i].argumentValue! = {
-                                flags: 0,
-                                historyType: 0
-                            };
-                        }
-                        transformFText(ar, value.arguments![i].argumentValue!);
-                        break;
-                    default:
-                        throw new Error('Unhandled FormatArgumentType: ' +
-                            value.arguments![i].argumentValueType);
-                }
-
-            }
-
-            break;
-        default:
-            throw new Error('Unhandled HistoryType of TextProperty: ' + value.historyType);
-    }
+              })
+              .endElem()
+          })
+          .endArr()
+      },
+      '$default': builder => {
+        builder.error(ctx => `Unhandled HistoryType: ${ctx.obj.historyType}`);
+      }
+    });
 }

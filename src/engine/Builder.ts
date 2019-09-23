@@ -90,6 +90,10 @@ export class Builder {
 
 
   public call(rulesFunction: (builder: Builder) => void) {
+    if (rulesFunction.name === '') {
+      throw new Error('call() can only be used with named functions');
+    }
+
     // Only build each function once
     if (functionCommands[rulesFunction.name] === undefined) {
       console.log('building', rulesFunction.name);

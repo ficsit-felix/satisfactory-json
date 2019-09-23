@@ -1,26 +1,27 @@
 import { Builder } from '../engine/Builder';
 import { transformCircuitSubsystem } from './extras/CircuitSubsystem';
-import { transformRailroadSubsystem } from './extras/RailroadSubsystem';
 import { transformGameMode } from './extras/GameMode';
 import { transformGameState } from './extras/GameState';
 import { transformPlayerState } from './extras/PlayerState';
+import { transformPowerLine } from './extras/PowerLine';
+import { transformVehicle } from './extras/Vehicle';
+import { transformConveyorBelt } from './extras/ConveyorBelt';
+import { transformTrain } from './extras/Train';
 
 export function transformExtra(builder: Builder) {
   builder
     .switch('_className', {
-      /*    '/Game/FactoryGame/Buildable/Factory/PowerLine/Build_PowerLine.Build_PowerLine_C':
-            builder => builder.call(transformPowerLine),*/
+      '/Game/FactoryGame/Buildable/Factory/PowerLine/Build_PowerLine.Build_PowerLine_C':
+        builder => builder.call(transformPowerLine),
       '/Game/FactoryGame/-Shared/Blueprint/BP_CircuitSubsystem.BP_CircuitSubsystem_C':
         builder => builder.call(transformCircuitSubsystem),
       '/Game/FactoryGame/-Shared/Blueprint/BP_GameMode.BP_GameMode_C':
         builder => builder.call(transformGameMode),
       '/Game/FactoryGame/-Shared/Blueprint/BP_GameState.BP_GameState_C':
         builder => builder.call(transformGameState),
-      '/Game/FactoryGame/-Shared/Blueprint/BP_RailroadSubsystem.BP_RailroadSubsystem_C':
-        builder => builder.call(transformRailroadSubsystem),
       '/Game/FactoryGame/Character/Player/BP_PlayerState.BP_PlayerState_C':
         builder => builder.call(transformPlayerState),
-      /*'/Game/FactoryGame/Buildable/Vehicle/Tractor/BP_Tractor.BP_Tractor_C':
+      '/Game/FactoryGame/Buildable/Vehicle/Tractor/BP_Tractor.BP_Tractor_C':
         builder => builder.call(transformVehicle),
       '/Game/FactoryGame/Buildable/Vehicle/Truck/BP_Truck.BP_Truck_C':
         builder => builder.call(transformVehicle),
@@ -45,7 +46,8 @@ export function transformExtra(builder: Builder) {
       '/Game/FactoryGame/Buildable/Vehicle/Train/Wagon/BP_FreightWagon.BP_FreightWagon_C':
         builder => builder.call(transformTrain),
       '/Game/FactoryGame/Buildable/Vehicle/Train/Locomotive/BP_Locomotive.BP_Locomotive_C':
-        builder => builder.call(transformTrain),*/
-      '$default': builder => { }
+        builder => builder.call(transformTrain),
+      '$default': _ => {
+      }
     })
 }

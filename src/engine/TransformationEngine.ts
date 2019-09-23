@@ -151,10 +151,9 @@ export class TransformationEngine {
 
   end(callback: (error?: Error | null | undefined) => void) {
     if (this.needBytes !== 0) {
-
       callback(new Error(`Missing ${this.needBytes} bytes`));
     } else {
-      console.log('final');
+      // TODO check for spare bytes
       callback();
     }
 

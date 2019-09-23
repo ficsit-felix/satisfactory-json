@@ -14,7 +14,7 @@
         "${workspaceFolder}/lib/**/*.js"
       ],
       "args": [
-        "after_intro.sav",
+        "20190702.sav",
         "test.json"
       ]
     }

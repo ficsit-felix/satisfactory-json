@@ -3,6 +3,12 @@ import { transformVector } from './structs/Vector';
 import { transformArbitraryStruct } from './structs/ArbitraryStruct';
 import { transformBox } from './structs/Box';
 import { transformInventoryItem } from './structs/InventoryItem';
+import { transformColor } from './structs/Color';
+import { transformLinearColor } from './structs/LinearColor';
+import { transformQuat } from './structs/Quat';
+import { transformRailroadTrackPosition } from './structs/RailroadTrackPosition';
+import { transformTimerHandle } from './structs/TimerHandle';
+import { transformGuid } from './structs/Guid';
 
 export function transformStructProperty(builder: Builder) {
   builder
@@ -23,17 +29,17 @@ export function transformStructProperty(builder: Builder) {
       'Vector': builder => transformVector(builder),
       'Rotator': builder => transformVector(builder),
       'Box': builder => transformBox(builder),
-      /*'Color': builder => transformColor(builder),
+      'Color': builder => transformColor(builder),
       'LinearColor': builder => transformLinearColor(builder),
-      'Quat': builder => transformQuat(builder),*/
+      'Quat': builder => transformQuat(builder),
       'InventoryItem': builder => transformInventoryItem(builder),
-      /*'RailroadTrackPosition': builder => transformRailroadTrackPosition(builder),
-      'TimerHandle': builder => transformTimerHandle(builder),*/
+      'RailroadTrackPosition': builder => transformRailroadTrackPosition(builder),
+      'TimerHandle': builder => transformTimerHandle(builder),
       'Transform': builder => transformArbitraryStruct(builder),
       'RemovedInstanceArray': builder => transformArbitraryStruct(builder),
       'InventoryStack': builder => transformArbitraryStruct(builder),
       'ProjectileData': builder => transformArbitraryStruct(builder),
-      //'Guid': builder => transformGuid(builder),
+      'Guid': builder => transformGuid(builder),
       '$default': builder => builder.error(ctx => `Unknown struct property ${ctx.obj.type}`)
     })
     .endObj();
