@@ -1,8 +1,7 @@
-import { Archive } from '../../Archive';
-import { StringProperty } from '../../types';
+import { Builder } from '../../engine/Builder';
 
-export default function transformStringProperty(
-    ar: Archive, property: StringProperty) {
-    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    ar.transformString(property.value);
+export function transformStringProperty(builder: Builder) {
+  builder
+    .assertNullByte(false) // Tag.HasPropertyGuid
+    .str('value');
 }

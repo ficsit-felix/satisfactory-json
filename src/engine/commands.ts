@@ -1,5 +1,6 @@
 import { assert } from 'console';
 import { Chunk } from './Chunk';
+import { functionCommands } from './Builder';
 
 /**
  * Name used to access a property or an array element
@@ -223,16 +224,18 @@ export class IntCommand extends Command {
 
 export class StrCommand extends Command {
   private name: Name;
-  constructor(name: Name) {
+  private shouldCount: boolean;
+  constructor(name: Name, shouldCount: boolean) {
     super();
     this.name = name;
+    this.shouldCount = shouldCount;
   }
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
       chunk.setRollbackPoint();
       // TODO store rewind point in case something gets wrong in the middle of this
 
-      const lengthBytes = chunk.read(4);
+      const lengthBytes = chunk.read(4, this.shouldCount);
       if (typeof lengthBytes === 'number') {
         return lengthBytes;
       }
@@ -336,13 +339,15 @@ export class LongCommand extends Command {
 
 export class ByteCommand extends Command {
   private name: Name;
-  constructor(name: Name) {
+  private shouldCount: boolean;
+  constructor(name: Name, shouldCount: boolean) {
     super();
     this.name = name;
+    this.shouldCount = shouldCount;
   }
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
-      const result = chunk.read(1);
+      const result = chunk.read(1, this.shouldCount);
       if (typeof result === 'number') {
         // return the amount of missing bytes
         return result;
@@ -381,10 +386,15 @@ export class FloatCommand extends Command {
 }
 
 export class AssertNullByteCommand extends Command {
+  private shouldCount: boolean;
+  constructor(shouldCount: boolean) {
+    super();
+    this.shouldCount = shouldCount;
+  }
 
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
-      const result = chunk.read(1);
+      const result = chunk.read(1, this.shouldCount);
       if (typeof result === 'number') {
         // return the amount of missing bytes
         return result;
@@ -405,10 +415,12 @@ export class AssertNullByteCommand extends Command {
 export class HexCommand extends Command {
   private name: Name;
   private bytes: number;
-  constructor(name: Name, bytes: number) {
+  private shouldCount: boolean;
+  constructor(name: Name, bytes: number, shouldCount: boolean) {
     super();
     this.name = name;
     this.bytes = bytes;
+    this.shouldCount = shouldCount;
   }
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
@@ -477,6 +489,21 @@ export class CondCommand extends Command {
       // execute else branch
       newStackFrameCallback(this.elseCommands);
     }
+    return 0;
+  }
+}
+
+export class CallCommand extends Command {
+  private name: string;
+  constructor(name: string) {
+    super();
+    this.name = name;
+  }
+  exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
+    if (functionCommands[this.name] === undefined) {
+      throw new Error(`No commands build for function ${this.name}`);
+    }
+    newStackFrameCallback(functionCommands[this.name]);
     return 0;
   }
 }

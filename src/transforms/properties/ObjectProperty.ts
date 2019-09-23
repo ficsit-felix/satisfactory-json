@@ -1,15 +1,10 @@
-import { Archive } from '../../Archive';
-import { ObjectProperty } from '../../types';
+import { Builder } from '../../engine/Builder';
 
-export default function transformObjectProperty(
-    ar: Archive, property: ObjectProperty) {
-    if (ar.isLoading()) {
-        property.value = {
-            levelName: '',
-            pathName: ''
-        };
-    }
-    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    ar.transformString(property.value.levelName);
-    ar.transformString(property.value.pathName);
+export function transformObjectProperty(builder: Builder) {
+  builder
+    .assertNullByte(false) // Tag.HasPropertyGuid
+    .obj('value')
+    .str('levelName')
+    .str('pathName')
+    .endObj();
 }

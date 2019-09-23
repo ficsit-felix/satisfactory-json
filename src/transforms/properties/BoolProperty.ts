@@ -1,8 +1,7 @@
-import { Archive } from '../../Archive';
-import { BoolProperty } from '../../types';
+import { Builder } from '../../engine/Builder';
 
-export default function transformBoolProperty(
-    ar: Archive, property: BoolProperty) {
-    ar.transformByte(property.value, false); // Tag.BoolVal
-    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
+export function transformBoolProperty(builder: Builder) {
+  builder
+    .byte('value', false) // Tag.BoolVal
+    .assertNullByte(false) // Tag.HasPropertyGuid
 }

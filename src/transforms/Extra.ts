@@ -1,6 +1,8 @@
 import { Builder } from '../engine/Builder';
 import { transformCircuitSubsystem } from './extras/CircuitSubsystem';
 import { transformRailroadSubsystem } from './extras/RailroadSubsystem';
+import { transformGameMode } from './extras/GameMode';
+import { transformGameState } from './extras/GameState';
 
 export function transformExtra(builder: Builder) {
   builder
@@ -9,10 +11,10 @@ export function transformExtra(builder: Builder) {
             (builder: Builder) => builder.call(transformPowerLine),*/
       '/Game/FactoryGame/-Shared/Blueprint/BP_CircuitSubsystem.BP_CircuitSubsystem_C':
         (builder: Builder) => builder.call(transformCircuitSubsystem),
-      /*'/Game/FactoryGame/-Shared/Blueprint/BP_GameMode.BP_GameMode_C':
+      '/Game/FactoryGame/-Shared/Blueprint/BP_GameMode.BP_GameMode_C':
         (builder: Builder) => builder.call(transformGameMode),
       '/Game/FactoryGame/-Shared/Blueprint/BP_GameState.BP_GameState_C':
-        (builder: Builder) => builder.call(transformGameState),*/
+        (builder: Builder) => builder.call(transformGameState),
       '/Game/FactoryGame/-Shared/Blueprint/BP_RailroadSubsystem.BP_RailroadSubsystem_C':
         (builder: Builder) => builder.call(transformRailroadSubsystem),
       /*        :

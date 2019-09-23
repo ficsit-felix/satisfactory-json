@@ -1,6 +1,6 @@
-import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand, BufferStartCommand, BufferEndCommand, SwitchCommand, BreakCommand, DebuggerCommand, HexCommand, AssertNullByteCommand } from './commands';
+import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand, BufferStartCommand, BufferEndCommand, SwitchCommand, BreakCommand, DebuggerCommand, HexCommand, AssertNullByteCommand, CallCommand } from './commands';
 
-
+export let functionCommands: { [id: string]: Command[] } = {};
 
 export class Builder {
   private commands: Command[] = [];
@@ -62,36 +62,45 @@ export class Builder {
     this.commands.push(new IntCommand(name, defaultValue, shouldCount));
     return this;
   }
-  public str(name: Name): Builder {
-    this.commands.push(new StrCommand(name));
+  public str(name: Name, shouldCount = true): Builder {
+    this.commands.push(new StrCommand(name, shouldCount));
     return this;
   }
   public long(name: Name): Builder {
     this.commands.push(new LongCommand(name));
     return this;
   }
-  public byte(name: Name): Builder {
-    this.commands.push(new ByteCommand(name));
+  public byte(name: Name, shouldCount = true): Builder {
+    this.commands.push(new ByteCommand(name, shouldCount));
     return this;
   }
   public float(name: Name): Builder {
     this.commands.push(new FloatCommand(name));
     return this;
   }
-  public hex(name: Name, bytes: number): Builder {
-    this.commands.push(new HexCommand(name, bytes));
+  public hex(name: Name, bytes: number, shouldCount = true): Builder {
+    this.commands.push(new HexCommand(name, bytes, shouldCount));
     return this;
   }
 
-  public assertNullByte(): Builder {
-    this.commands.push(new AssertNullByteCommand());
+  public assertNullByte(shouldCount = true): Builder {
+    this.commands.push(new AssertNullByteCommand(shouldCount));
     return this;
   }
 
 
   public call(rulesFunction: (builder: Builder) => void) {
-    // TODO don't do this multiple times?
-    rulesFunction(this);
+    // Only build each function once
+    if (functionCommands[rulesFunction.name] === undefined) {
+      console.log('building', rulesFunction.name);
+      // Already set this, so that we don't get into infinite recursion
+      functionCommands[rulesFunction.name] = [];
+
+      const builder = new Builder();
+      rulesFunction(builder);
+      functionCommands[rulesFunction.name] = builder.getCommands();
+    }
+    this.commands.push(new CallCommand(rulesFunction.name));
     return this;
   }
   /**
