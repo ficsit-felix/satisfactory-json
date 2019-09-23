@@ -12,6 +12,9 @@ export interface Context {
   vars: { [id: string]: any };
   parent?: Context;
   isLoading: boolean;
+  path: string;
+
+  
 }
 
 // Generate global ids for all commands
@@ -89,9 +92,11 @@ export class EnterObjectCommand extends Command {
       obj: ctx.obj,
       vars: ctx.vars,
       parent: ctx.parent,
-      isLoading: ctx.isLoading
+      isLoading: ctx.isLoading,
+      path: ctx.path
     };
     ctx.obj = ctx.obj[this.name];
+    ctx.path = ctx.path + '.' + this.name;
     return 0;
   }
 }
@@ -131,9 +136,11 @@ export class EnterArrayCommand extends Command {
       obj: ctx.obj,
       vars: ctx.vars,
       parent: ctx.parent,
-      isLoading: ctx.isLoading
+      isLoading: ctx.isLoading,
+      path: ctx.path
     };
     ctx.obj = ctx.obj[this.name];
+    ctx.path = ctx.path + '.' + this.name;
     return 0;
   }
 }
@@ -145,6 +152,7 @@ export class LeaveArrayCommand extends Command {
     assert(ctx.parent !== undefined);
     ctx.obj = ctx.parent!.obj;
     ctx.vars = ctx.parent!.vars;
+    ctx.path = ctx.parent!.path;
     ctx.parent = ctx.parent!.parent;
     return 0;
   }
@@ -174,9 +182,11 @@ export class EnterElemCommand extends Command {
       obj: ctx.obj,
       vars: ctx.vars,
       parent: ctx.parent,
-      isLoading: ctx.isLoading
+      isLoading: ctx.isLoading,
+      path: ctx.path
     };
     ctx.obj = ctx.obj[index];
+    ctx.path = ctx.path + '[' + index + ']';
     return 0;
   }
 }
@@ -188,6 +198,7 @@ export class LeaveElemCommand extends Command {
     assert(ctx.parent !== undefined);
     ctx.obj = ctx.parent!.obj;
     ctx.vars = ctx.parent!.vars;
+    ctx.path = ctx.parent!.path;
     ctx.parent = ctx.parent!.parent;
     return 0;
   }
@@ -424,7 +435,7 @@ export class HexCommand extends Command {
   }
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
-      const result = chunk.read(this.bytes);
+      const result = chunk.read(this.bytes, this.shouldCount);
       if (typeof result === 'number') {
         // return the amount of missing bytes
         return result;
@@ -439,7 +450,16 @@ export class HexCommand extends Command {
   }
 }
 
-export class LoopCommand extends Command {
+
+export class LoopHeaderCommand extends Command {
+  exec(ctx: Context): number {
+    // reset the _index loop variable
+    ctx.vars._index = -1;
+    return 0;
+  }
+}
+
+export class LoopBodyCommand extends Command {
   private times: Name;
   private loopBodyCommands: Command[];
   constructor(times: Name, loopBodyCommands: Command[]) {
@@ -449,12 +469,6 @@ export class LoopCommand extends Command {
   }
   exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
     const iterations = getVar(ctx, this.times);
-
-    // The _index variable might be set from an enclosing loop
-    if (ctx.vars._loopIndex !== this.id) {
-      ctx.vars._loopIndex = this.id;
-      ctx.vars._index = -1;
-    }
     ctx.vars._index++;
 
     if (ctx.vars._index < iterations) {
@@ -536,6 +550,9 @@ export class BufferStartCommand extends Command {
         return result;
       }
       setVar(ctx, this.name, result.readInt32LE(0));
+      if (this.resetBytesRead) {
+        chunk.resetBytesRead();
+      }
 
       // TODO preload the next ${result} bytes?
 
@@ -557,6 +574,34 @@ export class BufferEndCommand extends Command {
       throw Error('Unimplemented');
     }
     return 0;
+  }
+}
+
+export class HexRemainingCommand extends Command {
+  private name: Name;
+  private lengthVar: Name;
+  constructor(name: Name, lengthVar: Name) {
+    super();
+    this.name = name;
+    this.lengthVar = lengthVar;
+  }
+  exec(ctx: Context, chunk: Chunk): number {
+    if (ctx.isLoading) {
+      const length = getVar(ctx, this.lengthVar);
+      const result = chunk.readUntil(length);
+
+      if (typeof result === 'number') {
+        // return the amount of missing bytes
+        return result;
+      }
+      console.log('-----------', result.toString('hex'));
+      setVar(ctx, this.name, result.toString('hex'));
+      return 0;
+    } else {
+      // TODO writing
+      throw Error('Unimplemented');
+      return 0;
+    }
   }
 }
 

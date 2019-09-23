@@ -1,7 +1,10 @@
+
 export class Chunk {
   private buffer: Buffer;
   private cursor: number = 0;
   private rollbackCursor: number = 0;
+
+  // TODO pass bytesRead to the next Chunk
   private bytesRead: number = 0;
   constructor(buffer: Buffer) {
     this.buffer = buffer;
@@ -15,10 +18,13 @@ export class Chunk {
 
     const result = this.buffer.slice(this.cursor, this.cursor + bytes);
     this.cursor += bytes;
-    if (shouldCount) {
-      this.bytesRead += bytes;
-    }
+    this.bytesRead += bytes;
     return result;
+  }
+
+  public readUntil(length: number): Buffer | number {
+    console.log('read', length, this.bytesRead);
+    return this.read(length - this.bytesRead);
   }
 
   public setRollbackPoint() {
@@ -33,5 +39,9 @@ export class Chunk {
 
   public getRemaining(): Buffer {
     return this.buffer.slice(this.cursor);
+  }
+
+  public resetBytesRead() {
+    this.bytesRead = 0;
   }
 };

@@ -1,15 +1,18 @@
-import { Archive } from '../../../Archive';
-import { StructProperty } from '../../../types';
-export function transformBox(ar: Archive, property: StructProperty) {
-    if (ar.isLoading()) {
-        property.value.min = {};
-        property.value.max = {};
-    }
-    ar.transformFloat(property.value.min[0]);
-    ar.transformFloat(property.value.min[1]);
-    ar.transformFloat(property.value.min[2]);
-    ar.transformFloat(property.value.max[0]);
-    ar.transformFloat(property.value.max[1]);
-    ar.transformFloat(property.value.max[2]);
-    ar.transformByte(property.value.isValid);
+import { Builder } from '../../../engine/Builder';
+
+export function transformBox(builder: Builder) {
+  builder
+    .obj('value')
+    .arr('min')
+    .float(0)
+    .float(1)
+    .float(2)
+    .endArr()
+    .arr('max')
+    .float(0)
+    .float(1)
+    .float(2)
+    .endArr()
+    .byte('isValid')
+    .endObj();
 }

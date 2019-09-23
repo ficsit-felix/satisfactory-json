@@ -1,4 +1,4 @@
-import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, LoopCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand, BufferStartCommand, BufferEndCommand, SwitchCommand, BreakCommand, DebuggerCommand, HexCommand, AssertNullByteCommand, CallCommand } from './commands';
+import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand, BufferStartCommand, BufferEndCommand, SwitchCommand, BreakCommand, DebuggerCommand, HexCommand, AssertNullByteCommand, CallCommand, HexRemainingCommand, LoopBodyCommand, LoopHeaderCommand } from './commands';
 
 export let functionCommands: { [id: string]: Command[] } = {};
 
@@ -160,7 +160,8 @@ export class Builder {
   public loop(times: Name, loopBody: (builder: Builder) => void): Builder {
     const loopBodyBuilder = new Builder();
     loopBody(loopBodyBuilder);
-    this.commands.push(new LoopCommand(times, loopBodyBuilder.getCommands()));
+    this.commands.push(new LoopHeaderCommand());
+    this.commands.push(new LoopBodyCommand(times, loopBodyBuilder.getCommands()));
     return this;
   }
 
@@ -171,6 +172,11 @@ export class Builder {
 
   public bufferEnd(): Builder {
     this.commands.push(new BufferEndCommand());
+    return this;
+  }
+
+  public hexRemaining(name: Name, lengthVar: Name): Builder {
+    this.commands.push(new HexRemainingCommand(name, lengthVar));
     return this;
   }
 

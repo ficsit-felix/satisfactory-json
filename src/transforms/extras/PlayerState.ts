@@ -1,16 +1,6 @@
-import { Archive, LoadingArchive } from '../../Archive';
-import { Entity } from '../../types';
+import { Builder } from '../../engine/Builder';
 
-export default function transformPlayerState(
-    ar: Archive, entity: Entity, length: number) {
-    if (ar.isLoading()) {
-        entity.extra = {
-        };
-    }
-    // read remaining data
-    let count = 0;
-    if (ar.isLoading()) {
-        count = length - (ar as LoadingArchive).bytesRead;
-    }
-    ar.transformHex(entity.extra.unknown, count);
+export function transformPlayerState(builder: Builder) {
+  builder
+    .hexRemaining('unknown', '_length')
 }

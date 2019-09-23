@@ -1,5 +1,5 @@
 import { Builder } from './Builder';
-import { Command, Context, LoopCommand } from './commands';
+import { Command, Context, LoopBodyCommand } from './commands';
 import { inspect } from 'util';
 import { TransformCallback } from 'stream';
 import { Chunk } from './Chunk';
@@ -59,18 +59,26 @@ export class TransformationEngine {
 
 
     const chunk = new Chunk(buffer);
-    const saveGame = {};// TODO put save game here when saving
 
     if (this.stack.length === 0) {
       console.info('Starting program...');
       // Stack empty: Begin of program or something went wrong
+
+      const saveGame = {};// TODO put save game here when saving
+
+      // make this global for debugging purposes
+      // @ts-ignore
+      global.saveGame = saveGame;
+
+
       const frame = {
         commands: this.commands,
         currentCommand: 0,
         ctx: {
           obj: saveGame,
           vars: {},
-          isLoading: this.isLoading
+          isLoading: this.isLoading,
+          path: 'saveGame'
         }
       };
       this.stack.push(frame);
@@ -102,13 +110,14 @@ export class TransformationEngine {
             obj: frame.ctx.obj,
             vars: Object.assign({}, frame.ctx.vars), // shallow copy the variables so that the old ones still will be there when the stack is popped
             parent: frame.ctx.parent,
-            isLoading: frame.ctx.isLoading
+            isLoading: frame.ctx.isLoading,
+            path: frame.ctx.path
           }
         });
       }, () => {
         // Pop the stack to the previous loop command
         let frame = this.stack.pop();
-        while (frame !== undefined && !(frame.commands[frame.currentCommand] instanceof LoopCommand)) {
+        while (frame !== undefined && !(frame.commands[frame.currentCommand] instanceof LoopBodyCommand)) {
           frame = this.stack.pop();
         }
         if (frame === undefined) {
