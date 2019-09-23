@@ -31,22 +31,27 @@ if name starts with # it's a redirection
 */
 
 function setVar(ctx: Context, name: Name, value: any): void {
-  if (name.toString().charAt(0) === '#') {
-    ctx.vars[getVar(ctx, name.toString().substring(1))] = value;
-  } else if (name.toString().charAt(0) === '_') {
-    ctx.vars[name] = value;
-  } else {
-    ctx.obj[name] = value;
+  switch (name.toString().charAt(0)) {
+    case '#':
+      ctx.vars[getVar(ctx, name.toString().substring(1))] = value;
+      break;
+    case '_':
+      ctx.vars[name] = value;
+      break;
+    default:
+      ctx.obj[name] = value;
+      break;
   }
 }
 
 function getVar(ctx: Context, name: Name): any {
-  if (name.toString().charAt(0) === '#') {
-    return ctx.vars[getVar(ctx, name.toString().substring(1))];
-  } else if (name.toString().charAt(0) === '_') {
-    return ctx.vars[name];
-  } else {
-    return ctx.obj[name];
+  switch (name.toString().charAt(0)) {
+    case '#':
+      return ctx.vars[getVar(ctx, name.toString().substring(1))];
+    case '_':
+      return ctx.vars[name];
+    default:
+      return ctx.obj[name];
   }
 }
 
@@ -214,12 +219,12 @@ export class IntCommand extends Command {
   }
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
-      const result = chunk.read(4, this.shouldCount);
-      if (typeof result === 'number') {
+      const result = chunk.readInt(this.shouldCount);
+      if (result === undefined) {
         // return the amount of missing bytes
-        return result;
+        return chunk.missingBytes;
       }
-      setVar(ctx, this.name, result.readInt32LE(0));
+      setVar(ctx, this.name, result);
       return 0;
     } else {
       // TODO writing
@@ -240,80 +245,12 @@ export class StrCommand extends Command {
   }
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
-      chunk.setRollbackPoint();
-      // TODO store rewind point in case something gets wrong in the middle of this
-
-      const lengthBytes = chunk.read(4, this.shouldCount);
-      if (typeof lengthBytes === 'number') {
-        return lengthBytes;
+      const result = chunk.readStr(this.shouldCount);
+      if (result === undefined) {
+        return chunk.missingBytes;
       }
-      let length = lengthBytes.readInt32LE(0);
-      if (length === 0) {
-        setVar(ctx, this.name, '');
-        return 0;
-      }
-
-      //console.log('strlen', length);
-      let utf16 = false;
-      if (length < 0) {
-        // Thanks to @Goz3rr we know that this is now an utf16 based string
-        length = -2 * length;
-        utf16 = true;
-      }
-      // TODO detect EOF
-      /*if (this.cursor + length > this.stream.length) {
-          console.log(this.readHex(32));
-          // tslint:disable-next-line: no-console
-          console.trace('buffer < ' + length);
-          throw new Error('cannot read string of length: ' + length);
-      }*/
-      let resultStr;
-      if (utf16) {
-        const result = chunk.read(length - 2);
-        if (typeof result === 'number') {
-          // rewind
-          return chunk.rollback() + result;
-        }
-        // .slice(this.cursor, this.cursor + length - 2);
-        resultStr = decodeUTF16LE(result.toString('binary'));
-      } else {
-        const result = chunk.read(length - 1);
-        if (typeof result === 'number') {
-          // rewind
-          return chunk.rollback() + result;
-        }
-        // .slice(this.cursor, this.cursor + length - 1);
-        resultStr = result.toString('utf8');
-      }
-      // TODO overflow
-      /*      if (this.cursor < 0) {
-              throw new Error('Cursor overflowed to ' + this.cursor + ' by ' + length);
-            }*/
-      if (utf16) {
-        const result = chunk.read(1);
-        if (typeof result === 'number') {
-          // rewind
-          return chunk.rollback() + result;
-        }
-        const zero = result.readInt8(0);
-        if (zero !== 0) {
-          throw new Error(`string(len: ${length}) does not end with zero, but with ${zero}`);
-        }
-      }
-
-      const result = chunk.read(1);
-      if (typeof result === 'number') {
-        // rewind
-        return chunk.rollback() + result;
-      }
-      const zero = result.readInt8(0);
-      if (zero !== 0) {
-        throw new Error(`string(len: ${length}) does not end with zero, but with ${zero}`);
-      }
-
-      setVar(ctx, this.name, resultStr);
+      setVar(ctx, this.name, result);
       return 0;
-
     } else {
       // TODO writing
       throw Error('Unimplemented');
@@ -330,12 +267,12 @@ export class LongCommand extends Command {
   }
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
-      const result = chunk.read(8);
-      if (typeof result === 'number') {
+      const result = chunk.readLong();
+      if (result === undefined) {
         // return the amount of missing bytes
-        return result;
+        return chunk.missingBytes;
       }
-      setVar(ctx, this.name, result.toString('hex'));
+      setVar(ctx, this.name, result);
       return 0;
     } else {
       // TODO writing
@@ -355,12 +292,12 @@ export class ByteCommand extends Command {
   }
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
-      const result = chunk.read(1, this.shouldCount);
-      if (typeof result === 'number') {
+      const result = chunk.readByte(this.shouldCount);
+      if (result === undefined) {
         // return the amount of missing bytes
-        return result;
+        return chunk.missingBytes;
       }
-      setVar(ctx, this.name, result.readInt8(0));
+      setVar(ctx, this.name, result);
       return 0;
     } else {
       // TODO writing
@@ -378,12 +315,12 @@ export class FloatCommand extends Command {
   }
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
-      const result = chunk.read(4);
-      if (typeof result === 'number') {
+      const result = chunk.readFloat();
+      if (result === undefined) {
         // return the amount of missing bytes
-        return result;
+        return chunk.missingBytes;
       }
-      setVar(ctx, this.name, result.readFloatLE(0));
+      setVar(ctx, this.name, result);
       return 0;
     } else {
       // TODO writing
@@ -402,12 +339,12 @@ export class AssertNullByteCommand extends Command {
 
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
-      const result = chunk.read(1, this.shouldCount);
-      if (typeof result === 'number') {
+      const result = chunk.readByte(this.shouldCount);
+      if (result === undefined) {
         // return the amount of missing bytes
-        return result;
+        return chunk.missingBytes;
       }
-      const zero = result.readInt8(0);
+      const zero = result;
       if (zero !== 0) {
         throw new Error(`Byte not 0, but ${zero}`);
       }
@@ -433,9 +370,9 @@ export class HexCommand extends Command {
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
       const result = chunk.read(this.bytes, this.shouldCount);
-      if (typeof result === 'number') {
+      if (result === undefined) {
         // return the amount of missing bytes
-        return result;
+        return chunk.missingBytes;
       }
       setVar(ctx, this.name, result.toString('hex'));
       return 0;
@@ -543,11 +480,11 @@ export class BufferStartCommand extends Command {
   }
   exec(ctx: Context, chunk: Chunk): number {
     if (ctx.isLoading) {
-      const result = chunk.read(4);
-      if (typeof result === 'number') {
-        return result;
+      const result = chunk.readInt();
+      if (result === undefined) {
+        return chunk.missingBytes;
       }
-      setVar(ctx, this.name, result.readInt32LE(0));
+      setVar(ctx, this.name, result);
       if (this.resetBytesRead) {
         chunk.resetBytesRead();
       }
@@ -588,9 +525,9 @@ export class HexRemainingCommand extends Command {
       const length = getVar(ctx, this.lengthVar);
       const result = chunk.readUntil(length);
 
-      if (typeof result === 'number') {
+      if (result === undefined) {
         // return the amount of missing bytes
-        return result;
+        return chunk.missingBytes;
       }
       setVar(ctx, this.name, result.toString('hex'));
       return 0;
@@ -647,11 +584,3 @@ export class DebuggerCommand extends Command {
   }
 }
 
-// https://stackoverflow.com/a/14601808
-function decodeUTF16LE(binaryStr: string): string {
-  const cp = [];
-  for (let i = 0; i < binaryStr.length; i += 2) {
-    cp.push(binaryStr.charCodeAt(i) | (binaryStr.charCodeAt(i + 1) << 8));
-  }
-  return String.fromCharCode.apply(String, cp);
-}

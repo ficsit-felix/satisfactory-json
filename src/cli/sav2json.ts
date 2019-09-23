@@ -4,6 +4,7 @@ import program from 'commander';
 import { Sav2JsonTransform } from '../Sav2JsonTransform';
 //@ts-ignore
 import * as profiler from 'v8-profiler-next';
+import { Transform } from 'stream';
 
 let sourceValue: string | undefined;
 let targetValue: string | undefined;
@@ -42,8 +43,9 @@ if (program.profile) {
   profiler.startProfiling('probe', true);
 }
 
-
-const stream = fs.createReadStream(sourceValue!, { highWaterMark: 1024 * 1024 });
+const opts = { highWaterMark: 1024 * 512 };
+const stream = fs.createReadStream(sourceValue!, opts);
+const outStream = fs.createWriteStream(targetValue!, opts);
 /*
 
 fs.readFile(sourceValue!, 'binary', (error, data) => {
@@ -60,30 +62,45 @@ if (program.time) {
 
 const sav2json = new Sav2JsonTransform();
 
-stream.pipe(sav2json).on('finish', () => {
-
-  if (program.time) {
-    console.timeEnd('sav2json');
-    //console.time('writeFile');
+const stringifyTransform = new Transform({
+  objectMode: true,
+  transform(chunk, encoding, cb) {
+    this.push(JSON.stringify(chunk));
+    cb();
+  },
+  flush(cb) {
+    cb();
   }
-
-  if (program.profile) {
-    const profile = profiler.stopProfiling('probe');
-    profile.export((error: any, result: any) => {
-      console.log('Profile stored.');
-      fs.writeFileSync(
-        'sav2json.cpuprofile', result);
-      profile.delete();
-      process.exit();
-    });
-  }
-  /*const output = JSON.stringify(transformed);
-
-  fs.writeFile(targetValue!, output, 'utf8', (error2) => {
-    if (error2) {
-      quitWithError(error2);
-    }
-    console.timeEnd('writeFile');
-    console.log('Converted ' + sourceValue + ' to ' + targetValue);
-  });*/
 });
+
+stream
+  .pipe(sav2json)
+  .pipe(stringifyTransform)
+  .pipe(outStream)
+  .on('finish', () => {
+
+    if (program.time) {
+      console.timeEnd('sav2json');
+      //console.time('writeFile');
+    }
+
+    if (program.profile) {
+      const profile = profiler.stopProfiling('probe');
+      profile.export((error: any, result: any) => {
+        console.log('Profile stored.');
+        fs.writeFileSync(
+          'sav2json.cpuprofile', result);
+        profile.delete();
+        process.exit();
+      });
+    }
+    /*const output = JSON.stringify(transformed);
+  
+    fs.writeFile(targetValue!, output, 'utf8', (error2) => {
+      if (error2) {
+        quitWithError(error2);
+      }
+      console.timeEnd('writeFile');
+      console.log('Converted ' + sourceValue + ' to ' + targetValue);
+    });*/
+  });

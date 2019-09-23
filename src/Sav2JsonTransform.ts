@@ -7,7 +7,8 @@ export class Sav2JsonTransform extends Transform {
   private transformationEngine: TransformationEngine;
 
   constructor() {
-    super();
+    super({ readableObjectMode: true });
+
     console.time('buildRules');
     this.transformationEngine = new TransformationEngine(transform);
 
@@ -26,7 +27,8 @@ export class Sav2JsonTransform extends Transform {
   }
 
   _final(callback: (error?: Error | null) => void): void {
-
+    // @ts-ignore
+    this.push(global.saveGame);
     this.transformationEngine.end(callback);
   }
 }
