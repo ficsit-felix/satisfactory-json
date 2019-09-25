@@ -3,7 +3,9 @@ import { Builder } from '../../engine/Builder';
 export function transformTextProperty(builder: Builder) {
   builder
     .assertNullByte(false) // Tag.HasPropertyGuid
-    .call(transformFText);
+    .obj('value')
+    .call(transformFText)
+    .endObj();
 }
 
 // ETextHistoryType

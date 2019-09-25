@@ -66,7 +66,10 @@ export function transformMapProperty(builder: Builder) {
         })
         .switch('_valueTransform', {
           'StructProperty': builder => {
-            builder.call(transformProperties);
+            builder
+              //.obj('value') TODO add value here
+              .call(transformProperties)
+            //.endObj();
           },
           'ByteProperty': builder => {
             builder.byte('value');

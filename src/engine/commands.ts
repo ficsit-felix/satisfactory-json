@@ -37,7 +37,7 @@ if name starts with # it's a redirection
 function setVar(ctx: Context, name: Name, value: any): void {
   switch (name.toString().charAt(0)) {
     case '#':
-      ctx.tmp[getVar(ctx, name.toString().substring(1))] = value;
+      ctx.obj[getVar(ctx, name.toString().substring(1))] = value;
       break;
     case '_':
       ctx.tmp[name] = value;
@@ -66,7 +66,7 @@ export abstract class Command {
 
   constructor() {
     this.id = genCmdId();
-    this.location = new Error().stack!.split('\n')[4];
+    this.location = new Error().stack!.split('\n')[4].split('at ')[1];
   }
   /**
    * Executes this command
@@ -139,7 +139,7 @@ export class EnterArrayCommand extends Command {
     if (ctx.isLoading) {
       // Make sure the array is created
       if (ctx.obj[this.name] === undefined) {
-        ctx.obj[this.name] = []
+        ctx.obj[this.name] = [];
       }
     } else {
     }

@@ -12,7 +12,8 @@ export function transformArrayProperty(builder: Builder) {
         builder
           .arr('values')
           .loop('_itemCount', builder => {
-            builder.int('#_index');
+            builder
+              .int('#_index');
           })
           .endArr();
       },

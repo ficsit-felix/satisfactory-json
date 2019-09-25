@@ -6,7 +6,7 @@ import { transformProperty } from './Property';
 export function transformEntity(builder: Builder) {
   builder
     .bufferStart('_entityLength', true)
-    .debug('_entityLength', ctx => ctx.tmp._entityLength)
+    //.debug('_entityLength', ctx => ctx.tmp._entityLength)
     //.debug('_length', ctx => ctx.vars._length)
 
     .if(ctx => ctx.tmp._withNames, builder => {
@@ -35,10 +35,12 @@ export function transformEntity(builder: Builder) {
     .call(transformExtra)
 
   builder
-    .debug('>_entityLength', ctx => ctx.tmp._entityLength)
+  // TODO read missing data
+    //.debug('>_entityLength', ctx => ctx.tmp._entityLength)
     //.hexRemaining('missing', '_entityLength')
-    .exec(ctx => ctx.obj.missing !== '' && console.error('missing', ctx.obj.missing, ctx))
-    // TODO read missing data
+    //.exec(ctx => ctx.obj.missing !== '' && console.error('missing', ctx.obj.missing, ctx))
+
+    
     .bufferEnd();
 }
 

@@ -137,7 +137,7 @@ export class Chunk {
       this.missingBytes = this.cursor + bytes - this.buffer.length;
       return undefined;
     }
-    const result = this.buffer.readInt8(this.cursor);
+    const result = this.buffer.readUInt8(this.cursor);
     this.cursor += bytes;
     this.bytesRead += bytes;
     return result;
@@ -160,7 +160,7 @@ export class Chunk {
 
 
   public readUntil(length: number): Buffer | undefined {
-    console.log('read', length, this.bytesRead);
+    //console.log('read', length, this.bytesRead);
     return this.read(length - this.bytesRead);
   }
 
@@ -179,7 +179,7 @@ export class Chunk {
   }
 
   public resetBytesRead() {
-    console.log('resetBytesRead');
+    //console.log('resetBytesRead');
     this.bytesRead = 0;
   }
 

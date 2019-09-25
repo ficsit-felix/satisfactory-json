@@ -43,7 +43,20 @@ export function transform(builder: Builder) {
             .endElem()
             .endObj();
         });
-    });
+    })
+
+    .arr('collected')
+    .int('_collectedCount')
+    .loop('_collectedCount', builder => {
+      builder
+        .elem('_index')
+        .str('levelName')
+        .str('pathName')
+        .endElem()
+    })
+    .endArr()
+    // TODO missing
+    ;
 
 
 
@@ -51,7 +64,7 @@ export function transform(builder: Builder) {
 
 function transformHeader(builder: Builder) {
   builder
-    .obj('header')
+    //.obj('header')
     .int('saveHeaderType')
     .int('saveVersion')
     .int('buildVersion')
@@ -65,7 +78,7 @@ function transformHeader(builder: Builder) {
     }, bldr => {
       bldr.byte('sessionVisibility');
     })
-    .endObj();
+  //.endObj();
 }
 
 
@@ -77,7 +90,8 @@ function transformActorOrComponent(builder: Builder) {
         // actor
         bldr
           .arr('actors')
-          .elem('_index');
+          .elem('_index')
+          .exec(ctx => ctx.obj.type = ctx.tmp._type)
         transformActor(bldr);
         bldr
           .endElem()
@@ -88,7 +102,9 @@ function transformActorOrComponent(builder: Builder) {
         bldr
           .exec(ctx => ctx.tmp._componentIndex = ctx.tmp._index - ctx.obj.actors.length)
           .arr('components')
-          .elem('_componentIndex');
+          .elem('_componentIndex')
+          .exec(ctx => ctx.obj.type = ctx.tmp._type);
+
         transformComponent(bldr);
         bldr
           .endElem()
@@ -120,8 +136,9 @@ function transformActor(builder: Builder) {
     .float(1)
     .float(2)
     .endArr()
+    .endObj()
     .int('wasPlacedInLevel')
-    .endObj();
+    ;
 }
 
 function transformComponent(builder: Builder) {
