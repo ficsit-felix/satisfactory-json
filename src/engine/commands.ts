@@ -9,7 +9,8 @@ export type Name = string | number;
 
 export interface Context {
   obj: { [id: string]: any };
-  vars: { [id: string]: any };
+  tmp: { [id: string]: any };
+  locals: { [id: string]: any };
   parent?: Context;
   isLoading: boolean;
   path: string;
@@ -25,7 +26,10 @@ function genCmdId(): number {
 
 
 /*
-if name starts with _ it's a private variable
+if name starts with _ it's a temporary variable
+  all temporary variables except for _index can be overwritten by the callee when calling functions
+  and are not safe to use after a function call, etc.
+
 if name starts with # it's a redirection
  -> #_index reads the value from the _index variable and sets/gets at that location
 */
@@ -33,10 +37,10 @@ if name starts with # it's a redirection
 function setVar(ctx: Context, name: Name, value: any): void {
   switch (name.toString().charAt(0)) {
     case '#':
-      ctx.vars[getVar(ctx, name.toString().substring(1))] = value;
+      ctx.tmp[getVar(ctx, name.toString().substring(1))] = value;
       break;
     case '_':
-      ctx.vars[name] = value;
+      ctx.tmp[name] = value;
       break;
     default:
       ctx.obj[name] = value;
@@ -47,9 +51,9 @@ function setVar(ctx: Context, name: Name, value: any): void {
 function getVar(ctx: Context, name: Name): any {
   switch (name.toString().charAt(0)) {
     case '#':
-      return ctx.vars[getVar(ctx, name.toString().substring(1))];
+      return ctx.tmp[getVar(ctx, name.toString().substring(1))];
     case '_':
-      return ctx.vars[name];
+      return ctx.tmp[name];
     default:
       return ctx.obj[name];
   }
@@ -95,10 +99,11 @@ export class EnterObjectCommand extends Command {
     // Descend to the child object
     ctx.parent = {
       obj: ctx.obj,
-      vars: ctx.vars,
+      tmp: ctx.tmp,
       parent: ctx.parent,
       isLoading: ctx.isLoading,
-      path: ctx.path
+      path: ctx.path,
+      locals: ctx.locals
     };
     ctx.obj = ctx.obj[this.name];
     ctx.path = ctx.path + '.' + this.name;
@@ -111,8 +116,10 @@ export class LeaveObjectCommand extends Command {
     // Ascend to the parent context
     // TODO check that we actually ended an object?
     ctx.obj = ctx.parent!.obj;
-    ctx.vars = ctx.parent!.vars;
+    ctx.tmp = ctx.parent!.tmp;
+    ctx.path = ctx.parent!.path;
     ctx.parent = ctx.parent!.parent;
+
     return 0;
   }
 }
@@ -138,10 +145,11 @@ export class EnterArrayCommand extends Command {
     // Descend to the child array
     ctx.parent = {
       obj: ctx.obj,
-      vars: ctx.vars,
+      tmp: ctx.tmp,
       parent: ctx.parent,
       isLoading: ctx.isLoading,
-      path: ctx.path
+      path: ctx.path,
+      locals: ctx.locals
     };
     ctx.obj = ctx.obj[this.name];
     ctx.path = ctx.path + '.' + this.name;
@@ -154,7 +162,7 @@ export class LeaveArrayCommand extends Command {
     // Ascend to the parent context
     // TODO check that we actually ended an array?
     ctx.obj = ctx.parent!.obj;
-    ctx.vars = ctx.parent!.vars;
+    ctx.tmp = ctx.parent!.tmp;
     ctx.path = ctx.parent!.path;
     ctx.parent = ctx.parent!.parent;
     return 0;
@@ -183,10 +191,11 @@ export class EnterElemCommand extends Command {
     // Descend to the child array
     ctx.parent = {
       obj: ctx.obj,
-      vars: ctx.vars,
+      tmp: ctx.tmp,
       parent: ctx.parent,
       isLoading: ctx.isLoading,
-      path: ctx.path
+      path: ctx.path,
+      locals: ctx.locals
     };
     ctx.obj = ctx.obj[index];
     ctx.path = ctx.path + '[' + index + ']';
@@ -199,7 +208,7 @@ export class LeaveElemCommand extends Command {
     // Ascend to the parent context
     // TODO check that we actually ended an element?
     ctx.obj = ctx.parent!.obj;
-    ctx.vars = ctx.parent!.vars;
+    ctx.tmp = ctx.parent!.tmp;
     ctx.path = ctx.parent!.path;
     ctx.parent = ctx.parent!.parent;
     return 0;
@@ -386,31 +395,39 @@ export class HexCommand extends Command {
 
 
 export class LoopHeaderCommand extends Command {
+
+  private times: Name;
+  constructor(times: Name) {
+    super();
+    this.times = times;
+  }
   exec(ctx: Context): number {
+    const iterations = getVar(ctx, this.times);
+    ctx.locals.times = iterations;
     // reset the _index loop variable
-    ctx.vars._index = -1;
+    ctx.locals.index = -1;
     return 0;
   }
 }
 
 export class LoopBodyCommand extends Command {
-  private times: Name;
+
   private loopBodyCommands: Command[];
-  constructor(times: Name, loopBodyCommands: Command[]) {
+  constructor(loopBodyCommands: Command[]) {
     super();
-    this.times = times;
     this.loopBodyCommands = loopBodyCommands;
   }
   exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
-    const iterations = getVar(ctx, this.times);
-    ctx.vars._index++;
+    
+    ctx.locals.index++;
+    ctx.tmp._index = ctx.locals.index;
 
-    if (ctx.vars._index < iterations) {
+    if (ctx.locals.index < ctx.locals.iterations) {
       newStackFrameCallback(this.loopBodyCommands);
       // pls keep the current command pointer the same, so that we can execute the next iteration
       return -1;
     } else {
-      ctx.vars._index = undefined;
+      ctx.tmp._index = undefined;
       // continue after the loop
       return 0;
     }

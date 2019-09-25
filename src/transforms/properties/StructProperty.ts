@@ -19,8 +19,8 @@ export function transformStructProperty(builder: Builder) {
     .int('_zero2', ctx => 0)
     .int('_zero3', ctx => 0)
     .exec(ctx => {
-      if (ctx.vars._zero0 !== 0 || ctx.vars._zero1 !== 0 ||
-        ctx.vars._zero2 !== 0 || ctx.vars._zero3 !== 0) {
+      if (ctx.tmp._zero0 !== 0 || ctx.tmp._zero1 !== 0 ||
+        ctx.tmp._zero2 !== 0 || ctx.tmp._zero3 !== 0) {
         throw new Error('Struct GUID not 0');
       }
     })

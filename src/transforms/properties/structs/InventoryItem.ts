@@ -12,9 +12,9 @@ export function transformInventoryItem(builder: Builder) {
     .obj('properties')
     .str('_name')
     //.debug('_name', ctx => ctx.vars._name)
-    .if(ctx => ctx.vars._name !== 'None', builder => {
+    .if(ctx => ctx.tmp._name !== 'None', builder => {
       builder
-        .exec(ctx => ctx.obj.name = ctx.vars._name)
+        .exec(ctx => ctx.obj.name = ctx.tmp._name)
         .call(transformProperty)
     })
     .endObj()

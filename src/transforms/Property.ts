@@ -13,7 +13,7 @@ import { transformTextProperty   } from './properties/TextProperty';
 
 export function transformProperty(builder: Builder) {
   builder
-    .exec(ctx => { ctx.obj.name = ctx.vars._name; })
+    .exec(ctx => { ctx.obj.name = ctx.tmp._name; })
     .str('type') // Tag.Type
     .bufferStart('_tagSize', false) // Tag.Size
     .int('index', undefined, false) // Tag.ArrayIndex

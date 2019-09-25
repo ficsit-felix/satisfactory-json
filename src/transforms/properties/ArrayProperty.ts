@@ -50,7 +50,7 @@ export function transformArrayProperty(builder: Builder) {
           .str('structType')
           .bufferStart('_length', false)
           .int('_zero', ctx => 0, false)
-          .exec(ctx => { if (ctx.vars._zero !== 0) { throw new Error(`Not zero, but ${ctx.vars._zero}`) } })
+          .exec(ctx => { if (ctx.tmp._zero !== 0) { throw new Error(`Not zero, but ${ctx.tmp._zero}`) } })
           .str('structInnerType')
           .hex('propertyGuid', 16, false)
           .assertNullByte(false)
@@ -71,14 +71,14 @@ export function transformArrayProperty(builder: Builder) {
                     // parse inner properties
                     // TODO fix loop for writing
                     .arr('properties')
-                    .exec(ctx => ctx.vars._propertiesCount = ctx.isLoading ? 999999999 : ctx.obj.length)
+                    .exec(ctx => ctx.tmp._propertiesCount = ctx.isLoading ? 999999999 : ctx.obj.length)
                     .loop('_propertiesCount', builder => {
                       builder.str('_name')
                         //.debug('_name', ctx => ctx.vars._name)
-                        .if(ctx => ctx.vars._name === 'None', builder => builder.break())
+                        .if(ctx => ctx.tmp._name === 'None', builder => builder.break())
                         //.exec(ctx => console.log('properties._index', ctx.vars._index))
                         .elem('_index')
-                        .exec(ctx => ctx.obj.name = ctx.vars._name)
+                        .exec(ctx => ctx.obj.name = ctx.tmp._name)
                         .call(transformProperty)
                         .endElem()
                     })

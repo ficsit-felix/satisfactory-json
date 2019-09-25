@@ -4,17 +4,18 @@ import { transformBoolProperty } from '../BoolProperty';
 
 export function transformMapProperty(builder: Builder) {
   builder
+    .debugger()
     .obj('value')
     .str('keyType', false) // Tag.InnerType
     .str('valueType', false) // Tag.ValueType
     .assertNullByte() // Tag.HasPropertyGuid
     .int('_zero', () => 0)
-    .exec(ctx => { if (ctx.vars._zero !== 0) { throw Error(`Not 0, but ${ctx.vars._zero}`) } })
+    .exec(ctx => { if (ctx.tmp._zero !== 0) { throw Error(`Not 0, but ${ctx.tmp._zero}`) } })
     .int('_count', ctx => ctx.obj.values.length)
     .exec(ctx => {
       // decide key and value functions
-      ctx.vars._keyTransform = ctx.obj.keyType;
-      ctx.vars._valueTransform = ctx.obj.valueType;
+      ctx.tmp._keyTransform = ctx.obj.keyType;
+      ctx.tmp._valueTransform = ctx.obj.valueType;
 
       /*
         The following two maps both have the property.value.valueType ByteProperty.
@@ -32,11 +33,11 @@ export function transformMapProperty(builder: Builder) {
           // Currently the enum version is only used by LightItUp mod
           // this is the only one that also uses a StrProperty as the key (yet)
           if (ctx.obj.keyType === 'StrProperty') {
-            ctx.vars._valueTransform = 'EnumByteProperty';
+            ctx.tmp._valueTransform = 'EnumByteProperty';
           }
         } else {
           if (ctx.obj.values.length > 0 && typeof ctx.obj.values[0].value === 'string') {
-            ctx.vars._valueTransform = 'EnumByteProperty';
+            ctx.tmp._valueTransform = 'EnumByteProperty';
           }
         }
       }
@@ -61,7 +62,7 @@ export function transformMapProperty(builder: Builder) {
             builder.str('key');
           },
           '$default': builder => {
-            builder.exec(ctx => { throw Error(`Unimplemented key type ${ctx.vars._keyTransform}`); });
+            builder.exec(ctx => { throw Error(`Unimplemented key type ${ctx.tmp._keyTransform}`); });
           }
         })
         .switch('_valueTransform', {
@@ -75,7 +76,7 @@ export function transformMapProperty(builder: Builder) {
             builder.str('value');
           },
           '$default': builder => {
-            builder.exec(ctx => { throw Error(`Unimplemented value type ${ctx.vars._valueTransform}`); });
+            builder.exec(ctx => { throw Error(`Unimplemented value type ${ctx.tmp._valueTransform}`); });
           }
         })
         .endElem()

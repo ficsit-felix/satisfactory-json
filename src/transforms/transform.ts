@@ -13,12 +13,12 @@ export function transform(builder: Builder) {
     //.exec((ctx) => console.log('entryCount', ctx.vars._entryCount))
     .loop('_entryCount', builder => {
       builder.if(
-        ctx => ctx.vars._index < ctx.obj.actors.length,
+        ctx => ctx.tmp._index < ctx.obj.actors.length,
         builder => {
           builder
             .exec(ctx => {
-              ctx.vars._withNames = true;
-              ctx.vars._className = ctx.obj.actors[ctx.vars._index].className;
+              ctx.tmp._withNames = true;
+              ctx.tmp._className = ctx.obj.actors[ctx.tmp._index].className;
             })
             .obj('actors')
             .elem('_index')
@@ -31,9 +31,9 @@ export function transform(builder: Builder) {
         builder => {
           builder
             .exec(ctx => {
-              ctx.vars._withNames = false;
-              ctx.vars._componentIndex = ctx.vars._index - ctx.obj.actors.length;
-              ctx.vars._className = ctx.obj.components[ctx.vars._componentIndex].className;
+              ctx.tmp._withNames = false;
+              ctx.tmp._componentIndex = ctx.tmp._index - ctx.obj.actors.length;
+              ctx.tmp._className = ctx.obj.components[ctx.tmp._componentIndex].className;
             })
             .obj('components')
             .elem('_componentIndex')
@@ -71,8 +71,8 @@ function transformHeader(builder: Builder) {
 
 function transformActorOrComponent(builder: Builder) {
   builder
-    .int('_type', ctx => ctx.vars._index < ctx.obj.actors.length ? 1 : 0)
-    .if(ctx => ctx.vars._type === 1,
+    .int('_type', ctx => ctx.tmp._index < ctx.obj.actors.length ? 1 : 0)
+    .if(ctx => ctx.tmp._type === 1,
       bldr => {
         // actor
         bldr
@@ -86,7 +86,7 @@ function transformActorOrComponent(builder: Builder) {
       bldr => {
         // component
         bldr
-          .exec(ctx => ctx.vars._componentIndex = ctx.vars._index - ctx.obj.actors.length)
+          .exec(ctx => ctx.tmp._componentIndex = ctx.tmp._index - ctx.obj.actors.length)
           .arr('components')
           .elem('_componentIndex');
         transformComponent(bldr);
@@ -120,7 +120,8 @@ function transformActor(builder: Builder) {
     .float(1)
     .float(2)
     .endArr()
-    .int('wasPlacedInLevel');
+    .int('wasPlacedInLevel')
+    .endObj();
 }
 
 function transformComponent(builder: Builder) {

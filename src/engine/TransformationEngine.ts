@@ -8,6 +8,7 @@ interface StackFrame {
   commands: Command[];
   currentCommand: number;
   ctx: Context;
+  prevIndex: number;
 };
 
 export class TransformationEngine {
@@ -76,10 +77,12 @@ export class TransformationEngine {
         currentCommand: 0,
         ctx: {
           obj: saveGame,
-          vars: {},
+          tmp: {},
+          locals: {},
           isLoading: this.isLoading,
           path: 'saveGame'
-        }
+        },
+        prevIndex: 0
       };
       this.stack.push(frame);
     }
@@ -90,6 +93,8 @@ export class TransformationEngine {
       if (frame.currentCommand >= frame.commands.length) {
         // move one stack frame up
         this.stack.pop();
+        console.log(`${this.stack[this.stack.length - 1].ctx.tmp._index} -> ${frame.prevIndex}`)
+        this.stack[this.stack.length - 1].ctx.tmp._index = frame.prevIndex;
         if (this.stack.length === 0) {
           console.warn('No more stack frames');
           //throw new Error('EOW');
@@ -102,27 +107,49 @@ export class TransformationEngine {
       const cmd = frame.commands[frame.currentCommand];
       //console.log('executing', cmd);
       const needBytes = cmd.exec(frame.ctx, chunk, commands => {
+
+        //        console.log(frame.ctx.vars);
+        /* const vars = {
+           _length: frame.ctx.vars._length,
+           _index: frame.ctx.vars._index,
+           _name: frame.ctx.vars._name,
+           _entryCount: frame.ctx.vars._entryCount,
+           _tagSize: frame.ctx.vars._tagSize,
+           _type: frame.ctx.vars._type,
+           _keyTransform: frame.ctx.vars._keyTransform,
+           _valueTransform: frame.ctx.vars._valueTransform,
+           _withNames: frame.ctx.vars._withNames,
+           _className: frame.ctx.vars._className,
+           _itemCount: frame.ctx.vars._itemCount,
+           _childCount: frame.ctx.vars._childCount,
+         };*/
+
         // create new stack frame
         this.stack.push({
           commands,
           currentCommand: 0,
-          ctx: {
+          ctx: /*frame.ctx*/{
             obj: frame.ctx.obj,
-            vars: Object.assign({}, frame.ctx.vars), // shallow copy the variables so that the old ones still will be there when the stack is popped
+            tmp: frame.ctx.tmp,//Object.assign({}, frame.ctx.vars), // shallow copy the variables so that the old ones still will be there when the stack is popped
+            locals: {},
             parent: frame.ctx.parent,
             isLoading: frame.ctx.isLoading,
             path: frame.ctx.path
-          }
+          },
+          prevIndex: frame.ctx.tmp._index
         });
       }, () => {
         // Pop the stack to the previous loop command
         let frame = this.stack.pop();
+
         while (frame !== undefined && !(frame.commands[frame.currentCommand] instanceof LoopBodyCommand)) {
           frame = this.stack.pop();
         }
         if (frame === undefined) {
           throw new Error('No LoopCommand found on stack that can be broken');
         }
+        console.log(`${this.stack[this.stack.length - 1].ctx.tmp._index} -> ${frame.prevIndex}`)
+        this.stack[this.stack.length - 1].ctx.tmp._index = frame.prevIndex;
         // move command pointer after the loop command
         frame.currentCommand++;
         this.stack.push(frame);

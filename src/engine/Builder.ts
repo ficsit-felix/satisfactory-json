@@ -164,8 +164,8 @@ export class Builder {
   public loop(times: Name, loopBody: (builder: Builder) => void): Builder {
     const loopBodyBuilder = new Builder();
     loopBody(loopBodyBuilder);
-    this.commands.push(new LoopHeaderCommand());
-    this.commands.push(new LoopBodyCommand(times, loopBodyBuilder.getCommands()));
+    this.commands.push(new LoopHeaderCommand(times));
+    this.commands.push(new LoopBodyCommand(loopBodyBuilder.getCommands()));
     return this;
   }
 
