@@ -19,6 +19,8 @@ export function transformExtra(builder: Builder) {
         builder => builder.call(transformGameMode),
       '/Game/FactoryGame/-Shared/Blueprint/BP_GameState.BP_GameState_C':
         builder => builder.call(transformGameState),
+
+
       '/Game/FactoryGame/Character/Player/BP_PlayerState.BP_PlayerState_C':
         builder => builder.call(transformPlayerState),
       '/Game/FactoryGame/Buildable/Vehicle/Tractor/BP_Tractor.BP_Tractor_C':
@@ -47,6 +49,9 @@ export function transformExtra(builder: Builder) {
         builder => builder.call(transformTrain),
       '/Game/FactoryGame/Buildable/Vehicle/Train/Locomotive/BP_Locomotive.BP_Locomotive_C':
         builder => builder.call(transformTrain),
+
+      '/Game/FactoryGame/-Shared/Blueprint/BP_RailroadSubsystem.BP_RailroadSubsystem_C':
+        builder => builder.call(transformPlayerState),
       '$default': _ => {
       }
     })

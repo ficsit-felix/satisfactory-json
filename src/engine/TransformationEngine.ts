@@ -8,7 +8,6 @@ interface StackFrame {
   commands: Command[];
   currentCommand: number;
   ctx: Context;
-  prevIndex: number;
 };
 
 export class TransformationEngine {
@@ -23,6 +22,7 @@ export class TransformationEngine {
   private needBytes: number = 0;
   private buffers: Buffer[] = [];
   private bufferedBytes: number = 0;
+  private bytesRead: number = 0;
 
   // TODO collects Buffers and then concat them all at once
 
@@ -59,7 +59,7 @@ export class TransformationEngine {
     this.needBytes = 0;
 
 
-    const chunk = new Chunk(buffer);
+    const chunk = new Chunk(buffer, this.bytesRead);
 
     if (this.stack.length === 0) {
       console.info('Starting program...');
@@ -81,8 +81,7 @@ export class TransformationEngine {
           locals: {},
           isLoading: this.isLoading,
           path: 'saveGame'
-        },
-        prevIndex: 0
+        }
       };
       this.stack.push(frame);
     }
@@ -93,14 +92,13 @@ export class TransformationEngine {
       if (frame.currentCommand >= frame.commands.length) {
         // move one stack frame up
         this.stack.pop();
-        console.log(`${this.stack[this.stack.length - 1].ctx.tmp._index} -> ${frame.prevIndex}`)
-        this.stack[this.stack.length - 1].ctx.tmp._index = frame.prevIndex;
         if (this.stack.length === 0) {
           console.warn('No more stack frames');
           //throw new Error('EOW');
           // End of program?
           break;
         }
+
         continue;
       }
 
@@ -135,8 +133,7 @@ export class TransformationEngine {
             parent: frame.ctx.parent,
             isLoading: frame.ctx.isLoading,
             path: frame.ctx.path
-          },
-          prevIndex: frame.ctx.tmp._index
+          }
         });
       }, () => {
         // Pop the stack to the previous loop command
@@ -148,8 +145,6 @@ export class TransformationEngine {
         if (frame === undefined) {
           throw new Error('No LoopCommand found on stack that can be broken');
         }
-        console.log(`${this.stack[this.stack.length - 1].ctx.tmp._index} -> ${frame.prevIndex}`)
-        this.stack[this.stack.length - 1].ctx.tmp._index = frame.prevIndex;
         // move command pointer after the loop command
         frame.currentCommand++;
         this.stack.push(frame);
@@ -161,6 +156,8 @@ export class TransformationEngine {
         console.error(`Need ${needBytes} more bytes.`);
         console.log(frame.ctx.vars);*/
         this.needBytes = needBytes;
+        // pass bytesRead to next chunk
+        this.bytesRead = chunk.getBytesRead();
 
         // put remaining bytes into buffer for next iteration
         this.buffers = [chunk.getRemaining()];

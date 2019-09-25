@@ -4,7 +4,6 @@ import { transformBoolProperty } from '../BoolProperty';
 
 export function transformMapProperty(builder: Builder) {
   builder
-    .debugger()
     .obj('value')
     .str('keyType', false) // Tag.InnerType
     .str('valueType', false) // Tag.ValueType

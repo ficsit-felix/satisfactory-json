@@ -62,9 +62,11 @@ function getVar(ctx: Context, name: Name): any {
 
 export abstract class Command {
   protected id: number;
+  private location: string;
 
   constructor() {
     this.id = genCmdId();
+    this.location = new Error().stack!.split('\n')[4];
   }
   /**
    * Executes this command
@@ -418,11 +420,11 @@ export class LoopBodyCommand extends Command {
     this.loopBodyCommands = loopBodyCommands;
   }
   exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
-    
+
     ctx.locals.index++;
     ctx.tmp._index = ctx.locals.index;
 
-    if (ctx.locals.index < ctx.locals.iterations) {
+    if (ctx.locals.index < ctx.locals.times) {
       newStackFrameCallback(this.loopBodyCommands);
       // pls keep the current command pointer the same, so that we can execute the next iteration
       return -1;

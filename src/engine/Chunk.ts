@@ -7,8 +7,9 @@ export class Chunk {
 
   // TODO pass bytesRead to the next Chunk
   private bytesRead: number = 0;
-  constructor(buffer: Buffer) {
+  constructor(buffer: Buffer, bytesRead: number) {
     this.buffer = buffer;
+    this.bytesRead = bytesRead;
   }
 
   public read(bytes: number, shouldCount: boolean = true): Buffer | undefined {
@@ -159,7 +160,7 @@ export class Chunk {
 
 
   public readUntil(length: number): Buffer | undefined {
-    //console.log('read', length, this.bytesRead);
+    console.log('read', length, this.bytesRead);
     return this.read(length - this.bytesRead);
   }
 
@@ -178,7 +179,12 @@ export class Chunk {
   }
 
   public resetBytesRead() {
+    console.log('resetBytesRead');
     this.bytesRead = 0;
+  }
+
+  public getBytesRead(): number {
+    return this.bytesRead;
   }
 };
 

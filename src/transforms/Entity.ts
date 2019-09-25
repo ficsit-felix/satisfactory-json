@@ -5,7 +5,8 @@ import { transformProperty } from './Property';
 // TODO _withNames
 export function transformEntity(builder: Builder) {
   builder
-    .bufferStart('_length', true)
+    .bufferStart('_entityLength', true)
+    .debug('_entityLength', ctx => ctx.tmp._entityLength)
     //.debug('_length', ctx => ctx.vars._length)
 
     .if(ctx => ctx.tmp._withNames, builder => {
@@ -25,7 +26,6 @@ export function transformEntity(builder: Builder) {
     })
     .call(transformProperties)
     //.exec(ctx => console.log('entity', ctx.obj))
-    .debugger()
     .int('_extraObjectCount', ctx => 0)
     .exec(ctx => {
       if (ctx.tmp._extraObjectCount !== 0) {
@@ -33,6 +33,11 @@ export function transformEntity(builder: Builder) {
       }
     })
     .call(transformExtra)
+
+  builder
+    .debug('>_entityLength', ctx => ctx.tmp._entityLength)
+    //.hexRemaining('missing', '_entityLength')
+    .exec(ctx => ctx.obj.missing !== '' && console.error('missing', ctx.obj.missing, ctx))
     // TODO read missing data
     .bufferEnd();
 }
