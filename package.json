@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@types/node": "^12.7.5",
+    "@types/pako": "^1.0.1",
     "commander": "^3.0.1",
     "ts-node": "^8.4.1",
     "typescript": "^3.6.3",
@@ -16,5 +17,8 @@
     "sav2json": "ts-node src/cli/sav2json.ts",
     "sav2json:js": "node lib/cli/sav2json.js",
     "sav2json:debug": "ts-node --inspect=5858 --debug-brk --ignore false src/cli/sav2json.ts"
+  },
+  "dependencies": {
+    "pako": "^1.0.10"
   }
 }

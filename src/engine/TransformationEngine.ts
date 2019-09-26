@@ -23,11 +23,12 @@ export class TransformationEngine {
   private buffers: Buffer[] = [];
   private bufferedBytes: number = 0;
   private bytesRead: number = 0;
-
+  private startCompressionCallback: (buffer: Buffer) => void;
   // TODO collects Buffers and then concat them all at once
 
 
-  constructor(rulesFunction: (builder: Builder) => void) {
+  constructor(rulesFunction: (builder: Builder) => void, startCompressionCallback: (buffer: Buffer) => void) {
+    this.startCompressionCallback = startCompressionCallback;
     const builder = new Builder();
     // build the rules
     rulesFunction(builder);
@@ -40,13 +41,12 @@ export class TransformationEngine {
     this.isLoading = isLoading;
   }
 
-  transform(buffer: Buffer, callback: TransformCallback) {
+  transform(buffer: Buffer) {
     this.bufferedBytes += buffer.length;
     if (this.bufferedBytes < this.needBytes) {
       console.log(`still missing ${this.needBytes - this.bufferedBytes} bytes`);
       this.buffers.push(buffer);
       // need to read more
-      callback();
       return;
     }
 
@@ -162,14 +162,19 @@ export class TransformationEngine {
         // put remaining bytes into buffer for next iteration
         this.buffers = [chunk.getRemaining()];
         break;
-      }
-      if (needBytes !== -1) { // -1 indicates that the command pointer should not advance
+      } else if (needBytes === -1) { // -1 indicates that the command pointer should not advance
+      } else if (needBytes === 0) {
         frame.currentCommand++;
+      } else if (needBytes === -2) { // -2 indicates turning on compression
+        frame.currentCommand++;
+        this.buffers = [];
+        this.needBytes = 0;
+        this.startCompressionCallback(chunk.getRemaining());
+        return;
       }
 
       //console.log(frame.ctx);
     }
-    callback();
     //console.log(saveGame);
   }
 

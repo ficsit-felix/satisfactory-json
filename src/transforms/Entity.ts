@@ -24,7 +24,13 @@ export function transformEntity(builder: Builder) {
         })
         .endArr();
     })
+
     .call(transformProperties)
+    /*.exec(ctx => {
+      if (ctx.path.startsWith('saveGame.actors[473]')) {
+        debugger;
+      }
+    })*/
     //.exec(ctx => console.log('entity', ctx.obj))
     .int('_extraObjectCount', ctx => 0)
     .exec(ctx => {
@@ -35,12 +41,17 @@ export function transformEntity(builder: Builder) {
     .call(transformExtra)
 
   builder
-  // TODO read missing data
+    // TODO read missing data
     //.debug('>_entityLength', ctx => ctx.tmp._entityLength)
-    //.hexRemaining('missing', '_entityLength')
-    //.exec(ctx => ctx.obj.missing !== '' && console.error('missing', ctx.obj.missing, ctx))
+    .hexRemaining('missing', '_entityLength')
+    .exec(ctx => {
+      if (ctx.obj.missing !== '') {
+        console.error('missing', ctx.obj.missing, ctx);
+        debugger;
+      }
+    })
 
-    
+
     .bufferEnd();
 }
 

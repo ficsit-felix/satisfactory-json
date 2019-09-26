@@ -40,6 +40,7 @@ export function transformStructProperty(builder: Builder) {
       'InventoryStack': builder => transformArbitraryStruct(builder),
       'ProjectileData': builder => transformArbitraryStruct(builder),
       'Guid': builder => transformGuid(builder),
+      'TrainSimulationData': builder => transformArbitraryStruct(builder),
       '$default': builder => builder.error(ctx => `Unknown struct property ${ctx.obj.type}`)
     })
     .endObj();

@@ -1,4 +1,4 @@
-import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand, BufferStartCommand, BufferEndCommand, SwitchCommand, BreakCommand, DebuggerCommand, HexCommand, AssertNullByteCommand, CallCommand, HexRemainingCommand, LoopBodyCommand, LoopHeaderCommand } from './commands';
+import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand, BufferStartCommand, BufferEndCommand, SwitchCommand, BreakCommand, DebuggerCommand, HexCommand, AssertNullByteCommand, CallCommand, HexRemainingCommand, LoopBodyCommand, LoopHeaderCommand, StartCompressionCommand } from './commands';
 
 export let functionCommands: { [id: string]: Command[] } = {};
 
@@ -197,6 +197,11 @@ export class Builder {
 
   public break(): Builder {
     this.commands.push(new BreakCommand());
+    return this;
+  }
+
+  public startCompression(): Builder {
+    this.commands.push(new StartCompressionCommand());
     return this;
   }
 }

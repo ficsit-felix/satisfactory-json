@@ -73,11 +73,12 @@ function transformHeader(builder: Builder) {
     .str('sessionName')
     .int('playDurationSeconds')
     .long('saveDateTime')
-    .if(ctx => {
-      return ctx.obj.saveHeaderType > 4;
-    }, bldr => {
-      bldr.byte('sessionVisibility');
-    })
+    .if(ctx =>
+      ctx.obj.saveHeaderType >= 5
+      , bldr =>
+        bldr.byte('sessionVisibility')
+    )
+    .if(ctx => ctx.obj.saveVersion >= 21, builder => builder.startCompression())
   //.endObj();
 }
 

@@ -4,6 +4,7 @@ export class Chunk {
   private buffer: Buffer;
   private cursor: number = 0;
   private rollbackCursor: number = 0;
+  private rollbackBytesRead: number = 0;
 
   // TODO pass bytesRead to the next Chunk
   private bytesRead: number = 0;
@@ -166,11 +167,13 @@ export class Chunk {
 
   public setRollbackPoint() {
     this.rollbackCursor = this.cursor;
+    this.rollbackBytesRead = this.bytesRead;
   }
 
   public rollback(): number {
     const gainedBytes = this.cursor - this.rollbackCursor;
     this.cursor = this.rollbackCursor;
+    this.bytesRead = this.rollbackBytesRead;
     return gainedBytes;
   }
 

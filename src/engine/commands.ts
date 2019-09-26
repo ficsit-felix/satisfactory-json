@@ -603,3 +603,12 @@ export class DebuggerCommand extends Command {
   }
 }
 
+
+export class StartCompressionCommand extends Command {
+  exec(_context: Context, _chunk: Chunk, _newStackFrameCallback: (commands: Command[]) => void, dropStackFrameCallback: () => void): number {
+    
+    // to break the while loop and let the compression kick in
+    return -2;
+  }
+}
+
