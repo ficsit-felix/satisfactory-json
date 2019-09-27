@@ -59,7 +59,7 @@ export function transformProperties(builder: Builder) {
   // TODO fix loop for writing
   builder
     .arr('properties')
-    .exec(ctx => ctx.tmp._propertiesCount = ctx.isLoading ? 999999999 : ctx.obj.properites.length)
+    .exec(ctx => ctx.tmp._propertiesCount = ctx.isLoading ? 999999999 : ctx.obj.length)
     .loop('_propertiesCount', builder => {
       builder.str('_name')
         //.debug('_name', ctx => ctx.vars._name)

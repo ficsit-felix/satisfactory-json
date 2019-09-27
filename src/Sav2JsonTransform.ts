@@ -32,7 +32,7 @@ export class Sav2JsonTransform extends Transform {
     if (this.compressionTransform) {
       this.compressionTransform.transform(chunk, this.transformationEngine);
     } else {
-      this.transformationEngine.transform(chunk);
+      this.transformationEngine.transformRead(chunk);
     }
     callback();
   }

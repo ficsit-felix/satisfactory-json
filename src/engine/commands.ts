@@ -1,6 +1,6 @@
-import { assert } from 'console';
-import { Chunk } from './Chunk';
-import { functionCommands } from './Builder';
+import { assert } from "console";
+import { Archive } from "./Archive";
+import { functionCommands } from "./Builder";
 
 /**
  * Name used to access a property or an array element
@@ -14,8 +14,6 @@ export interface Context {
   parent?: Context;
   isLoading: boolean;
   path: string;
-
-
 }
 
 // Generate global ids for all commands
@@ -23,7 +21,6 @@ let __veryGlobalId: number = 0;
 function genCmdId(): number {
   return __veryGlobalId++;
 }
-
 
 /*
 if name starts with _ it's a temporary variable
@@ -33,13 +30,47 @@ if name starts with _ it's a temporary variable
 if name starts with # it's a redirection
  -> #_index reads the value from the _index variable and sets/gets at that location
 */
+export enum ReferenceType {
+  OBJ, //
+  TMP, // _
+  INDIRECT_OBJ, // #
+  INDIRECT_TMP // #_
+}
+export interface Reference {
+  type: ReferenceType;
+  name: string;
+}
+
+function buildReference(name: Name): Reference {
+  let str = name.toString();
+
+  let type = ReferenceType.OBJ;
+
+  switch (str[0]) {
+    case "#":
+      if (str[1] === "_") {
+        type = ReferenceType.INDIRECT_TMP;
+      } else {
+        type = ReferenceType.INDIRECT_OBJ;
+      }
+      break;
+    case "_":
+      type = ReferenceType.TMP;
+      break;
+  }
+
+  return {
+    type: type,
+    name: str
+  };
+}
 
 function setVar(ctx: Context, name: Name, value: any): void {
   switch (name.toString().charAt(0)) {
-    case '#':
+    case "#":
       ctx.obj[getVar(ctx, name.toString().substring(1))] = value;
       break;
-    case '_':
+    case "_":
       ctx.tmp[name] = value;
       break;
     default:
@@ -50,15 +81,14 @@ function setVar(ctx: Context, name: Name, value: any): void {
 
 function getVar(ctx: Context, name: Name): any {
   switch (name.toString().charAt(0)) {
-    case '#':
+    case "#":
       return ctx.tmp[getVar(ctx, name.toString().substring(1))];
-    case '_':
+    case "_":
       return ctx.tmp[name];
     default:
       return ctx.obj[name];
   }
 }
-
 
 export abstract class Command {
   protected id: number;
@@ -66,7 +96,7 @@ export abstract class Command {
 
   constructor() {
     this.id = genCmdId();
-    this.location = new Error().stack!.split('\n')[4].split('at ')[1];
+    this.location = new Error().stack!.split("\n")[4].split("at ")[1];
   }
   /**
    * Executes this command
@@ -74,15 +104,15 @@ export abstract class Command {
    * or -1 to indicate that the command pointer should not advance (only useful if the newStackFrameCallback was called)
 
    */
-  abstract exec(ctx: Context,
-    chunk: Chunk,
+  abstract exec(
+    ctx: Context,
+    ar: Archive,
     newStackFrameCallback: (commands: Command[]) => void,
     dropStackFrameCallback: () => void
   ): number;
 }
 
 export class EnterObjectCommand extends Command {
-
   private name: string;
   constructor(name: string) {
     super();
@@ -108,7 +138,7 @@ export class EnterObjectCommand extends Command {
       locals: ctx.locals
     };
     ctx.obj = ctx.obj[this.name];
-    ctx.path = ctx.path + '.' + this.name;
+    ctx.path = ctx.path + "." + this.name;
     return 0;
   }
 }
@@ -126,9 +156,7 @@ export class LeaveObjectCommand extends Command {
   }
 }
 
-
 export class EnterArrayCommand extends Command {
-
   private name: string;
   constructor(name: string) {
     super();
@@ -154,7 +182,7 @@ export class EnterArrayCommand extends Command {
       locals: ctx.locals
     };
     ctx.obj = ctx.obj[this.name];
-    ctx.path = ctx.path + '.' + this.name;
+    ctx.path = ctx.path + "." + this.name;
     return 0;
   }
 }
@@ -172,7 +200,6 @@ export class LeaveArrayCommand extends Command {
 }
 
 export class EnterElemCommand extends Command {
-
   private index: Name;
   constructor(index: Name) {
     super();
@@ -185,7 +212,7 @@ export class EnterElemCommand extends Command {
     if (ctx.isLoading) {
       // Make sure the array element is created
       if (ctx.obj[index] === undefined) {
-        ctx.obj[index] = {}
+        ctx.obj[index] = {};
       }
     } else {
     }
@@ -200,7 +227,7 @@ export class EnterElemCommand extends Command {
       locals: ctx.locals
     };
     ctx.obj = ctx.obj[index];
-    ctx.path = ctx.path + '[' + index + ']';
+    ctx.path = ctx.path + "[" + index + "]";
     return 0;
   }
 }
@@ -217,127 +244,169 @@ export class LeaveElemCommand extends Command {
   }
 }
 
-
 export class IntCommand extends Command {
-  private name: Name;
+  private ref: Reference;
   private defaultValue?: (ctx: Context) => number;
   private shouldCount: boolean;
-  constructor(name: Name, defaultValue?: (ctx: Context) => number, shouldCount: boolean = true) {
+  constructor(
+    name: Name,
+    defaultValue?: (ctx: Context) => number,
+    shouldCount: boolean = true
+  ) {
     super();
-    this.name = name;
+    this.ref = buildReference(name);
     this.defaultValue = defaultValue;
     this.shouldCount = shouldCount;
   }
-  exec(ctx: Context, chunk: Chunk): number {
-    if (ctx.isLoading) {
-      const result = chunk.readInt(this.shouldCount);
+  exec(ctx: Context, ar: Archive): number {
+    const result = ar.transformInt(
+      ctx,
+      this.ref,
+      this.shouldCount,
+      this.defaultValue
+    );
+    if (!result) {
+      return ar.missingBytes;
+    }
+    return 0;
+
+    /*    if (ctx.isLoading) {
+      const result = ar.readInt(this.shouldCount);
       if (result === undefined) {
         // return the amount of missing bytes
-        return chunk.missingBytes;
+        return ar.missingBytes;
       }
       setVar(ctx, this.name, result);
       return 0;
     } else {
+      const value = getVar(ctx, this.name);
+
+      ar.writeInt(value, this.shouldCount);
+
       // TODO writing
-      throw Error('Unimplemented');
+      throw Error("Unimplemented");
       return 0;
-    }
+    }*/
   }
 }
 
-
 export class StrCommand extends Command {
-  private name: Name;
+  private ref: Reference;
   private shouldCount: boolean;
   constructor(name: Name, shouldCount: boolean) {
     super();
-    this.name = name;
+    this.ref = buildReference(name);
     this.shouldCount = shouldCount;
   }
-  exec(ctx: Context, chunk: Chunk): number {
-    if (ctx.isLoading) {
-      const result = chunk.readStr(this.shouldCount);
+  exec(ctx: Context, ar: Archive): number {
+    const result = ar.transformStr(ctx, this.ref, this.shouldCount);
+    if (!result) {
+      return ar.missingBytes;
+    }
+    return 0;
+
+    /*    if (ctx.isLoading) {
+      const result = ar.readStr(this.shouldCount);
       if (result === undefined) {
-        return chunk.missingBytes;
+        return ar.missingBytes;
       }
       setVar(ctx, this.name, result);
       return 0;
     } else {
       // TODO writing
-      throw Error('Unimplemented');
+      throw Error("Unimplemented");
       return 0;
-    }
+    }*/
   }
 }
 
 export class LongCommand extends Command {
-  private name: Name;
+  private ref: Reference;
   constructor(name: Name) {
     super();
-    this.name = name;
+    this.ref = buildReference(name);
   }
-  exec(ctx: Context, chunk: Chunk): number {
-    if (ctx.isLoading) {
-      const result = chunk.readLong();
+  exec(ctx: Context, ar: Archive): number {
+    const result = ar.transformLong(ctx, this.ref, true);
+    if (!result) {
+      return ar.missingBytes;
+    }
+    return 0;
+
+    /*    if (ctx.isLoading) {
+      const result = ar.readLong();
       if (result === undefined) {
         // return the amount of missing bytes
-        return chunk.missingBytes;
+        return ar.missingBytes;
       }
       setVar(ctx, this.name, result);
       return 0;
     } else {
       // TODO writing
-      throw Error('Unimplemented');
+      throw Error("Unimplemented");
       return 0;
-    }
+    }*/
   }
 }
 
 export class ByteCommand extends Command {
-  private name: Name;
+  private ref: Reference;
   private shouldCount: boolean;
   constructor(name: Name, shouldCount: boolean) {
     super();
-    this.name = name;
+    this.ref = buildReference(name);
     this.shouldCount = shouldCount;
   }
-  exec(ctx: Context, chunk: Chunk): number {
+  exec(ctx: Context, ar: Archive): number {
+    const result = ar.transformByte(ctx, this.ref, this.shouldCount);
+    if (!result) {
+      return ar.missingBytes;
+    }
+    return 0;
+    /*
     if (ctx.isLoading) {
-      const result = chunk.readByte(this.shouldCount);
+      const result = ar.readByte(this.shouldCount);
       if (result === undefined) {
         // return the amount of missing bytes
-        return chunk.missingBytes;
+        return ar.missingBytes;
       }
       setVar(ctx, this.name, result);
       return 0;
     } else {
       // TODO writing
-      throw Error('Unimplemented');
+      throw Error("Unimplemented");
       return 0;
-    }
+    }*/
   }
 }
 
 export class FloatCommand extends Command {
-  private name: Name;
+  private ref: Reference;
   constructor(name: Name) {
     super();
-    this.name = name;
+    this.ref = buildReference(name);
   }
-  exec(ctx: Context, chunk: Chunk): number {
+  exec(ctx: Context, ar: Archive): number {
+    const result = ar.transformFloat(ctx, this.ref, true);
+    if (!result) {
+      return ar.missingBytes;
+    }
+
+    return 0;
+    /*
     if (ctx.isLoading) {
-      const result = chunk.readFloat();
+      const result = ar.readFloat();
       if (result === undefined) {
         // return the amount of missing bytes
-        return chunk.missingBytes;
+        return ar.missingBytes;
       }
       setVar(ctx, this.name, result);
       return 0;
     } else {
       // TODO writing
-      throw Error('Unimplemented');
+      throw Error("Unimplemented");
       return 0;
-    }
+    }*/
   }
 }
 
@@ -348,12 +417,18 @@ export class AssertNullByteCommand extends Command {
     this.shouldCount = shouldCount;
   }
 
-  exec(ctx: Context, chunk: Chunk): number {
+  exec(ctx: Context, ar: Archive): number {
+    const result = ar.assertNullByte(ctx, this.shouldCount);
+    if (!result) {
+      return ar.missingBytes;
+    }
+    return 0;
+    /*
     if (ctx.isLoading) {
-      const result = chunk.readByte(this.shouldCount);
+      const result = ar.readByte(this.shouldCount);
       if (result === undefined) {
         // return the amount of missing bytes
-        return chunk.missingBytes;
+        return ar.missingBytes;
       }
       const zero = result;
       if (zero !== 0) {
@@ -362,42 +437,46 @@ export class AssertNullByteCommand extends Command {
       return 0;
     } else {
       // TODO writing
-      throw Error('Unimplemented');
+      throw Error("Unimplemented");
       return 0;
-    }
+    }*/
   }
 }
 
 export class HexCommand extends Command {
-  private name: Name;
+  private ref: Reference;
   private bytes: number;
   private shouldCount: boolean;
   constructor(name: Name, bytes: number, shouldCount: boolean) {
     super();
-    this.name = name;
+    this.ref = buildReference(name);
     this.bytes = bytes;
     this.shouldCount = shouldCount;
   }
-  exec(ctx: Context, chunk: Chunk): number {
+  exec(ctx: Context, ar: Archive): number {
+    const result = ar.transformHex(ctx, this.ref, this.bytes, this.shouldCount);
+    if (!result) {
+      return ar.missingBytes;
+    }
+    return 0;
+    /*
     if (ctx.isLoading) {
-      const result = chunk.read(this.bytes, this.shouldCount);
+      const result = ar.read(this.bytes, this.shouldCount);
       if (result === undefined) {
         // return the amount of missing bytes
-        return chunk.missingBytes;
+        return ar.missingBytes;
       }
-      setVar(ctx, this.name, result.toString('hex'));
+      setVar(ctx, this.name, result.toString("hex"));
       return 0;
     } else {
       // TODO writing
-      throw Error('Unimplemented');
+      throw Error("Unimplemented");
       return 0;
-    }
+    }*/
   }
 }
 
-
 export class LoopHeaderCommand extends Command {
-
   private times: Name;
   constructor(times: Name) {
     super();
@@ -413,14 +492,16 @@ export class LoopHeaderCommand extends Command {
 }
 
 export class LoopBodyCommand extends Command {
-
   private loopBodyCommands: Command[];
   constructor(loopBodyCommands: Command[]) {
     super();
     this.loopBodyCommands = loopBodyCommands;
   }
-  exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
-
+  exec(
+    ctx: Context,
+    ar: Archive,
+    newStackFrameCallback: (commands: Command[]) => void
+  ): number {
     ctx.locals.index++;
     ctx.tmp._index = ctx.locals.index;
 
@@ -440,13 +521,21 @@ export class CondCommand extends Command {
   private cond: (ctx: Context) => boolean;
   private thenCommands: Command[];
   private elseCommands?: Command[];
-  constructor(cond: (ctx: Context) => boolean, thenCommands: Command[], elseCommands?: Command[]) {
+  constructor(
+    cond: (ctx: Context) => boolean,
+    thenCommands: Command[],
+    elseCommands?: Command[]
+  ) {
     super();
     this.cond = cond;
     this.thenCommands = thenCommands;
     this.elseCommands = elseCommands;
   }
-  exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
+  exec(
+    ctx: Context,
+    ar: Archive,
+    newStackFrameCallback: (commands: Command[]) => void
+  ): number {
     const result = this.cond(ctx);
     //console.log(`----------COND: ${result}`);
     if (result) {
@@ -466,8 +555,11 @@ export class CallCommand extends Command {
     super();
     this.name = name;
   }
-  exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
-
+  exec(
+    ctx: Context,
+    ar: Archive,
+    newStackFrameCallback: (commands: Command[]) => void
+  ): number {
     if (functionCommands[this.name] === undefined) {
       throw new Error(`No commands build for function ${this.name}`);
     }
@@ -482,79 +574,98 @@ export class ExecCommand extends Command {
     super();
     this.code = code;
   }
-  exec(ctx: Context, chunk: Chunk): number {
+  exec(ctx: Context, ar: Archive): number {
     this.code(ctx);
     return 0;
   }
 }
 
-
 export class BufferStartCommand extends Command {
-  private name: Name;
+  private ref: Reference;
   private resetBytesRead: boolean;
   constructor(name: Name, resetBytesRead: boolean) {
     super();
-    this.name = name;
+    this.ref = buildReference(name);
     this.resetBytesRead = resetBytesRead;
   }
-  exec(ctx: Context, chunk: Chunk): number {
+  exec(ctx: Context, ar: Archive): number {
+    const result = ar.startBuffer(ctx, this.ref, this.resetBytesRead);
+    if (!result) {
+      return ar.missingBytes;
+    }
+    return 0;
+    /*
     if (ctx.isLoading) {
-      const result = chunk.readInt();
+      const result = ar.readInt();
       if (result === undefined) {
-        return chunk.missingBytes;
+        return ar.missingBytes;
       }
       setVar(ctx, this.name, result);
       if (this.resetBytesRead) {
-        chunk.resetBytesRead();
+        ar.resetBytesRead();
       }
 
       // TODO preload the next ${result} bytes?
-
     } else {
       // TODO writing
-      throw Error('Unimplemented');
+      throw Error("Unimplemented");
     }
     return 0;
+    */
   }
 }
 
 export class BufferEndCommand extends Command {
-
-  exec(ctx: Context, chunk: Chunk): number {
-    if (ctx.isLoading) {
-
-    } else {
-      // TODO writing
-      throw Error('Unimplemented');
+  exec(ctx: Context, ar: Archive): number {
+    const result = ar.endBuffer();
+    if (!result) {
+      return ar.missingBytes;
     }
     return 0;
+    /*if (ctx.isLoading) {
+    } else {
+      // TODO writing
+      throw Error("Unimplemented");
+    }
+    return 0;*/
   }
 }
 
 export class HexRemainingCommand extends Command {
-  private name: Name;
-  private lengthVar: Name;
+  private ref: Reference;
+  private lengthRef: Reference;
   constructor(name: Name, lengthVar: Name) {
     super();
-    this.name = name;
-    this.lengthVar = lengthVar;
+    this.ref = buildReference(name);
+    this.lengthRef = buildReference(lengthVar);
   }
-  exec(ctx: Context, chunk: Chunk): number {
+  exec(ctx: Context, ar: Archive): number {
+    const result = ar.transformHexRemaining(
+      ctx,
+      this.ref,
+      this.lengthRef,
+      true
+    );
+    if (!result) {
+      return ar.missingBytes;
+    }
+    return 0;
+    /*
     if (ctx.isLoading) {
       const length = getVar(ctx, this.lengthVar);
-      const result = chunk.readUntil(length);
+      const result = ar.readUntil(length);
 
       if (result === undefined) {
         // return the amount of missing bytes
-        return chunk.missingBytes;
+        return ar.missingBytes;
       }
-      setVar(ctx, this.name, result.toString('hex'));
+      setVar(ctx, this.name, result.toString("hex"));
       return 0;
     } else {
       // TODO writing
-      throw Error('Unimplemented');
+      throw Error("Unimplemented");
       return 0;
-    }
+    }*/
   }
 }
 
@@ -566,49 +677,69 @@ export class SwitchCommand extends Command {
     this.name = name;
     this.cases = cases;
   }
-  exec(ctx: Context, chunk: Chunk, newStackFrameCallback: (commands: Command[]) => void): number {
-    if (ctx.isLoading) {
+  exec(
+    ctx: Context,
+    ar: Archive,
+    newStackFrameCallback: (commands: Command[]) => void
+  ): number {
+    const value = getVar(ctx, this.name).toString();
+    //console.log(`Fetch ${value}`);
 
-      const value = getVar(ctx, this.name).toString();
-      //console.log(`Fetch ${value}`);
-
-      if (this.cases[value] !== undefined) {
-        newStackFrameCallback(this.cases[value]);
-      } else if (this.cases['$default'] !== undefined) {
-        newStackFrameCallback(this.cases['$default']);
-      } else {
-        console.warn(`No case found for ${value} and no default case provided`);
-      }
-
+    if (this.cases[value] !== undefined) {
+      newStackFrameCallback(this.cases[value]);
+    } else if (this.cases["$default"] !== undefined) {
+      newStackFrameCallback(this.cases["$default"]);
     } else {
-      // TODO writing
-      throw Error('Unimplemented');
+      console.warn(`No case found for ${value} and no default case provided`);
     }
     return 0;
   }
 }
 
 export class BreakCommand extends Command {
-
-  exec(_context: Context, _chunk: Chunk, _newStackFrameCallback: (commands: Command[]) => void, dropStackFrameCallback: () => void): number {
+  exec(
+    _context: Context,
+    _ar: Archive,
+    _newStackFrameCallback: (commands: Command[]) => void,
+    dropStackFrameCallback: () => void
+  ): number {
     dropStackFrameCallback();
     return 0;
   }
 }
 
 export class DebuggerCommand extends Command {
-  exec(_context: Context, _chunk: Chunk, _newStackFrameCallback: (commands: Command[]) => void, dropStackFrameCallback: () => void): number {
+  exec(
+    _context: Context,
+    _ar: Archive,
+    _newStackFrameCallback: (commands: Command[]) => void,
+    dropStackFrameCallback: () => void
+  ): number {
     debugger;
     return 0;
   }
 }
 
-
 export class StartCompressionCommand extends Command {
-  exec(_context: Context, _chunk: Chunk, _newStackFrameCallback: (commands: Command[]) => void, dropStackFrameCallback: () => void): number {
-    
+  exec(
+    _context: Context,
+    _ar: Archive,
+    _newStackFrameCallback: (commands: Command[]) => void,
+    dropStackFrameCallback: () => void
+  ): number {
     // to break the while loop and let the compression kick in
     return -2;
   }
 }
 
+export class EndSaveGameCommand extends Command {
+  exec(
+    ctx: Context,
+    ar: Archive,
+    newStackFrameCallback: (commands: Command[]) => void,
+    dropStackFrameCallback: () => void
+  ): number {
+    ar.endSaveGame();
+    return -3;
+  }
+}

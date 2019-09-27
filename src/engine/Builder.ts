@@ -1,4 +1,34 @@
-import { Name, Command, EnterObjectCommand, LeaveObjectCommand, IntCommand, Context, StrCommand, LongCommand, ByteCommand, CondCommand, EnterArrayCommand, LeaveArrayCommand, FloatCommand, EnterElemCommand, LeaveElemCommand, ExecCommand, BufferStartCommand, BufferEndCommand, SwitchCommand, BreakCommand, DebuggerCommand, HexCommand, AssertNullByteCommand, CallCommand, HexRemainingCommand, LoopBodyCommand, LoopHeaderCommand, StartCompressionCommand } from './commands';
+import {
+  Name,
+  Command,
+  EnterObjectCommand,
+  LeaveObjectCommand,
+  IntCommand,
+  Context,
+  StrCommand,
+  LongCommand,
+  ByteCommand,
+  CondCommand,
+  EnterArrayCommand,
+  LeaveArrayCommand,
+  FloatCommand,
+  EnterElemCommand,
+  LeaveElemCommand,
+  ExecCommand,
+  BufferStartCommand,
+  BufferEndCommand,
+  SwitchCommand,
+  BreakCommand,
+  DebuggerCommand,
+  HexCommand,
+  AssertNullByteCommand,
+  CallCommand,
+  HexRemainingCommand,
+  LoopBodyCommand,
+  LoopHeaderCommand,
+  StartCompressionCommand,
+  EndSaveGameCommand
+} from "./commands";
 
 export let functionCommands: { [id: string]: Command[] } = {};
 
@@ -58,7 +88,11 @@ export class Builder {
     return this;
   }
 
-  public int(name: Name, defaultValue?: (ctx: Context) => number, shouldCount = true): Builder {
+  public int(
+    name: Name,
+    defaultValue?: (ctx: Context) => number,
+    shouldCount = true
+  ): Builder {
     this.commands.push(new IntCommand(name, defaultValue, shouldCount));
     return this;
   }
@@ -88,15 +122,14 @@ export class Builder {
     return this;
   }
 
-
   public call(rulesFunction: (builder: Builder) => void) {
-    if (rulesFunction.name === '') {
-      throw new Error('call() can only be used with named functions');
+    if (rulesFunction.name === "") {
+      throw new Error("call() can only be used with named functions");
     }
 
     // Only build each function once
     if (functionCommands[rulesFunction.name] === undefined) {
-      console.log('building', rulesFunction.name);
+      console.log("building", rulesFunction.name);
       // Already set this, so that we don't get into infinite recursion
       functionCommands[rulesFunction.name] = [];
 
@@ -109,7 +142,7 @@ export class Builder {
   }
   /**
    * Execute arbitrary javascript code when the TransformEngine gets to this point
-   * @param code 
+   * @param code
    */
   public exec(code: (ctx: Context) => void) {
     this.commands.push(new ExecCommand(code));
@@ -127,20 +160,25 @@ export class Builder {
   }
 
   public error(message: (ctx: Context) => string) {
-    this.commands.push(new ExecCommand(ctx => { throw new Error(message(ctx)); }));
+    this.commands.push(
+      new ExecCommand(ctx => {
+        throw new Error(message(ctx));
+      })
+    );
     return this;
   }
 
-
   /**
    * Do two different things depending on the condition
-   * @param cond 
-   * @param thenBranch 
-   * @param elseBranch 
+   * @param cond
+   * @param thenBranch
+   * @param elseBranch
    */
-  public if(cond: (ctx: Context) => boolean,
+  public if(
+    cond: (ctx: Context) => boolean,
     thenBranch: (builder: Builder) => void,
-    elseBranch?: (builder: Builder) => void): Builder {
+    elseBranch?: (builder: Builder) => void
+  ): Builder {
     const thenBuilder = new Builder();
     thenBranch(thenBuilder);
     let elseBuilder = undefined;
@@ -149,17 +187,21 @@ export class Builder {
       elseBranch(elseBuilder);
     }
 
-    this.commands.push(new CondCommand(cond,
-      thenBuilder.getCommands(),
-      elseBuilder === undefined ? undefined : elseBuilder.getCommands()))
+    this.commands.push(
+      new CondCommand(
+        cond,
+        thenBuilder.getCommands(),
+        elseBuilder === undefined ? undefined : elseBuilder.getCommands()
+      )
+    );
     return this;
   }
 
   /**
    * Does the same thing a couple of times.
    * Inside the loopBody, _index will be set to the current index
-   * @param times 
-   * @param loopBody 
+   * @param times
+   * @param loopBody
    */
   public loop(times: Name, loopBody: (builder: Builder) => void): Builder {
     const loopBodyBuilder = new Builder();
@@ -184,14 +226,17 @@ export class Builder {
     return this;
   }
 
-  public switch(name: Name, cases: { [id: string]: (builder: Builder) => void }): Builder {
+  public switch(
+    name: Name,
+    cases: { [id: string]: (builder: Builder) => void }
+  ): Builder {
     const casesCommands: { [id: string]: Command[] } = {};
     for (const key of Object.keys(cases)) {
       const builder = new Builder();
       cases[key](builder);
       casesCommands[key] = builder.getCommands();
     }
-    this.commands.push(new SwitchCommand(name, casesCommands))
+    this.commands.push(new SwitchCommand(name, casesCommands));
     return this;
   }
 
@@ -202,6 +247,11 @@ export class Builder {
 
   public startCompression(): Builder {
     this.commands.push(new StartCompressionCommand());
+    return this;
+  }
+
+  public endSaveGame(): Builder {
+    this.commands.push(new EndSaveGameCommand());
     return this;
   }
 }

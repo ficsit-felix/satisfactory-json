@@ -1,7 +1,7 @@
-import { Transform, TransformCallback } from 'stream';
-import { TransformationEngine } from './TransformationEngine';
-import { Chunk } from './Chunk';
-import { inflate, deflate } from 'pako';
+import { Transform, TransformCallback } from "stream";
+import { TransformationEngine } from "./TransformationEngine";
+import { Archive } from "./Archive";
+import { inflate, deflate } from "pako";
 
 export class CompressionTransform extends Transform {
   private buffers: Buffer[] = [];
@@ -13,7 +13,7 @@ export class CompressionTransform extends Transform {
   private packageFileTag: bigint = 2653586369n;
 
   constructor() {
-    super();
+    super({ highWaterMark: 131072 });
   }
 
   _transform(buffer: Buffer, encoding: string, callback: TransformCallback) {
@@ -25,7 +25,7 @@ export class CompressionTransform extends Transform {
       this.buffers = [];
     }
     while (this.bufferedBytes >= this.maxChunkSize) {
-      const chunk = buffer.slice(this.maxChunkSize);
+      const chunk = buffer.slice(0, this.maxChunkSize);
       this.bufferedBytes -= this.maxChunkSize;
       const deflatedChunk = deflate(chunk);
       const chunkHeader = new Buffer(48);

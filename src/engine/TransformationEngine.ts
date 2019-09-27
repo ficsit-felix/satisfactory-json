@@ -1,18 +1,18 @@
-import { Builder } from './Builder';
-import { Command, Context, LoopBodyCommand } from './commands';
-import { inspect } from 'util';
-import { TransformCallback } from 'stream';
-import { Chunk } from './Chunk';
+import { Builder } from "./Builder";
+import { Command, Context, LoopBodyCommand } from "./commands";
+import { inspect } from "util";
+import { TransformCallback } from "stream";
+import { Archive, ReadArchive, WriteArchive } from "./Archive";
+import { SaveGame } from "../types";
+import { threadId } from "worker_threads";
 
 interface StackFrame {
   commands: Command[];
   currentCommand: number;
   ctx: Context;
-};
+}
 
 export class TransformationEngine {
-
-
   private commands: Command[];
   private isLoading: boolean = false;
   private stack: StackFrame[] = [];
@@ -26,22 +26,24 @@ export class TransformationEngine {
   private startCompressionCallback: (buffer: Buffer) => void;
   // TODO collects Buffers and then concat them all at once
 
-
-  constructor(rulesFunction: (builder: Builder) => void, startCompressionCallback: (buffer: Buffer) => void) {
+  constructor(
+    rulesFunction: (builder: Builder) => void,
+    startCompressionCallback: (buffer: Buffer) => void
+  ) {
     this.startCompressionCallback = startCompressionCallback;
     const builder = new Builder();
     // build the rules
     rulesFunction(builder);
     this.commands = builder.getCommands();
 
-    console.log('commands', inspect(this.commands, false, 10));
+    console.log("commands", inspect(this.commands, false, 10));
   }
 
   prepare(isLoading: boolean) {
     this.isLoading = isLoading;
   }
 
-  transform(buffer: Buffer) {
+  transformRead(buffer: Buffer) {
     this.bufferedBytes += buffer.length;
     if (this.bufferedBytes < this.needBytes) {
       console.log(`still missing ${this.needBytes - this.bufferedBytes} bytes`);
@@ -58,19 +60,17 @@ export class TransformationEngine {
     }
     this.needBytes = 0;
 
-
-    const chunk = new Chunk(buffer, this.bytesRead);
+    const chunk = new ReadArchive(buffer, this.bytesRead);
 
     if (this.stack.length === 0) {
-      console.info('Starting program...');
+      console.info("Starting program...");
       // Stack empty: Begin of program or something went wrong
 
-      const saveGame = {};// TODO put save game here when saving
+      const saveGame = {}; // TODO put save game here when saving
 
       // make this global for debugging purposes
       // @ts-ignore
       global.saveGame = saveGame;
-
 
       const frame = {
         commands: this.commands,
@@ -80,7 +80,7 @@ export class TransformationEngine {
           tmp: {},
           locals: {},
           isLoading: this.isLoading,
-          path: 'saveGame'
+          path: "saveGame"
         }
       };
       this.stack.push(frame);
@@ -93,7 +93,7 @@ export class TransformationEngine {
         // move one stack frame up
         this.stack.pop();
         if (this.stack.length === 0) {
-          console.warn('No more stack frames');
+          console.warn("No more stack frames");
           //throw new Error('EOW');
           // End of program?
           break;
@@ -104,10 +104,12 @@ export class TransformationEngine {
 
       const cmd = frame.commands[frame.currentCommand];
       //console.log('executing', cmd);
-      const needBytes = cmd.exec(frame.ctx, chunk, commands => {
-
-        //        console.log(frame.ctx.vars);
-        /* const vars = {
+      const needBytes = cmd.exec(
+        frame.ctx,
+        chunk,
+        commands => {
+          //        console.log(frame.ctx.vars);
+          /* const vars = {
            _length: frame.ctx.vars._length,
            _index: frame.ctx.vars._index,
            _name: frame.ctx.vars._name,
@@ -122,34 +124,40 @@ export class TransformationEngine {
            _childCount: frame.ctx.vars._childCount,
          };*/
 
-        // create new stack frame
-        this.stack.push({
-          commands,
-          currentCommand: 0,
-          ctx: /*frame.ctx*/{
-            obj: frame.ctx.obj,
-            tmp: frame.ctx.tmp,//Object.assign({}, frame.ctx.vars), // shallow copy the variables so that the old ones still will be there when the stack is popped
-            locals: {},
-            parent: frame.ctx.parent,
-            isLoading: frame.ctx.isLoading,
-            path: frame.ctx.path
-          }
-        });
-      }, () => {
-        // Pop the stack to the previous loop command
-        let frame = this.stack.pop();
+          // create new stack frame
+          this.stack.push({
+            commands,
+            currentCommand: 0,
+            ctx: /*frame.ctx*/ {
+              obj: frame.ctx.obj,
+              tmp: frame.ctx.tmp, //Object.assign({}, frame.ctx.vars), // shallow copy the variables so that the old ones still will be there when the stack is popped
+              locals: {},
+              parent: frame.ctx.parent,
+              isLoading: frame.ctx.isLoading,
+              path: frame.ctx.path
+            }
+          });
+        },
+        () => {
+          // Pop the stack to the previous loop command
+          let frame = this.stack.pop();
 
-        while (frame !== undefined && !(frame.commands[frame.currentCommand] instanceof LoopBodyCommand)) {
-          frame = this.stack.pop();
+          while (
+            frame !== undefined &&
+            !(frame.commands[frame.currentCommand] instanceof LoopBodyCommand)
+          ) {
+            frame = this.stack.pop();
+          }
+          if (frame === undefined) {
+            throw new Error("No LoopCommand found on stack that can be broken");
+          }
+          // move command pointer after the loop command
+          frame.currentCommand++;
+          this.stack.push(frame);
         }
-        if (frame === undefined) {
-          throw new Error('No LoopCommand found on stack that can be broken');
-        }
-        // move command pointer after the loop command
-        frame.currentCommand++;
-        this.stack.push(frame);
-      });
-      if (needBytes > 0) { // This command needs more bytes to successfully execute
+      );
+      if (needBytes > 0) {
+        // This command needs more bytes to successfully execute
 
         /*console.log(chunk.cursor);
         console.log('---------------------------');
@@ -162,10 +170,12 @@ export class TransformationEngine {
         // put remaining bytes into buffer for next iteration
         this.buffers = [chunk.getRemaining()];
         break;
-      } else if (needBytes === -1) { // -1 indicates that the command pointer should not advance
+      } else if (needBytes === -1) {
+        // -1 indicates that the command pointer should not advance
       } else if (needBytes === 0) {
         frame.currentCommand++;
-      } else if (needBytes === -2) { // -2 indicates turning on compression
+      } else if (needBytes === -2) {
+        // -2 indicates turning on compression
         frame.currentCommand++;
         this.buffers = [];
         this.needBytes = 0;
@@ -178,6 +188,134 @@ export class TransformationEngine {
     //console.log(saveGame);
   }
 
+  private writeArchive?: WriteArchive;
+
+  public getWriteArchive(): WriteArchive | undefined {
+    return this.writeArchive;
+  }
+
+  // return true if writing the save file is not finished
+  transformWrite(saveGame: SaveGame): boolean {
+    const ar = this.writeArchive ? this.writeArchive : new WriteArchive();
+    this.writeArchive = ar;
+
+    if (this.stack.length === 0) {
+      console.info("Starting program...");
+      // Stack empty: Begin of program or something went wrong
+
+      // make this global for debugging purposes
+      // @ts-ignore
+      global.saveGame = saveGame;
+
+      const frame = {
+        commands: this.commands,
+        currentCommand: 0,
+        ctx: {
+          obj: saveGame,
+          tmp: {},
+          locals: {},
+          isLoading: this.isLoading,
+          path: "saveGame"
+        }
+      };
+      this.stack.push(frame);
+    }
+
+    while (true) {
+      // get current stack frame
+      const frame = this.stack[this.stack.length - 1];
+      if (frame.currentCommand >= frame.commands.length) {
+        // move one stack frame up
+        this.stack.pop();
+        if (this.stack.length === 0) {
+          console.warn("No more stack frames");
+          //throw new Error('EOW');
+          // End of program?
+          break;
+        }
+
+        continue;
+      }
+
+      const cmd = frame.commands[frame.currentCommand];
+      //console.log('executing', cmd);
+      const needBytes = cmd.exec(
+        frame.ctx,
+        ar,
+        commands => {
+          //        console.log(frame.ctx.vars);
+          /* const vars = {
+           _length: frame.ctx.vars._length,
+           _index: frame.ctx.vars._index,
+           _name: frame.ctx.vars._name,
+           _entryCount: frame.ctx.vars._entryCount,
+           _tagSize: frame.ctx.vars._tagSize,
+           _type: frame.ctx.vars._type,
+           _keyTransform: frame.ctx.vars._keyTransform,
+           _valueTransform: frame.ctx.vars._valueTransform,
+           _withNames: frame.ctx.vars._withNames,
+           _className: frame.ctx.vars._className,
+           _itemCount: frame.ctx.vars._itemCount,
+           _childCount: frame.ctx.vars._childCount,
+         };*/
+
+          // create new stack frame
+          this.stack.push({
+            commands,
+            currentCommand: 0,
+            ctx: /*frame.ctx*/ {
+              obj: frame.ctx.obj,
+              tmp: frame.ctx.tmp, //Object.assign({}, frame.ctx.vars), // shallow copy the variables so that the old ones still will be there when the stack is popped
+              locals: {},
+              parent: frame.ctx.parent,
+              isLoading: frame.ctx.isLoading,
+              path: frame.ctx.path
+            }
+          });
+        },
+        () => {
+          // Pop the stack to the previous loop command
+          let frame = this.stack.pop();
+
+          while (
+            frame !== undefined &&
+            !(frame.commands[frame.currentCommand] instanceof LoopBodyCommand)
+          ) {
+            frame = this.stack.pop();
+          }
+          if (frame === undefined) {
+            throw new Error("No LoopCommand found on stack that can be broken");
+          }
+          // move command pointer after the loop command
+          frame.currentCommand++;
+          this.stack.push(frame);
+        }
+      );
+      if (needBytes > 0) {
+        // This command has filled a chunk
+        // TODO write out chunk
+
+        return true;
+      } else if (needBytes === -1) {
+        // -1 indicates that the command pointer should not advance
+      } else if (needBytes === 0) {
+        frame.currentCommand++;
+      } else if (needBytes === -2) {
+        // -2 indicates turning on compression
+        frame.currentCommand++;
+        this.startCompressionCallback(this.writeArchive.getHeaderChunk());
+        return true;
+      } else if (needBytes === -3) {
+        // end of the save game
+        return false;
+      }
+
+      //console.log(frame.ctx);
+    }
+    //console.log(saveGame);
+    return true;
+  }
+
   end(callback: (error?: Error | null | undefined) => void) {
     if (this.needBytes !== 0) {
       callback(new Error(`Missing ${this.needBytes} bytes`));
@@ -185,6 +323,5 @@ export class TransformationEngine {
       // TODO check for spare bytes
       callback();
     }
-
   }
 }

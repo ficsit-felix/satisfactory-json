@@ -1,6 +1,6 @@
 import { Transform, TransformCallback } from 'stream';
 import { TransformationEngine } from './TransformationEngine';
-import { Chunk } from './Chunk';
+import { Archive, ReadArchive } from './Archive';
 import { inflate } from 'pako';
 
 export class DecompressionTransform {
@@ -27,7 +27,7 @@ export class DecompressionTransform {
     }
     this.needBytes = 0;
 
-    const chunk = new Chunk(buffer, 0);
+    const chunk = new ReadArchive(buffer, 0);
 
 
     while (true) {
@@ -45,11 +45,11 @@ export class DecompressionTransform {
       const uncompressedBuffer = Buffer.from(this.firstRead ? inflated.slice(4) : inflated);
       this.firstRead = false;
 
-      transformationEngine.transform(uncompressedBuffer);
+      transformationEngine.transformRead(uncompressedBuffer);
     }
   }
 
-  readChunk(chunk: Chunk): Buffer | undefined {
+  readChunk(chunk: ReadArchive): Buffer | undefined {
     // read header
     const packageFileTag = chunk.readLong(); // c1832a9e 00000000
     if (packageFileTag === undefined) {

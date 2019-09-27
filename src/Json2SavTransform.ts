@@ -1,8 +1,8 @@
-import { Transform, TransformCallback } from 'stream';
-import { assert } from 'console';
-import { TransformationEngine } from './engine/TransformationEngine';
-import { transform } from './transforms/transform';
-import { CompressionTransform } from './engine/CompressionTransform';
+import { Transform, TransformCallback } from "stream";
+import { assert } from "console";
+import { TransformationEngine } from "./engine/TransformationEngine";
+import { transform } from "./transforms/transform";
+import { CompressionTransform } from "./engine/CompressionTransform";
 
 export class Json2SavTransform extends Transform {
   private transformationEngine: TransformationEngine;
@@ -11,33 +11,48 @@ export class Json2SavTransform extends Transform {
   constructor() {
     super({ writableObjectMode: true });
 
-    console.time('buildRules');
-    this.transformationEngine = new TransformationEngine(transform, (buffer) => {
-      console.log('enable compression')
+    console.time("buildRules");
+    this.transformationEngine = new TransformationEngine(transform, buffer => {
+      console.log("enable compression");
+
+      // write header to file
+      this.push(buffer);
+
       this.compressionTransform = new CompressionTransform();
-      //this.compressionTransform.transform(buffer, this.transformationEngine);
+      this.compressionTransform.on("data", chunk => {
+        this.push(chunk);
+      });
     });
 
-    this.transformationEngine.prepare(true);
-    console.timeEnd('buildRules');
+    this.transformationEngine.prepare(false);
+    console.timeEnd("buildRules");
   }
 
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {
-
     console.log(encoding);
+    let continueWriting = true;
+    while (continueWriting) {
+      continueWriting = this.transformationEngine.transformWrite(chunk);
 
-    /*if (this.compressionTransform) {
-      this.compressionTransform._transform(chunk, this.transformationEngine);
-    } else {
-      this.transformationEngine.transform(chunk);
-    }*/
+      // chunk is filled
+      const ar = this.transformationEngine.getWriteArchive();
+      if (ar) {
+        for (const chunk of ar.getFilledChunks()) {
+          if (this.compressionTransform !== undefined) {
+            this.compressionTransform.write(chunk);
+            //            this.compressionTransform.push(chunk);
+          } else {
+            this.push(chunk);
+          }
+        }
+        ar.clearFilledChunks();
+      }
+    }
     callback();
   }
 
   _final(callback: (error?: Error | null) => void): void {
     // @ts-ignore
-    this.push(global.saveGame);
     this.transformationEngine.end(callback);
-
   }
 }
