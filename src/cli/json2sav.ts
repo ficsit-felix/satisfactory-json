@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
-import * as program from 'commander';
+import program from 'commander';
 
-import { json2sav } from '../transform';
+//@ts-ignore
+import * as profiler from 'v8-profiler-next';
+import { Transform, TransformCallback } from 'stream';
+import { Json2SavTransform } from '../Json2SavTransform';
 
 let sourceValue: string | undefined;
 let targetValue: string | undefined;
@@ -17,6 +20,7 @@ program
     'back to a Satisfactory save game (.sav)')
   .arguments('<source> <target>')
   .option('-t, --time', 'time program')
+  .option('-p --profile', 'export profile as json2sav.cpuprofile')
   .action((source, target) => {
     sourceValue = source;
     targetValue = target;
@@ -33,25 +37,73 @@ if (targetValue === undefined) {
   quitWithError('No target file specified.');
 }
 
-fs.readFile(sourceValue!, 'utf8', (error, data) => {
+if (program.time) {
+  console.time('readFile');
+}
+
+if (program.profile) {
+  profiler.startProfiling('probe', true);
+}
+
+const opts = { highWaterMark: 1024 * 512 };
+const stream = fs.createReadStream(sourceValue!, opts);
+const outStream = fs.createWriteStream(targetValue!, opts);
+/*
+
+fs.readFile(sourceValue!, 'binary', (error, data) => {
   if (error) {
     quitWithError(error);
   }
-  const json = JSON.parse(data);
-  if (program.time) {
-    // tslint:disable-next-line: no-console
-    console.time('json2sav');
-  }
-  const output = json2sav(json);
-  if (program.time) {
-    // tslint:disable-next-line: no-console
-    console.timeEnd('json2sav');
+  const binaryData = Buffer.from(data, 'binary');*/
+
+if (program.time) {
+  console.timeEnd('readFile');
+  console.time('json2sav');
+}
+
+
+const json2sav = new Json2SavTransform();
+
+class JSONparseTransform extends Transform {
+  private buffers: Buffer[] = [];
+  constructor() {
+    super({
+      readableObjectMode: true
+    });
   }
 
-  fs.writeFile(targetValue!, output, 'binary', (error2) => {
-    if (error2) {
-      quitWithError(error2);
+  _transform(chunk: Buffer, encoding: string, cb: TransformCallback) {
+    this.buffers.push(chunk);
+    cb();
+  }
+
+  _flush(cb: TransformCallback) {
+    this.push(JSON.parse(Buffer.concat(this.buffers).toString('utf8')));
+    cb();
+  }
+}
+
+const parseTransform = new JSONparseTransform();
+
+stream
+  .pipe(parseTransform)
+  .pipe(json2sav)
+  .pipe(outStream)
+  .on('finish', () => {
+
+    if (program.time) {
+      console.timeEnd('json2sav');
+      //console.time('writeFile');
     }
-    console.log('Converted ' + sourceValue + ' to ' + targetValue);
+
+    if (program.profile) {
+      const profile = profiler.stopProfiling('probe');
+      profile.export((error: any, result: any) => {
+        console.log('Profile stored.');
+        fs.writeFileSync(
+          'json2sav.cpuprofile', result);
+        profile.delete();
+        process.exit();
+      });
+    }
   });
-});

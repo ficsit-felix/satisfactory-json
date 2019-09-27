@@ -1,4 +1,9 @@
 {
+  "author": "ficsit-felix",
+  "dependencies": {
+    "pako": "^1.0.10"
+  },
+  "description": "Convert Satisfactory save files to JSON and back",
   "devDependencies": {
     "@types/node": "^12.7.5",
     "@types/pako": "^1.0.1",
@@ -7,18 +12,21 @@
     "typescript": "^3.6.3",
     "v8-profiler-next": "^1.1.1"
   },
-  "name": "satisfactory-json2",
-  "version": "0.0.1",
-  "description": "Rewrite of satisfactory-json",
-  "main": "index.js",
-  "author": "bitowl <git@bitowl.de>",
+  "files": [
+    "lib/**/*"
+  ],
   "license": "MIT",
+  "main": "lib/index.js",
+  "name": "satisfactory-json",
+  "repository": "https://github.com/bitowl/satisfactory-json",
   "scripts": {
+    "build": "tsc --build tsconfig.json",
+    "build:watch": "tsc -w",
     "sav2json": "ts-node src/cli/sav2json.ts",
     "sav2json:js": "node lib/cli/sav2json.js",
-    "sav2json:debug": "ts-node --inspect=5858 --debug-brk --ignore false src/cli/sav2json.ts"
+    "json2sav": "ts-node src/cli/json2sav.ts",
+    "json2sav:js": "node lib/cli/json2sav.js"
   },
-  "dependencies": {
-    "pako": "^1.0.10"
-  }
+  "types": "lib/index.d.ts",
+  "version": "0.0.22"
 }

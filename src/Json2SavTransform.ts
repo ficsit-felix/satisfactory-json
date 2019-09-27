@@ -2,20 +2,20 @@ import { Transform, TransformCallback } from 'stream';
 import { assert } from 'console';
 import { TransformationEngine } from './engine/TransformationEngine';
 import { transform } from './transforms/transform';
-import { DecompressionTransform } from './engine/DecompressionTransform';
+import { CompressionTransform } from './engine/CompressionTransform';
 
-export class Sav2JsonTransform extends Transform {
+export class Json2SavTransform extends Transform {
   private transformationEngine: TransformationEngine;
-  private compressionTransform?: DecompressionTransform;
+  private compressionTransform?: CompressionTransform;
 
   constructor() {
-    super({ readableObjectMode: true });
+    super({ writableObjectMode: true });
 
     console.time('buildRules');
     this.transformationEngine = new TransformationEngine(transform, (buffer) => {
       console.log('enable compression')
-      this.compressionTransform = new DecompressionTransform();
-      this.compressionTransform.transform(buffer, this.transformationEngine);
+      this.compressionTransform = new CompressionTransform();
+      //this.compressionTransform.transform(buffer, this.transformationEngine);
     });
 
     this.transformationEngine.prepare(true);
@@ -24,16 +24,13 @@ export class Sav2JsonTransform extends Transform {
 
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {
 
-    // We can only handle Buffers
-    if (encoding !== 'buffer') {
-      throw new Error(`We can only handle Buffers and not ${encoding}`)
-    }
+    console.log(encoding);
 
-    if (this.compressionTransform) {
-      this.compressionTransform.transform(chunk, this.transformationEngine);
+    /*if (this.compressionTransform) {
+      this.compressionTransform._transform(chunk, this.transformationEngine);
     } else {
       this.transformationEngine.transform(chunk);
-    }
+    }*/
     callback();
   }
 
