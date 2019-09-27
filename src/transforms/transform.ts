@@ -73,6 +73,7 @@ function transformHeader(builder: Builder) {
     .str('sessionName')
     .int('playDurationSeconds')
     .long('saveDateTime')
+    .exec(ctx => ctx.obj.saveDateTime = '' + ctx.obj.saveDateTime)
     .if(ctx =>
       ctx.obj.saveHeaderType >= 5
       , bldr =>

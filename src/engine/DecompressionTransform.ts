@@ -51,35 +51,39 @@ export class DecompressionTransform {
 
   readChunk(chunk: Chunk): Buffer | undefined {
     // read header
-    const packageFileTag = chunk.readInt(); // c1832a9e
+    const packageFileTag = chunk.readLong(); // c1832a9e 00000000
     if (packageFileTag === undefined) {
       return undefined;
     }
     //console.log(packageFileTag);
 
-    const uncompressedOffset = chunk.readInt();
-    if (uncompressedOffset === undefined) {
+    const maxChunkSize = chunk.readLong();
+    if (maxChunkSize === undefined) {
       return undefined;
     }
-    const uncompressedSize = chunk.readInt();
+
+    let compressedSize = chunk.readLong();
+    if (compressedSize === undefined) {
+      return undefined;
+    }
+
+    let uncompressedSize = chunk.readLong();
     if (uncompressedSize === undefined) {
       return undefined;
     }
 
-    const compressedOffset = chunk.readInt();
-    if (compressedOffset === undefined) {
-      return undefined;
-    }
-    const compressedSize = chunk.readInt();
+
+    compressedSize = chunk.readLong();
     if (compressedSize === undefined) {
       return undefined;
     }
-    const rest = chunk.read(7 * 4); // TODO find out more
-    if (rest === undefined) {
+
+    uncompressedSize = chunk.readLong();
+    if (uncompressedSize === undefined) {
       return undefined;
     }
 
     // return compressedSize;
-    return chunk.read(compressedSize);
+    return chunk.read(Number(compressedSize));
   }
 }

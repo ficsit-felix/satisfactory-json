@@ -115,7 +115,7 @@ export class Chunk {
 
 
 
-  public readLong(shouldCount = true): string | undefined {
+  public readLong(shouldCount = true): bigint | undefined {
     const bytes = 8;
 
     if (this.cursor + bytes > this.buffer.length) {
@@ -123,7 +123,7 @@ export class Chunk {
       this.missingBytes = this.cursor + bytes - this.buffer.length;
       return undefined;
     }
-    const result = this.buffer.slice(this.cursor, this.cursor + bytes).toString('hex');
+    const result = this.buffer.readBigInt64LE(this.cursor);
     this.cursor += bytes;
     this.bytesRead += bytes;
     return result;

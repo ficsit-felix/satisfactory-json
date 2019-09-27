@@ -9,8 +9,8 @@ export class CompressionTransform extends Transform {
   private needBytes: number = 0;
   private firstRead: boolean = true;
 
-  private chunkSize: number = 131072;
-  private packageFileTag: number = -1641380927;
+  private maxChunkSize: number = 131072;
+  private packageFileTag: bigint = 2653586369n;
 
   constructor() {
     super();
@@ -24,20 +24,17 @@ export class CompressionTransform extends Transform {
       buffer = Buffer.concat(this.buffers);
       this.buffers = [];
     }
-    while (this.bufferedBytes >= this.chunkSize) {
-      const chunk = buffer.slice(this.chunkSize);
-      this.bufferedBytes -= this.chunkSize;
+    while (this.bufferedBytes >= this.maxChunkSize) {
+      const chunk = buffer.slice(this.maxChunkSize);
+      this.bufferedBytes -= this.maxChunkSize;
       const deflatedChunk = deflate(chunk);
       const chunkHeader = new Buffer(48);
-      chunkHeader.writeInt32LE(this.packageFileTag, 0);
-      chunkHeader.writeInt32LE(0, 4); // uncompressedOffset
-      chunkHeader.writeInt32LE(this.chunkSize, 8); // uncompressedSize
-      chunkHeader.writeInt32LE(0, 12); // compressedOffset
-      chunkHeader.writeInt32LE(deflatedChunk.length, 16); // compressedSize
-
-      for (let i = 0; i < 7; i++) {
-        chunkHeader.writeInt32LE(0, 20 + i);
-      }
+      chunkHeader.writeBigInt64LE(this.packageFileTag, 0);
+      chunkHeader.writeBigInt64LE(BigInt(this.maxChunkSize), 8);
+      chunkHeader.writeBigInt64LE(BigInt(deflatedChunk.length), 16);
+      chunkHeader.writeBigInt64LE(BigInt(chunk.length), 24);
+      chunkHeader.writeBigInt64LE(BigInt(deflatedChunk.length), 32);
+      chunkHeader.writeBigInt64LE(BigInt(chunk.length), 40);
 
       this.push(chunkHeader);
       this.push(deflatedChunk);
