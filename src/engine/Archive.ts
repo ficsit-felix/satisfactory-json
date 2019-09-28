@@ -411,7 +411,7 @@ export class WriteArchive extends Archive {
     return this.writeInt(value, shouldCount);
   }
 
-  private writeInt(value: number, shouldCount: boolean): boolean {
+  public writeInt(value: number, shouldCount: boolean): boolean {
     const bytes = 4;
 
     if (shouldCount) {
@@ -600,7 +600,7 @@ export class WriteArchive extends Archive {
     this.cursor += bytes - freePlace;
   }
 
-  public endSaveGame() {}
+  public endSaveGame() { }
 }
 
 // https://stackoverflow.com/a/14313213

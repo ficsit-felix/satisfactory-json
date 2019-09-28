@@ -304,6 +304,7 @@ export class TransformationEngine {
         // -2 indicates turning on compression
         frame.currentCommand++;
         this.startCompressionCallback(this.writeArchive.getHeaderChunk());
+        this.writeArchive.writeInt(0, true);
         return true;
       } else if (needBytes === -3) {
         // end of the save game
