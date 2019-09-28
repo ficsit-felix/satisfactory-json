@@ -61,7 +61,13 @@ export function transformProperties(builder: Builder) {
     .arr('properties')
     .exec(ctx => ctx.tmp._propertiesCount = ctx.isLoading ? 999999999 : ctx.obj.length)
     .loop('_propertiesCount', builder => {
-      builder.str('_name')
+      builder
+        .exec(ctx => {
+          if (!ctx.isLoading) {
+            ctx.tmp._name = ctx.obj[ctx.tmp._index].name;
+          }
+        })
+        .str('_name')
         //.debug('_name', ctx => ctx.vars._name)
         .if(ctx => ctx.tmp._name === 'None', builder => builder.break())
         //.exec(ctx => console.log('properties._index', ctx.vars._index))
@@ -69,6 +75,11 @@ export function transformProperties(builder: Builder) {
         .exec(ctx => ctx.obj.name = ctx.tmp._name)
         .call(transformProperty)
         .endElem()
+    })
+    .if(ctx => !ctx.isLoading, builder => {
+      builder
+        .exec(ctx => ctx.tmp._none = 'None')
+        .str('_none');
     })
     .endArr();
 }
