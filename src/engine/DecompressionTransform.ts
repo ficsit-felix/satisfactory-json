@@ -42,6 +42,8 @@ export class DecompressionTransform {
       }
       const inflated = inflate(compressedChunk);
 
+      console.log('first 4 bytes', Buffer.from(inflated.slice(0, 4)).readInt32LE(0));
+
       const uncompressedBuffer = Buffer.from(this.firstRead ? inflated.slice(4) : inflated);
       this.firstRead = false;
 

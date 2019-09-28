@@ -99,31 +99,63 @@ export class ReadArchive extends Archive {
     ref: Reference,
     shouldCount: boolean
   ): boolean {
-    throw new Error("Method not implemented.");
+    const result = this.readStr(shouldCount);
+    if (result === undefined) {
+      return false;
+    }
+    setVar(ctx, ref, result);
+
+    return true;
   }
   public transformLong(
     ctx: Context,
     ref: Reference,
     shouldCount: boolean
   ): boolean {
-    throw new Error("Method not implemented.");
+    const result = this.readLong(shouldCount);
+    if (result === undefined) {
+      return false;
+    }
+    setVar(ctx, ref, result);
+
+    return true;
   }
   public transformByte(
     ctx: Context,
     ref: Reference,
     shouldCount: boolean
   ): boolean {
-    throw new Error("Method not implemented.");
+    const result = this.readByte(shouldCount);
+    if (result === undefined) {
+      return false;
+    }
+    setVar(ctx, ref, result);
+
+    return true;
   }
   public transformFloat(
     ctx: Context,
     ref: Reference,
     shouldCount: boolean
   ): boolean {
-    throw new Error("Method not implemented.");
+    const result = this.readFloat(shouldCount);
+    if (result === undefined) {
+      return false;
+    }
+    setVar(ctx, ref, result);
+
+    return true;
   }
   public assertNullByte(ctx: Context, shouldCount: boolean): boolean {
-    throw new Error("Method not implemented.");
+    const result = this.readByte(shouldCount);
+    if (result === undefined) {
+      return false;
+    }
+    if (result !== 0) {
+      throw new Error(`Not zero, but ${result}`);
+    }
+
+    return true;
   }
   public transformHex(
     ctx: Context,
@@ -131,7 +163,13 @@ export class ReadArchive extends Archive {
     bytes: number,
     shouldCount: boolean
   ): boolean {
-    throw new Error("Method not implemented.");
+    const result = this.read(bytes, shouldCount);
+    if (result === undefined) {
+      return false;
+    }
+    setVar(ctx, ref, result.toString('hex'));
+
+    return true;
   }
   public transformHexRemaining(
     ctx: Context,
@@ -139,20 +177,37 @@ export class ReadArchive extends Archive {
     lengthRef: Reference,
     shouldCount: boolean
   ): boolean {
-    throw new Error("Method not implemented.");
+    const length = getVar(ctx, lengthRef);
+
+    const result = this.readUntil(length, shouldCount);
+    if (result === undefined) {
+      return false;
+    }
+    setVar(ctx, ref, result.toString('hex'));
+
+    return true;
   }
   public startBuffer(
     ctx: Context,
     ref: Reference,
     resetBytesRead: boolean
   ): boolean {
-    throw new Error("Method not implemented.");
+    const result = this.readInt();
+    if (result === undefined) {
+      return false;
+    }
+    setVar(ctx, ref, result);
+    if (resetBytesRead) {
+      this.resetBytesRead();
+    }
+
+    return true;
   }
   public endBuffer(): boolean {
-    throw new Error("Method not implemented.");
+    return true;
   }
   public endSaveGame(): void {
-    throw new Error("Method not implemented.");
+
   }
   public missingBytes: number = 0;
   private buffer: Buffer;
@@ -207,6 +262,7 @@ export class ReadArchive extends Archive {
     const result = this.buffer.readInt32LE(this.cursor);
     this.cursor += bytes;
     this.bytesRead += bytes;
+    return result;
   }
 
   public readStr(shouldCount = true): string | undefined {
@@ -327,9 +383,9 @@ export class ReadArchive extends Archive {
     return result;
   }
 
-  public readUntil(length: number): Buffer | undefined {
+  public readUntil(length: number, shouldCount: boolean): Buffer | undefined {
     //console.log('read', length, this.bytesRead);
-    return this.read(length - this.bytesRead);
+    return this.read(length - this.bytesRead, shouldCount);
   }
 
   public setRollbackPoint() {

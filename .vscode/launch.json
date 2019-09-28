@@ -10,10 +10,13 @@
       "name": "sav2json",
       "program": "${workspaceFolder}/src/cli/sav2json.ts",
       "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
+      ],
       "args": [
         //"nurso_250919-192142.sav",
-        "Forest factory_250919-193000.sav",
+        //"Forest factory_250919-193000.sav",
+        "after_intro_new.sav",
         "test.json"
       ]
     },
@@ -23,8 +26,13 @@
       "name": "json2sav",
       "program": "${workspaceFolder}/src/cli/json2sav.ts",
       "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "args": ["test.json", "test.sav"]
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
+      ],
+      "args": [
+        "test.json",
+        "test.sav"
+      ]
     }
   ]
 }

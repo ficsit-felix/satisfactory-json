@@ -48,7 +48,8 @@ function buildReference(name: Name): Reference {
 
   switch (str[0]) {
     case "#":
-      if (str[1] === "_") {
+      str = str.substring(1);
+      if (str[0] === "_") {
         type = ReferenceType.INDIRECT_TMP;
       } else {
         type = ReferenceType.INDIRECT_OBJ;

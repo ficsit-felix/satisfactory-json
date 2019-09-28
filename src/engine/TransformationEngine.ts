@@ -1,10 +1,8 @@
+import { inspect } from "util";
+import { SaveGame } from "../types";
+import { ReadArchive, WriteArchive } from "./Archive";
 import { Builder } from "./Builder";
 import { Command, Context, LoopBodyCommand } from "./commands";
-import { inspect } from "util";
-import { TransformCallback } from "stream";
-import { Archive, ReadArchive, WriteArchive } from "./Archive";
-import { SaveGame } from "../types";
-import { threadId } from "worker_threads";
 
 interface StackFrame {
   commands: Command[];
@@ -172,7 +170,7 @@ export class TransformationEngine {
         break;
       } else if (needBytes === -1) {
         // -1 indicates that the command pointer should not advance
-      } else if (needBytes === 0) {
+      } else if (needBytes === 0 || needBytes === -3) {
         frame.currentCommand++;
       } else if (needBytes === -2) {
         // -2 indicates turning on compression
