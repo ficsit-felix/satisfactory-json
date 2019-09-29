@@ -445,10 +445,18 @@ export class WriteArchive extends Archive {
   }
 
   public getFilledChunks(): Buffer[] {
-    return this.buffers;
+    if (this.lengthPlaceholders.length === 0) {
+      return this.buffers;
+    } else {
+      // If there are placeholders left in one of the filled chunks we need to hold it back until the placeholder is filled
+      return [];
+    }
+
   }
   public clearFilledChunks() {
-    this.buffers = [];
+    if (this.lengthPlaceholders.length === 0) {
+      this.buffers = [];
+    }
   }
 
   // returns only the filled portion of the first chunk
@@ -640,7 +648,10 @@ export class WriteArchive extends Archive {
     ref: Reference,
     resetBytesRead: boolean
   ): boolean {
-
+    console.log(this.lengthPlaceholders.length);
+    if (this.lengthPlaceholders.length > 10) {
+      debugger;
+    }
     this.lengthPlaceholders.push(
       {
         buffer: this.buffers.length,

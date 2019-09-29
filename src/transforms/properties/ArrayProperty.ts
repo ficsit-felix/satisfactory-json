@@ -102,7 +102,8 @@ export function transformArrayProperty(builder: Builder) {
 
 
           })
-          .endArr();
+          .endArr()
+          .bufferEnd();
 
       },
       '$default': builder => {
