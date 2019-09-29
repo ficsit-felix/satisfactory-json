@@ -434,7 +434,7 @@ export class WriteArchive extends Archive {
   constructor() {
     super();
     this.missingBytes = 1; // no real meaning except, we need to write out the chunk
-    this.buffer = new Buffer(MAX_CHUNK_SIZE);
+    this.buffer = Buffer.alloc(MAX_CHUNK_SIZE);
   }
 
   public getFilledChunks(): Buffer[] {
@@ -449,7 +449,7 @@ export class WriteArchive extends Archive {
     // TODO only works if the whole header fits into the first chunk
     const header = this.buffer.slice(0, this.cursor);
     this.cursor = 0;
-    this.buffer = new Buffer(MAX_CHUNK_SIZE);
+    this.buffer = Buffer.alloc(MAX_CHUNK_SIZE);
     return header;
   }
 
@@ -475,7 +475,7 @@ export class WriteArchive extends Archive {
     }
     if (this.cursor + bytes >= MAX_CHUNK_SIZE) {
       // not enough place in the buffer
-      const buffer = new Buffer(bytes);
+      const buffer = Buffer.alloc(bytes);
       buffer.writeInt32LE(value, 0);
       this.putInNewChunk(buffer, bytes);
       return false;
@@ -529,7 +529,7 @@ export class WriteArchive extends Archive {
     if (this.cursor + bytes >= MAX_CHUNK_SIZE) {
       // not enough place in the buffer
       this.buffers.push(this.buffer);
-      this.buffer = new Buffer(MAX_CHUNK_SIZE);
+      this.buffer = Buffer.alloc(MAX_CHUNK_SIZE);
       this.buffer.writeUInt8(value, 0);
       this.cursor = 1;
       return false;
@@ -556,7 +556,7 @@ export class WriteArchive extends Archive {
     }
     if (this.cursor + bytes >= MAX_CHUNK_SIZE) {
       // not enough place in the buffer
-      const buffer = new Buffer(bytes);
+      const buffer = Buffer.alloc(bytes);
       buffer.writeBigInt64LE(value, 0);
       this.putInNewChunk(buffer, bytes);
       return false;
@@ -580,7 +580,7 @@ export class WriteArchive extends Archive {
     }
     if (this.cursor + bytes >= MAX_CHUNK_SIZE) {
       // not enough place in the buffer
-      const buffer = new Buffer(bytes);
+      const buffer = Buffer.alloc(bytes);
       buffer.writeFloatLE(value, 0);
       this.putInNewChunk(buffer, bytes);
       return false;
@@ -598,7 +598,7 @@ export class WriteArchive extends Archive {
     }
     if (this.cursor + bytes >= MAX_CHUNK_SIZE) {
       // not enough place in the buffer
-      const buffer = new Buffer(bytes);
+      const buffer = Buffer.alloc(bytes);
       buffer.write(value, 0);
       this.putInNewChunk(buffer, bytes);
       return false;
@@ -649,7 +649,7 @@ export class WriteArchive extends Archive {
       this.buffer.set(buffer.slice(0, freePlace), this.cursor);
     }
     this.buffers.push(this.buffer);
-    this.buffer = new Buffer(MAX_CHUNK_SIZE);
+    this.buffer = Buffer.alloc(MAX_CHUNK_SIZE);
     this.cursor = 0;
     const rest = freePlace > 0 ? buffer.slice(freePlace) : buffer;
     this.buffer.set(rest, this.cursor); // TODO check that this actually fits into the next chunk

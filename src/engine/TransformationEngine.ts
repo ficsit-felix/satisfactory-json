@@ -42,6 +42,7 @@ export class TransformationEngine {
   }
 
   transformRead(buffer: Buffer) {
+    console.log('chunk')
     this.bufferedBytes += buffer.length;
     if (this.bufferedBytes < this.needBytes) {
       console.log(`still missing ${this.needBytes - this.bufferedBytes} bytes`);
@@ -291,8 +292,9 @@ export class TransformationEngine {
       );
       if (needBytes > 0) {
         // This command has filled a chunk
-        // TODO write out chunk
 
+        // this command actually finished
+        frame.currentCommand++;
         return true;
       } else if (needBytes === -1) {
         // -1 indicates that the command pointer should not advance

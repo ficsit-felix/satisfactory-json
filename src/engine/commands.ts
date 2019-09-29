@@ -740,6 +740,7 @@ export class EndSaveGameCommand extends Command {
     newStackFrameCallback: (commands: Command[]) => void,
     dropStackFrameCallback: () => void
   ): number {
+    console.log('finished');
     ar.endSaveGame();
     return -3;
   }

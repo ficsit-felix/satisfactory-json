@@ -1,6 +1,5 @@
 import { Builder } from '../../../engine/Builder';
 import { transformProperty } from '../../Property';
-import { exec } from 'child_process';
 
 export function transformInventoryItem(builder: Builder) {
   builder
@@ -11,8 +10,13 @@ export function transformInventoryItem(builder: Builder) {
     .str('pathName')
 
     .arr('properties')
+    .if(ctx => !ctx.isLoading && ctx.obj.length === 0, builder => {
+      builder
+        .exec(ctx => ctx.tmp._name = 'None')
+    })
     .str('_name')
     //.debug('_name', ctx => ctx.vars._name)
+
     .if(ctx => ctx.tmp._name !== 'None', builder => {
       builder
         .exec(ctx => ctx.tmp._index = 0)

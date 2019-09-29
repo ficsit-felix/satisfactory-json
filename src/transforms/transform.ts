@@ -127,6 +127,7 @@ function transformActor(builder: Builder) {
     .str("className")
     .str("levelName")
     .str("pathName")
+
     .int("needTransform")
     .obj("transform")
     .arr("rotation")

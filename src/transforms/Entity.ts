@@ -14,7 +14,7 @@ export function transformEntity(builder: Builder) {
         .str('levelName')
         .str('pathName')
         .int('_childCount', ctx => ctx.obj.children.length)
-        .arr('children')
+        .arr('children')!
         .loop('_childCount', builder => {
           builder
             .elem('_index')

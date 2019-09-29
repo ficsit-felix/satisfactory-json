@@ -28,7 +28,7 @@ export class CompressionTransform extends Transform {
       const chunk = buffer.slice(0, this.maxChunkSize);
       this.bufferedBytes -= this.maxChunkSize;
       const deflatedChunk = deflate(chunk);
-      const chunkHeader = new Buffer(48);
+      const chunkHeader = Buffer.alloc(48);
       chunkHeader.writeBigInt64LE(this.packageFileTag, 0);
       chunkHeader.writeBigInt64LE(BigInt(this.maxChunkSize), 8);
       chunkHeader.writeBigInt64LE(BigInt(deflatedChunk.length), 16);
