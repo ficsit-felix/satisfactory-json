@@ -13,7 +13,7 @@ export function transformInventoryItem(builder: Builder) {
     .exec((ctx, ar) => {
       if (!ctx.isLoading) {
         // dirty hack to make inventory item only take up 4 bytes
-        ctx.tmp._length = (ar as WriteArchive).bufferLength;
+        ctx.tmp._bufferLength = (ar as WriteArchive).bufferLength;
       }
     })
     .arr('properties')
@@ -38,7 +38,7 @@ export function transformInventoryItem(builder: Builder) {
     .exec((ctx, ar) => {
       if (!ctx.isLoading) {
         // dirty hack to make inventory item only take up 4 bytes
-        (ar as WriteArchive).bufferLength = ctx.tmp._length + 4;
+        (ar as WriteArchive).bufferLength = ctx.tmp._bufferLength + 4;
       }
     })
   //.endObj();
