@@ -690,10 +690,12 @@ export class WriteArchive extends Archive {
       buffer = lengthPlaceholder.buffer < this.buffers.length ? this.buffers[lengthPlaceholder.buffer] : this.buffer;
       const rest = freePlace > 0 ? smallBuffer.slice(freePlace) : smallBuffer;
       buffer.set(rest, lengthPlaceholder.cursor);
-      return true;
+      // TODO return false only if there is a chunk finished that can be written out because lengthPlaceholders is empty
+      return false;
     }
     buffer.writeInt32LE(value, lengthPlaceholder.cursor);
 
+    // TODO return false if there is a chunk finished that can be written out because lengthPlaceholders is empty
     return true;
     //throw new Error("Method not implemented.");
   }
@@ -712,7 +714,11 @@ export class WriteArchive extends Archive {
     this.cursor += bytes - freePlace;
   }
 
-  public endSaveGame() { }
+  public endSaveGame() {
+    // mark the last not completely filled chunk as finished
+    this.buffers.push(this.buffer.slice(0, this.cursor));
+    this.buffer = Buffer.alloc(0);
+  }
 }
 
 // https://stackoverflow.com/a/14313213
