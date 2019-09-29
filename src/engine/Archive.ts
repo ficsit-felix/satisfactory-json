@@ -425,11 +425,18 @@ function decodeUTF16LE(binaryStr: string): string {
 
 const MAX_CHUNK_SIZE = 131072;
 
+interface LengthPlaceholder {
+  cursor: number;
+  buffer: number;
+  startBufferLength: number;
+}
+
 export class WriteArchive extends Archive {
   private buffers: Buffer[] = [];
   private buffer: Buffer;
   private cursor: number = 0;
   private bufferLength: number = 0;
+  private lengthPlaceholders: LengthPlaceholder[] = [];
 
   constructor() {
     super();
@@ -618,7 +625,7 @@ export class WriteArchive extends Archive {
     shouldCount: boolean
   ): boolean {
     const value = getVar(ctx, ref);
-    return this.write(value, shouldCount);
+    return this.write(Buffer.from(value, 'hex').toString('binary'), shouldCount); // TODO somehow directly write the buffer?
   }
   public transformHexRemaining(
     ctx: Context,
@@ -633,11 +640,49 @@ export class WriteArchive extends Archive {
     ref: Reference,
     resetBytesRead: boolean
   ): boolean {
+
+    this.lengthPlaceholders.push(
+      {
+        buffer: this.buffers.length,
+        cursor: this.cursor,
+        startBufferLength: this.bufferLength + 4 // +4 because this length counts for the encompassing counter
+      }
+    );
+
     // TODO TOODODOOOO
-    return this.writeInt(0, true);
-    //throw new Error("Method not implemented.");
+    return this.writeInt(4919, true); // 0x1337 as placeholder
   }
   public endBuffer(): boolean {
+
+    // write the int to the previously allocated placeholder 
+    const lengthPlaceholder = this.lengthPlaceholders.pop();
+    if (lengthPlaceholder === undefined) {
+      throw new Error('No length placeholder left over. endBuffer() was called more often than startBuffer() ?');
+    }
+    const value = this.bufferLength - lengthPlaceholder.startBufferLength;
+
+
+    let buffer = lengthPlaceholder.buffer < this.buffers.length ? this.buffers[lengthPlaceholder.buffer] : this.buffer;
+    const bytes = 4;
+    if (lengthPlaceholder.cursor + bytes >= MAX_CHUNK_SIZE) {
+      // not enough place in the buffer
+      const smallBuffer = Buffer.alloc(bytes);
+      smallBuffer.writeInt32LE(value, 0);
+
+      const freePlace = MAX_CHUNK_SIZE - lengthPlaceholder.cursor;
+      if (freePlace > 0) {
+        buffer.set(smallBuffer.slice(0, freePlace), lengthPlaceholder.cursor);
+      }
+
+      lengthPlaceholder.buffer++;
+      lengthPlaceholder.cursor = 0;
+      buffer = lengthPlaceholder.buffer < this.buffers.length ? this.buffers[lengthPlaceholder.buffer] : this.buffer;
+      const rest = freePlace > 0 ? smallBuffer.slice(freePlace) : smallBuffer;
+      buffer.set(rest, lengthPlaceholder.cursor);
+      return true;
+    }
+    buffer.writeInt32LE(value, lengthPlaceholder.cursor);
+
     return true;
     //throw new Error("Method not implemented.");
   }
