@@ -55,7 +55,7 @@ export function transform(builder: Builder) {
     })
 
     .arr("collected")
-    .int("_collectedCount")
+    .int("_collectedCount", ctx => ctx.obj.length)
     .loop("_collectedCount", builder => {
       builder
         .elem("_index")
@@ -64,6 +64,10 @@ export function transform(builder: Builder) {
         .endElem();
     })
     .endArr()
+    .if(
+      ctx => ctx.obj.saveVersion >= 21,
+      bldr => builder.bufferEnd()
+    )
     .endSaveGame();
   // TODO missing
 }
@@ -86,7 +90,10 @@ function transformHeader(builder: Builder) {
     )
     .if(
       ctx => ctx.obj.saveVersion >= 21,
-      builder => builder.startCompression()
+      builder => {
+        builder.startCompression()
+          .bufferStart('_length', true);
+      }
     );
   //.endObj();
 }
