@@ -13,11 +13,11 @@ import { transformGuid } from './structs/Guid';
 export function transformStructProperty(builder: Builder) {
   builder
     .obj('value')
-    .str('type') // Tag.StructName
-    .int('_zero0', ctx => 0) // Tag.StructGuid
-    .int('_zero1', ctx => 0)
-    .int('_zero2', ctx => 0)
-    .int('_zero3', ctx => 0)
+    .str('type', false) // Tag.StructName
+    .int('_zero0', _ => 0, false) // Tag.StructGuid
+    .int('_zero1', _ => 0, false)
+    .int('_zero2', _ => 0, false)
+    .int('_zero3', _ => 0, false)
     .exec(ctx => {
       if (ctx.tmp._zero0 !== 0 || ctx.tmp._zero1 !== 0 ||
         ctx.tmp._zero2 !== 0 || ctx.tmp._zero3 !== 0) {

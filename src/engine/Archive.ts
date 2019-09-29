@@ -54,7 +54,7 @@ export abstract class Archive {
     ref: Reference,
     resetBytesRead: boolean
   ): boolean;
-  public abstract endBuffer(): boolean;
+  public abstract endBuffer(ctx: Context): boolean;
 
   public abstract endSaveGame(): void;
 }
@@ -197,6 +197,7 @@ export class ReadArchive extends Archive {
       return false;
     }
     setVar(ctx, ref, result);
+    ctx.obj._length = result; // TODO remove
     if (resetBytesRead) {
       this.resetBytesRead();
     }
@@ -435,7 +436,7 @@ export class WriteArchive extends Archive {
   private buffers: Buffer[] = [];
   private buffer: Buffer;
   private cursor: number = 0;
-  private bufferLength: number = 0;
+  public bufferLength: number = 0;
   private lengthPlaceholders: LengthPlaceholder[] = [];
 
   constructor() {
@@ -648,7 +649,6 @@ export class WriteArchive extends Archive {
     ref: Reference,
     resetBytesRead: boolean
   ): boolean {
-    console.log(this.lengthPlaceholders.length);
     if (this.lengthPlaceholders.length > 10) {
       debugger;
     }
@@ -663,7 +663,7 @@ export class WriteArchive extends Archive {
     // TODO TOODODOOOO
     return this.writeInt(4919, true); // 0x1337 as placeholder
   }
-  public endBuffer(): boolean {
+  public endBuffer(ctx: Context): boolean {
 
     // write the int to the previously allocated placeholder 
     const lengthPlaceholder = this.lengthPlaceholders.pop();
@@ -671,6 +671,26 @@ export class WriteArchive extends Archive {
       throw new Error('No length placeholder left over. endBuffer() was called more often than startBuffer() ?');
     }
     const value = this.bufferLength - lengthPlaceholder.startBufferLength;
+
+
+    // fix the buffer length for enclosing counters
+    // they also count the bytes that were not included in our calculation
+    let actualLengthInBytes = 0;
+    let currentCursor = lengthPlaceholder.cursor;
+    for (let i = lengthPlaceholder.buffer; i < this.buffers.length; i++) {
+      actualLengthInBytes += this.buffers[i].length - currentCursor;
+      currentCursor = 0;
+    }
+    actualLengthInBytes += this.cursor - currentCursor - 4;
+
+    this.bufferLength = lengthPlaceholder.startBufferLength + actualLengthInBytes;
+
+
+
+    if (value != ctx.obj._length) { // TODO remove
+
+      debugger;
+    }
 
 
     let buffer = lengthPlaceholder.buffer < this.buffers.length ? this.buffers[lengthPlaceholder.buffer] : this.buffer;

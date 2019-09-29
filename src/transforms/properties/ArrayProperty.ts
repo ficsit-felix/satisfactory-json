@@ -4,7 +4,7 @@ import { transformProperty } from '../Property';
 export function transformArrayProperty(builder: Builder) {
   builder
     .obj('value')
-    .str('type') // Tag.InnerType
+    .str('type', false) // Tag.InnerType
     .assertNullByte(false) // Tag.HasPropertyGuid
     .int('_itemCount', ctx => ctx.obj.values.length)
     .switch('type', {
@@ -50,9 +50,9 @@ export function transformArrayProperty(builder: Builder) {
           .str('structName')
           .str('structType')
           .bufferStart('_length', false)
-          .int('_zero', ctx => 0, false)
+          .int('_zero', _ => 0, false)
           .exec(ctx => { if (ctx.tmp._zero !== 0) { throw new Error(`Not zero, but ${ctx.tmp._zero}`) } })
-          .str('structInnerType')
+          .str('structInnerType', false)
           .hex('propertyGuid', 16, false)
           .assertNullByte(false)
           .arr('values')

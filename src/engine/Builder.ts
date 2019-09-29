@@ -29,6 +29,7 @@ import {
   StartCompressionCommand,
   EndSaveGameCommand
 } from "./commands";
+import { Archive } from './Archive';
 
 export let functionCommands: { [id: string]: Command[] } = {};
 
@@ -144,7 +145,7 @@ export class Builder {
    * Execute arbitrary javascript code when the TransformEngine gets to this point
    * @param code
    */
-  public exec(code: (ctx: Context) => void) {
+  public exec(code: (ctx: Context, ar: Archive) => void) {
     this.commands.push(new ExecCommand(code));
     return this;
   }

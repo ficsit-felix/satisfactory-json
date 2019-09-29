@@ -570,13 +570,13 @@ export class CallCommand extends Command {
 }
 
 export class ExecCommand extends Command {
-  private code: (ctx: Context) => void;
-  constructor(code: (ctx: Context) => void) {
+  private code: (ctx: Context, ar: Archive) => void;
+  constructor(code: (ctx: Context, ar: Archive) => void) {
     super();
     this.code = code;
   }
   exec(ctx: Context, ar: Archive): number {
-    this.code(ctx);
+    this.code(ctx, ar);
     return 0;
   }
 }
@@ -618,7 +618,7 @@ export class BufferStartCommand extends Command {
 
 export class BufferEndCommand extends Command {
   exec(ctx: Context, ar: Archive): number {
-    const result = ar.endBuffer();
+    const result = ar.endBuffer(ctx);
     if (!result) {
       return ar.missingBytes;
     }
