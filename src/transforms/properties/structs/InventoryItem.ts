@@ -17,9 +17,14 @@ export function transformInventoryItem(builder: Builder) {
       }
     })
     .arr('properties')
-    .if(ctx => !ctx.isLoading && ctx.obj.length === 0, builder => {
-      builder
-        .exec(ctx => ctx.tmp._name = 'None')
+    .exec(ctx => {
+      if (!ctx.isLoading) {
+        if (ctx.obj.length === 0) {
+          ctx.tmp._name = 'None';
+        } else {
+          ctx.tmp._name = ctx.obj[0].name;
+        }
+      }
     })
     .str('_name')
     //.debug('_name', ctx => ctx.vars._name)
