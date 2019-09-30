@@ -1,6 +1,6 @@
 import { Builder } from '../../../engine/Builder';
 
-export function transformBox(builder: Builder) {
+export function transformBox(builder: Builder): void {
   builder
     //.obj('value') TODO readd: were missing
     .obj('min') // TODO arr
@@ -13,6 +13,6 @@ export function transformBox(builder: Builder) {
     .float(1)
     .float(2)
     .endArr()
-    .byte('isValid')
+    .byte('isValid');
   //.endObj();
 }

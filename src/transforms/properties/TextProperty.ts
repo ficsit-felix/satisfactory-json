@@ -1,6 +1,6 @@
 import { Builder } from '../../engine/Builder';
 
-export function transformTextProperty(builder: Builder) {
+export function transformTextProperty(builder: Builder): void {
   builder
     .assertNullByte(false) // Tag.HasPropertyGuid
     .obj('value')
@@ -8,6 +8,7 @@ export function transformTextProperty(builder: Builder) {
     .endObj();
 }
 
+/*
 // ETextHistoryType
 const HISTORYTYPE_BASE = 0;
 const HISTORYTYPE_NAMEDFORMAT = 1;
@@ -30,22 +31,23 @@ const FORMATARGUMENTTYPE_FLOAT = 2;
 const FORMATARGUMENTTYPE_DOUBLE = 3;
 const FORMATARGUMENTTYPE_TEXT = 4;
 const FORMATARGUMENTTYPE_GENDER = 5;
+*/
 
-function transformFText(builder: Builder) {
+function transformFText(builder: Builder): void {
   builder
     .int('flags') // Value.Flags
     .byte('historyType') // HistoryType
 
     // parse the TextHistory according to TextHistory.cpp
     .switch('historyType', {
-      '0'/*HISTORYTYPE_BASE*/: builder => {
+      '0' /*HISTORYTYPE_BASE*/: builder => {
         builder
           .str('namespace')
           .str('key')
           .str('sourceString');
       },
-      '255'/*HISTORYTYPE_NONE*/: builder => { }, // this is the end of the  no value ?
-      '3'/*HISTORYTYPE_ARGUMENTFORMAT*/: builder => {
+      '255' /*HISTORYTYPE_NONE*/: _builder => {}, // this is the end of the  no value ?
+      '3' /*HISTORYTYPE_ARGUMENTFORMAT*/: builder => {
         builder
           .obj('sourceFmt')
           .call(transformFText)
@@ -59,21 +61,24 @@ function transformFText(builder: Builder) {
               .str('argumentName')
               .byte('argumentValueType')
               .switch('argumentValueType', {
-                '4'/*FORMATARGUMENTTYPE_TEXT*/: builder => {
+                '4' /*FORMATARGUMENTTYPE_TEXT*/: builder => {
                   builder
                     .obj('argumentValue')
                     .call(transformFText)
                     .endObj();
                 },
-                '$default': builder => {
-                  builder.error(ctx => `Unhandled FormatArgumentType: ${ctx.obj.argumentValueType}`);
+                $default: builder => {
+                  builder.error(
+                    ctx =>
+                      `Unhandled FormatArgumentType: ${ctx.obj.argumentValueType}`
+                  );
                 }
               })
-              .endElem()
+              .endElem();
           })
-          .endArr()
+          .endArr();
       },
-      '$default': builder => {
+      $default: builder => {
         builder.error(ctx => `Unhandled HistoryType: ${ctx.obj.historyType}`);
       }
     });

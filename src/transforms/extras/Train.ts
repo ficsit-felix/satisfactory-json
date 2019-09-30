@@ -1,6 +1,6 @@
 import { Builder } from '../../engine/Builder';
 
-export function transformTrain(builder: Builder) {
+export function transformTrain(builder: Builder): void {
   builder
     .obj('extra')
     .assertNullByte() // TODO assertnullint

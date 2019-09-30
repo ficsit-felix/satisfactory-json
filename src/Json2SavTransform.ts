@@ -1,8 +1,7 @@
-import { Transform, TransformCallback } from "stream";
-import { assert } from "console";
-import { TransformationEngine } from "./engine/TransformationEngine";
-import { transform } from "./transforms/transform";
-import { CompressionTransform } from "./engine/CompressionTransform";
+import { Transform, TransformCallback } from 'stream';
+import { TransformationEngine } from './engine/TransformationEngine';
+import { transform } from './transforms/transform';
+import { CompressionTransform } from './engine/CompressionTransform';
 
 export class Json2SavTransform extends Transform {
   private transformationEngine: TransformationEngine;
@@ -11,25 +10,23 @@ export class Json2SavTransform extends Transform {
   constructor() {
     super({ writableObjectMode: true });
 
-    console.time("buildRules");
-    this.transformationEngine = new TransformationEngine(transform, buffer => {
-      console.log("enable compression");
+    this.transformationEngine = new TransformationEngine(
+      transform,
+      (buffer): void => {
+        // write header to file
+        this.push(buffer);
 
-      // write header to file
-      this.push(buffer);
-
-      this.compressionTransform = new CompressionTransform();
-      this.compressionTransform.on("data", chunk => {
-        this.push(chunk);
-      });
-    });
+        this.compressionTransform = new CompressionTransform();
+        this.compressionTransform.on('data', chunk => {
+          this.push(chunk);
+        });
+      }
+    );
 
     this.transformationEngine.prepare(false);
-    console.timeEnd("buildRules");
   }
 
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {
-    console.log(encoding);
     let continueWriting = true;
     while (continueWriting) {
       continueWriting = this.transformationEngine.transformWrite(chunk);
@@ -52,8 +49,6 @@ export class Json2SavTransform extends Transform {
   }
 
   _final(callback: (error?: Error | null) => void): void {
-    console.log('---fin---');
-    // @ts-ignore
     this.transformationEngine.end(callback);
   }
 }

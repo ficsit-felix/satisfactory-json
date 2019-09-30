@@ -1,6 +1,6 @@
 import { Builder } from '../../engine/Builder';
 
-export function transformConveyorBelt(builder: Builder) {
+export function transformConveyorBelt(builder: Builder): void {
   builder
     .obj('extra')
     .int('_itemCount', ctx => ctx.obj.items.length)
@@ -17,7 +17,7 @@ export function transformConveyorBelt(builder: Builder) {
         .str('levelName')
         .str('pathName')
         .float('position')
-        .endElem()
+        .endElem();
     })
     .endArr()
     .endObj();

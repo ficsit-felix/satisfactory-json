@@ -31,7 +31,7 @@
   "scripts": {
     "build": "tsc --build tsconfig.json",
     "build:watch": "tsc -w",
-    "lint": "eslint -c .eslintrc.json src/**/*.ts",
+    "lint": "eslint \"src/**\"",
     "sav2json": "ts-node src/cli/sav2json.ts",
     "sav2json:js": "node lib/cli/sav2json.js",
     "json2sav": "ts-node src/cli/json2sav.ts",

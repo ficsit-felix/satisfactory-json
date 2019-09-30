@@ -1,4 +1,4 @@
-/* global BigInt, Uint8Array */
+/* global BigInt */
 import { Context, Reference, ReferenceType } from './commands';
 
 // Polyfill for browser until https://github.com/feross/buffer/pull/247 is merged

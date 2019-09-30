@@ -1,6 +1,6 @@
 import { Builder } from '../../engine/Builder';
 
-export function transformVehicle(builder: Builder) {
+export function transformVehicle(builder: Builder): void {
   builder
     .obj('extra')
     .int('_objectCount', ctx => ctx.obj.objects.length)
@@ -10,7 +10,7 @@ export function transformVehicle(builder: Builder) {
         .elem('_index')
         .str('name')
         .hex('unknown', 53)
-        .endElem()
+        .endElem();
     })
     .endArr()
     .endObj();

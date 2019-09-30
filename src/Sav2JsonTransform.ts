@@ -1,5 +1,4 @@
 import { Transform, TransformCallback } from 'stream';
-import { assert } from 'console';
 import { TransformationEngine } from './engine/TransformationEngine';
 import { transform } from './transforms/transform';
 import { DecompressionTransform } from './engine/DecompressionTransform';
@@ -12,11 +11,14 @@ export class Sav2JsonTransform extends Transform {
     super({ readableObjectMode: true });
 
     //console.time('buildRules');
-    this.transformationEngine = new TransformationEngine(transform, buffer => {
-      //console.log('enable compression')
-      this.compressionTransform = new DecompressionTransform();
-      this.compressionTransform.transform(buffer, this.transformationEngine);
-    });
+    this.transformationEngine = new TransformationEngine(
+      transform,
+      (buffer): void => {
+        //console.log('enable compression')
+        this.compressionTransform = new DecompressionTransform();
+        this.compressionTransform.transform(buffer, this.transformationEngine);
+      }
+    );
 
     this.transformationEngine.prepare(true);
     //console.timeEnd('buildRules');
@@ -37,7 +39,9 @@ export class Sav2JsonTransform extends Transform {
   }
 
   _final(callback: (error?: Error | null) => void): void {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore
+    // TODO get saveGame from transformation engine
     this.push(global.saveGame);
     this.transformationEngine.end(callback);
   }

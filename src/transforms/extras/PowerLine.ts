@@ -1,6 +1,6 @@
 import { Builder } from '../../engine/Builder';
 
-export function transformPowerLine(builder: Builder) {
+export function transformPowerLine(builder: Builder): void {
   builder
     .obj('extra')
     .str('sourceLevelName')
