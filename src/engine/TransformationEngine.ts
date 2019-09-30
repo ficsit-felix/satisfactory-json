@@ -1,4 +1,3 @@
-import { inspect } from 'util';
 import { SaveGame } from '../types';
 import { ReadArchive, WriteArchive } from './Archive';
 import { Builder } from './Builder';
@@ -34,7 +33,7 @@ export class TransformationEngine {
     rulesFunction(builder);
     this.commands = builder.getCommands();
 
-    console.log('commands', inspect(this.commands, false, 10));
+    //console.log('commands', inspect(this.commands, false, 10));
   }
 
   prepare(isLoading: boolean): void {
@@ -44,7 +43,7 @@ export class TransformationEngine {
   transformRead(buffer: Buffer): void {
     this.bufferedBytes += buffer.length;
     if (this.bufferedBytes < this.needBytes) {
-      console.log(`still missing ${this.needBytes - this.bufferedBytes} bytes`);
+      //console.log(`still missing ${this.needBytes - this.bufferedBytes} bytes`);
       this.buffers.push(buffer);
       // need to read more
       return;
@@ -61,7 +60,7 @@ export class TransformationEngine {
     const chunk = new ReadArchive(buffer, this.bytesRead);
 
     if (this.stack.length === 0) {
-      console.info('Starting program...');
+      //console.info('Starting program...');
       // Stack empty: Begin of program or something went wrong
 
       const saveGame = {}; // TODO put save game here when saving
@@ -92,7 +91,7 @@ export class TransformationEngine {
         // move one stack frame up
         this.stack.pop();
         if (this.stack.length === 0) {
-          console.warn('No more stack frames');
+          //console.warn('No more stack frames');
           //throw new Error('EOW');
           // End of program?
           break;

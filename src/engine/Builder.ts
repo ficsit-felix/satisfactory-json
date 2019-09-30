@@ -130,7 +130,7 @@ export class Builder {
 
     // Only build each function once
     if (functionCommands[rulesFunction.name] === undefined) {
-      console.log('building', rulesFunction.name);
+      //console.log('building', rulesFunction.name);
       // Already set this, so that we don't get into infinite recursion
       functionCommands[rulesFunction.name] = [];
 

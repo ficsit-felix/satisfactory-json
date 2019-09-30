@@ -7,9 +7,14 @@ import { SaveGame, sav2json, json2sav } from 'satisfactory-json';
 
 const saveFileData: Buffer;
 // convert sav -> json
-const saveGame: SaveGame = sav2json(saveFileData);
-// convert json -> sav
-const saveData: string = json2sav(saveGame);
+sav2json(saveFileData).then((saveGame: SaveGame) => {
+
+  // convert json -> sav
+  json2sav(saveGame).then((saveData: string) => {
+
+  });
+});
+
 ```
 
 ---

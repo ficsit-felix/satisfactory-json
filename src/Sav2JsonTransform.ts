@@ -11,22 +11,21 @@ export class Sav2JsonTransform extends Transform {
   constructor() {
     super({ readableObjectMode: true });
 
-    console.time('buildRules');
-    this.transformationEngine = new TransformationEngine(transform, (buffer) => {
-      console.log('enable compression')
+    //console.time('buildRules');
+    this.transformationEngine = new TransformationEngine(transform, buffer => {
+      //console.log('enable compression')
       this.compressionTransform = new DecompressionTransform();
       this.compressionTransform.transform(buffer, this.transformationEngine);
     });
 
     this.transformationEngine.prepare(true);
-    console.timeEnd('buildRules');
+    //console.timeEnd('buildRules');
   }
 
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {
-
     // We can only handle Buffers
     if (encoding !== 'buffer') {
-      throw new Error(`We can only handle Buffers and not ${encoding}`)
+      throw new Error(`We can only handle Buffers and not ${encoding}`);
     }
 
     if (this.compressionTransform) {
@@ -41,6 +40,5 @@ export class Sav2JsonTransform extends Transform {
     // @ts-ignore
     this.push(global.saveGame);
     this.transformationEngine.end(callback);
-
   }
 }
