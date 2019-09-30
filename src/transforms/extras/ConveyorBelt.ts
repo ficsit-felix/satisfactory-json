@@ -15,7 +15,7 @@ export function transformConveyorBelt(builder: Builder): void {
               //console.warn('Item count is ' + items.length +
               //' while there are only ' + i + ' items in there');
 
-              // break;
+              // break:
               dropStackFrameCallback();
             }
           }

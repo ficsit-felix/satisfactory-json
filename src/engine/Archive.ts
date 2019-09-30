@@ -464,6 +464,7 @@ function decodeUTF16LE(binaryStr: string): string {
   for (let i = 0; i < binaryStr.length; i += 2) {
     cp.push(binaryStr.charCodeAt(i) | (binaryStr.charCodeAt(i + 1) << 8));
   }
+  // eslint-disable-next-line prefer-spread
   return String.fromCharCode.apply(String, cp);
 }
 

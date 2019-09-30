@@ -32,6 +32,14 @@ export function transformArrayProperty(builder: Builder): void {
           })
           .endArr();
       },
+      StrProperty: builder => {
+        builder
+          .arr('values')
+          .loop('_itemCount', builder => {
+            builder.str('#_index');
+          })
+          .endArr();
+      },
       ObjectProperty: builder => {
         builder
           .arr('values')

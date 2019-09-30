@@ -2,7 +2,24 @@
 Library to convert from Satisfactory save files to a JSON format and back.
 
 ## Usage
+Using node streams:
+```ts
+import { SaveGame, Sav2JsonTransform, Json2SavTransform } from 'satisfactory-json';
 
+// convert sav -> json
+const readStream: ReadStream; // e.g. from fs.createReadStream
+readStream.pipe(new Sav2JsonTransform()).on('data', saveGame => {
+
+});
+
+// convert json -> sav
+const saveGame: SaveGame;
+const writeStream: WriteStream; // e.g. from fs.createWriteStream
+const transform = new Json2SavTransform();
+transform.pipe(writeStream);
+transform.write(saveGame);
+transform.end();
+```
 
 Or using something similar to the previous interface:
 ```ts
@@ -12,10 +29,12 @@ const saveFileData: Buffer;
 // convert sav -> json
 sav2json(saveFileData).then((saveGame: SaveGame) => {
 
-  // convert json -> sav
-  json2sav(saveGame).then((saveData: string) => {
+});
 
-  });
+// convert json -> sav
+const saveGame: SaveGame;
+json2sav(saveGame).then((saveData: string) => {
+
 });
 
 ```
