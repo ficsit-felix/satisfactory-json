@@ -1,7 +1,7 @@
 name: Check that code is linted
 
 on:
-  [pull_request, push]
+  [push]
 
 jobs:
   lint:
