@@ -1,4 +1,50 @@
-import { Name, Context, Reference, ReferenceType } from './commands';
+import { Context, Reference, ReferenceType } from './commands';
+
+
+// Polyfill for browser until https://github.com/feross/buffer/pull/247 is merged
+if (Buffer.prototype.readBigInt64LE === undefined) {
+  /* eslint-disable */
+  Buffer.prototype.readBigInt64LE = function readBigInt64LE(offset = 0) {
+    const first = this[offset]
+    const last = this[offset + 7]
+
+    const val = this[offset + 4] +
+      this[offset + 5] * 2 ** 8 +
+      this[offset + 6] * 2 ** 16 +
+      (last << 24) // Overflow
+
+    return (BigInt(val) << 32n) +
+      BigInt(first +
+        this[++offset] * 2 ** 8 +
+        this[++offset] * 2 ** 16 +
+        this[++offset] * 2 ** 24)
+  };
+
+  function wrtBigUInt64LE(buf: Buffer | number[], value: bigint, offset: number, min: bigint, max: bigint) {
+    let lo = Number(value & 0xffffffffn)
+    buf[offset++] = lo
+    lo = lo >> 8
+    buf[offset++] = lo
+    lo = lo >> 8
+    buf[offset++] = lo
+    lo = lo >> 8
+    buf[offset++] = lo
+    let hi = Number(value >> 32n & 0xffffffffn)
+    buf[offset++] = hi
+    hi = hi >> 8
+    buf[offset++] = hi
+    hi = hi >> 8
+    buf[offset++] = hi
+    hi = hi >> 8
+    buf[offset++] = hi
+    return offset
+  }
+  Buffer.prototype.writeBigInt64LE = function writeBigInt64LE(value, offset = 0) {
+    return wrtBigUInt64LE(this, value, offset, -0x8000000000000000n, 0x7fffffffffffffffn)
+  }
+}
+/* eslint-enable */
+
 
 export abstract class Archive {
   public missingBytes = 0;
@@ -203,7 +249,7 @@ export class ReadArchive extends Archive {
   public endBuffer(): boolean {
     return true;
   }
-  public endSaveGame(): void {}
+  public endSaveGame(): void { }
   public missingBytes = 0;
   private buffer: Buffer;
   private cursor = 0;
@@ -344,7 +390,10 @@ export class ReadArchive extends Archive {
       this.missingBytes = this.cursor + bytes - this.buffer.length;
       return undefined;
     }
+
     const result = this.buffer.readBigInt64LE(this.cursor);
+    // const result = new DataView(this.buffer, this.cursor, byte)
+
     this.cursor += bytes;
     this.bytesRead += bytes;
     return result;
