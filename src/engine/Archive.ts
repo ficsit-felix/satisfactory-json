@@ -238,7 +238,7 @@ export class ReadArchive extends Archive {
       return false;
     }
     setVar(ctx, ref, result);
-    ctx.obj._length = result; // TODO remove
+    //ctx.obj._length = result; // TODO remove
     if (resetBytesRead) {
       this.resetBytesRead();
     }
@@ -464,7 +464,7 @@ function decodeUTF16LE(binaryStr: string): string {
   for (let i = 0; i < binaryStr.length; i += 2) {
     cp.push(binaryStr.charCodeAt(i) | (binaryStr.charCodeAt(i + 1) << 8));
   }
-  return String.fromCharCode(...cp);
+  return String.fromCharCode.apply(String, cp);
 }
 
 const MAX_CHUNK_SIZE = 131072;
@@ -563,7 +563,8 @@ export class WriteArchive extends Archive {
       sameChunk = this.writeByte(0, shouldCount) && sameChunk;
     } else {
       sameChunk = this.writeInt(-value.length - 1, shouldCount) && sameChunk;
-      sameChunk = this.write(encodeUTF16LE(value), shouldCount) && sameChunk;
+      sameChunk =
+        this.writeBuffer(encodeUTF16LE(value), shouldCount) && sameChunk;
       sameChunk = this.writeByte(0, shouldCount) && sameChunk;
       sameChunk = this.writeByte(0, shouldCount) && sameChunk;
     }
@@ -815,11 +816,11 @@ function isASCII(str: string): boolean {
   return /^[\x00-\x7F]*$/.test(str);
 }
 // https://stackoverflow.com/a/24391376
-function encodeUTF16LE(text: string): string {
+function encodeUTF16LE(text: string): Buffer {
   const byteArray = new Uint8Array(text.length * 2);
   for (let i = 0; i < text.length; i++) {
     byteArray[i * 2] = text.charCodeAt(i) & 0xff;
     byteArray[i * 2 + 1] = (text.charCodeAt(i) >> 8) & 0xff;
   }
-  return String.fromCharCode(...byteArray);
+  return Buffer.from(byteArray);
 }

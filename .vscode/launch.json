@@ -32,8 +32,8 @@
         "${workspaceFolder}/lib/**/*.js"
       ],
       "args": [
-        "old.json",
-        "old.sav"
+        "letsplay.json",
+        "letsplay.sav"
       ]
     }
   ]
