@@ -2,6 +2,9 @@
 Library to convert from Satisfactory save files to a JSON format and back.
 
 ## Usage
+
+
+Or using something similar to the previous interface:
 ```ts
 import { SaveGame, sav2json, json2sav } from 'satisfactory-json';
 

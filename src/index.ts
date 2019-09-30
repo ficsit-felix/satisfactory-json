@@ -26,7 +26,7 @@ export function json2sav(saveGame: SaveGame): Promise<string> {
       buffers.push(chunk);
     });
     transform.on('finish', () => {
-      resolve(Buffer.concat(buffers).toString());
+      resolve(Buffer.concat(buffers).toString('binary'));
     });
     transform.write(saveGame);
     transform.end();
