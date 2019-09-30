@@ -15,7 +15,6 @@ export class CompressionTransform extends Transform {
   }
 
   _transform(buffer: Buffer, encoding: string, callback: TransformCallback) {
-    console.log('t');
     //this.bufferedBytes += buffer.length;
     /*if (this.buffers.length > 0) {
       // concatenate all the buffers
@@ -34,7 +33,6 @@ export class CompressionTransform extends Transform {
     chunkHeader.writeBigInt64LE(BigInt(chunk.length), 24);
     chunkHeader.writeBigInt64LE(BigInt(deflatedChunk.length), 32);
     chunkHeader.writeBigInt64LE(BigInt(chunk.length), 40);
-    console.log('cl', chunk.length);
 
     this.push(chunkHeader);
     this.push(deflatedChunk);

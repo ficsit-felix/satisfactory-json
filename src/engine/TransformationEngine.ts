@@ -42,7 +42,6 @@ export class TransformationEngine {
   }
 
   transformRead(buffer: Buffer) {
-    console.log('chunk')
     this.bufferedBytes += buffer.length;
     if (this.bufferedBytes < this.needBytes) {
       console.log(`still missing ${this.needBytes - this.bufferedBytes} bytes`);

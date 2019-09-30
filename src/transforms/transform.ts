@@ -66,7 +66,7 @@ export function transform(builder: Builder) {
     .endArr()
     .if(
       ctx => ctx.obj.saveVersion >= 21,
-      bldr => builder.bufferEnd()
+      builder => builder.bufferEnd()
     )
     .endSaveGame();
   // TODO missing
