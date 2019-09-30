@@ -71,8 +71,7 @@ export function transformArrayProperty(builder: Builder): void {
             builder.if(
               ctx =>
                 ctx.parent !== undefined &&
-                ctx.parent.parent !== undefined &&
-                ctx.parent.parent.obj.structInnerProperty === 'Guid',
+                ctx.parent.obj.structInnerType === 'Guid',
               builder => {
                 builder.hex('#_index', 16);
               },
