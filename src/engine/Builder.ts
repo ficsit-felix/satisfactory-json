@@ -28,10 +28,10 @@ import {
   LoopHeaderCommand,
   StartCompressionCommand,
   EndSaveGameCommand
-} from "./commands";
+} from './commands';
 import { Archive } from './Archive';
 
-export let functionCommands: { [id: string]: Command[] } = {};
+export const functionCommands: { [id: string]: Command[] } = {};
 
 export class Builder {
   private commands: Command[] = [];
@@ -123,14 +123,14 @@ export class Builder {
     return this;
   }
 
-  public call(rulesFunction: (builder: Builder) => void) {
-    if (rulesFunction.name === "") {
-      throw new Error("call() can only be used with named functions");
+  public call(rulesFunction: (builder: Builder) => void): Builder {
+    if (rulesFunction.name === '') {
+      throw new Error('call() can only be used with named functions');
     }
 
     // Only build each function once
     if (functionCommands[rulesFunction.name] === undefined) {
-      console.log("building", rulesFunction.name);
+      console.log('building', rulesFunction.name);
       // Already set this, so that we don't get into infinite recursion
       functionCommands[rulesFunction.name] = [];
 
@@ -145,24 +145,26 @@ export class Builder {
    * Execute arbitrary javascript code when the TransformEngine gets to this point
    * @param code
    */
-  public exec(code: (ctx: Context, ar: Archive) => void) {
+  public exec(code: (ctx: Context, ar: Archive) => void): Builder {
     this.commands.push(new ExecCommand(code));
     return this;
   }
 
-  public debug(text: string, code: (ctx: Context) => any) {
-    this.commands.push(new ExecCommand(ctx => console.log(text, code(ctx))));
+  public debug(text: string, code: (ctx: Context) => any): Builder {
+    this.commands.push(
+      new ExecCommand((ctx): void => console.log(text, code(ctx)))
+    );
     return this;
   }
 
-  public debugger() {
+  public debugger(): Builder {
     this.commands.push(new DebuggerCommand());
     return this;
   }
 
-  public error(message: (ctx: Context) => string) {
+  public error(message: (ctx: Context) => string): Builder {
     this.commands.push(
-      new ExecCommand(ctx => {
+      new ExecCommand((ctx: Context): never => {
         throw new Error(message(ctx));
       })
     );

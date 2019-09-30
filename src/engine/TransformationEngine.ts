@@ -1,8 +1,8 @@
-import { inspect } from "util";
-import { SaveGame } from "../types";
-import { ReadArchive, WriteArchive } from "./Archive";
-import { Builder } from "./Builder";
-import { Command, Context, LoopBodyCommand } from "./commands";
+import { inspect } from 'util';
+import { SaveGame } from '../types';
+import { ReadArchive, WriteArchive } from './Archive';
+import { Builder } from './Builder';
+import { Command, Context, LoopBodyCommand } from './commands';
 
 interface StackFrame {
   commands: Command[];
@@ -12,15 +12,15 @@ interface StackFrame {
 
 export class TransformationEngine {
   private commands: Command[];
-  private isLoading: boolean = false;
+  private isLoading = false;
   private stack: StackFrame[] = [];
   /**
    * Bytes needed before next command can be fulfilled
    */
-  private needBytes: number = 0;
+  private needBytes = 0;
   private buffers: Buffer[] = [];
-  private bufferedBytes: number = 0;
-  private bytesRead: number = 0;
+  private bufferedBytes = 0;
+  private bytesRead = 0;
   private startCompressionCallback: (buffer: Buffer) => void;
   // TODO collects Buffers and then concat them all at once
 
@@ -34,7 +34,7 @@ export class TransformationEngine {
     rulesFunction(builder);
     this.commands = builder.getCommands();
 
-    console.log("commands", inspect(this.commands, false, 10));
+    console.log('commands', inspect(this.commands, false, 10));
   }
 
   prepare(isLoading: boolean) {
@@ -61,7 +61,7 @@ export class TransformationEngine {
     const chunk = new ReadArchive(buffer, this.bytesRead);
 
     if (this.stack.length === 0) {
-      console.info("Starting program...");
+      console.info('Starting program...');
       // Stack empty: Begin of program or something went wrong
 
       const saveGame = {}; // TODO put save game here when saving
@@ -78,7 +78,7 @@ export class TransformationEngine {
           tmp: {},
           locals: {},
           isLoading: this.isLoading,
-          path: "saveGame"
+          path: 'saveGame'
         }
       };
       this.stack.push(frame);
@@ -91,7 +91,7 @@ export class TransformationEngine {
         // move one stack frame up
         this.stack.pop();
         if (this.stack.length === 0) {
-          console.warn("No more stack frames");
+          console.warn('No more stack frames');
           //throw new Error('EOW');
           // End of program?
           break;
@@ -147,7 +147,7 @@ export class TransformationEngine {
             frame = this.stack.pop();
           }
           if (frame === undefined) {
-            throw new Error("No LoopCommand found on stack that can be broken");
+            throw new Error('No LoopCommand found on stack that can be broken');
           }
           // move command pointer after the loop command
           frame.currentCommand++;
@@ -198,7 +198,7 @@ export class TransformationEngine {
     this.writeArchive = ar;
 
     if (this.stack.length === 0) {
-      console.info("Starting program...");
+      console.info('Starting program...');
       // Stack empty: Begin of program or something went wrong
 
       // make this global for debugging purposes
@@ -213,7 +213,7 @@ export class TransformationEngine {
           tmp: {},
           locals: {},
           isLoading: this.isLoading,
-          path: "saveGame"
+          path: 'saveGame'
         }
       };
       this.stack.push(frame);
@@ -226,7 +226,7 @@ export class TransformationEngine {
         // move one stack frame up
         this.stack.pop();
         if (this.stack.length === 0) {
-          console.warn("No more stack frames");
+          console.warn('No more stack frames');
           //throw new Error('EOW');
           // End of program?
           break;
@@ -282,7 +282,7 @@ export class TransformationEngine {
             frame = this.stack.pop();
           }
           if (frame === undefined) {
-            throw new Error("No LoopCommand found on stack that can be broken");
+            throw new Error('No LoopCommand found on stack that can be broken');
           }
           // move command pointer after the loop command
           frame.currentCommand++;

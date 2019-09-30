@@ -7,7 +7,13 @@
   "devDependencies": {
     "@types/node": "^12.7.5",
     "@types/pako": "^1.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.3.1",
+    "@typescript-eslint/parser": "^2.3.1",
     "commander": "^3.0.1",
+    "eslint": "^6.5.0",
+    "eslint-config-prettier": "^6.3.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "prettier": "^1.18.2",
     "ts-node": "^8.4.1",
     "typescript": "^3.6.3",
     "v8-profiler-next": "^1.1.1"
@@ -17,11 +23,15 @@
   ],
   "license": "MIT",
   "main": "lib/index.js",
-  "name": "satisfactory-json",
-  "repository": "https://github.com/bitowl/satisfactory-json",
+  "name": "@ficsit-felix/satisfactory-json",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": "https://github.com/ficsit-felix/satisfactory-json",
   "scripts": {
     "build": "tsc --build tsconfig.json",
     "build:watch": "tsc -w",
+    "lint": "eslint src/**/*.ts",
     "sav2json": "ts-node src/cli/sav2json.ts",
     "sav2json:js": "node lib/cli/sav2json.js",
     "json2sav": "ts-node src/cli/json2sav.ts",

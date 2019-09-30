@@ -1,6 +1,5 @@
-import { assert } from "console";
-import { Archive } from "./Archive";
-import { functionCommands } from "./Builder";
+import { Archive } from './Archive';
+import { functionCommands } from './Builder';
 
 /**
  * Name used to access a property or an array element
@@ -17,7 +16,7 @@ export interface Context {
 }
 
 // Generate global ids for all commands
-let __veryGlobalId: number = 0;
+let __veryGlobalId = 0;
 function genCmdId(): number {
   return __veryGlobalId++;
 }
@@ -47,15 +46,15 @@ function buildReference(name: Name): Reference {
   let type = ReferenceType.OBJ;
 
   switch (str[0]) {
-    case "#":
+    case '#':
       str = str.substring(1);
-      if (str[0] === "_") {
+      if (str[0] === '_') {
         type = ReferenceType.INDIRECT_TMP;
       } else {
         type = ReferenceType.INDIRECT_OBJ;
       }
       break;
-    case "_":
+    case '_':
       type = ReferenceType.TMP;
       break;
   }
@@ -66,28 +65,28 @@ function buildReference(name: Name): Reference {
   };
 }
 
+function getVar(ctx: Context, name: Name): any {
+  switch (name.toString().charAt(0)) {
+    case '#':
+      return ctx.tmp[getVar(ctx, name.toString().substring(1))];
+    case '_':
+      return ctx.tmp[name];
+    default:
+      return ctx.obj[name];
+  }
+}
+
 function setVar(ctx: Context, name: Name, value: any): void {
   switch (name.toString().charAt(0)) {
-    case "#":
+    case '#':
       ctx.obj[getVar(ctx, name.toString().substring(1))] = value;
       break;
-    case "_":
+    case '_':
       ctx.tmp[name] = value;
       break;
     default:
       ctx.obj[name] = value;
       break;
-  }
-}
-
-function getVar(ctx: Context, name: Name): any {
-  switch (name.toString().charAt(0)) {
-    case "#":
-      return ctx.tmp[getVar(ctx, name.toString().substring(1))];
-    case "_":
-      return ctx.tmp[name];
-    default:
-      return ctx.obj[name];
   }
 }
 
@@ -97,7 +96,7 @@ export abstract class Command {
 
   constructor() {
     this.id = genCmdId();
-    this.location = new Error().stack!.split("\n")[4].split("at ")[1];
+    this.location = new Error().stack!.split('\n')[4].split('at ')[1];
   }
   /**
    * Executes this command
@@ -139,7 +138,7 @@ export class EnterObjectCommand extends Command {
       locals: ctx.locals
     };
     ctx.obj = ctx.obj[this.name];
-    ctx.path = ctx.path + "." + this.name;
+    ctx.path = ctx.path + '.' + this.name;
     return 0;
   }
 }
@@ -183,7 +182,7 @@ export class EnterArrayCommand extends Command {
       locals: ctx.locals
     };
     ctx.obj = ctx.obj[this.name];
-    ctx.path = ctx.path + "." + this.name;
+    ctx.path = ctx.path + '.' + this.name;
     return 0;
   }
 }
@@ -228,7 +227,7 @@ export class EnterElemCommand extends Command {
       locals: ctx.locals
     };
     ctx.obj = ctx.obj[index];
-    ctx.path = ctx.path + "[" + index + "]";
+    ctx.path = ctx.path + '[' + index + ']';
     return 0;
   }
 }
@@ -252,7 +251,7 @@ export class IntCommand extends Command {
   constructor(
     name: Name,
     defaultValue?: (ctx: Context) => number,
-    shouldCount: boolean = true
+    shouldCount = true
   ) {
     super();
     this.ref = buildReference(name);
@@ -688,8 +687,8 @@ export class SwitchCommand extends Command {
 
     if (this.cases[value] !== undefined) {
       newStackFrameCallback(this.cases[value]);
-    } else if (this.cases["$default"] !== undefined) {
-      newStackFrameCallback(this.cases["$default"]);
+    } else if (this.cases['$default'] !== undefined) {
+      newStackFrameCallback(this.cases['$default']);
     } else {
       console.warn(`No case found for ${value} and no default case provided`);
     }

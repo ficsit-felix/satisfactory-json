@@ -1,7 +1,7 @@
-import { Name, Context, Reference, ReferenceType } from "./commands";
+import { Name, Context, Reference, ReferenceType } from './commands';
 
 export abstract class Archive {
-  public missingBytes: number = 0;
+  public missingBytes = 0;
   public abstract transformInt(
     ctx: Context,
     ref: Reference,
@@ -80,16 +80,12 @@ function getVar(ctx: Context, ref: Reference): any {
   switch (ref.type) {
     case ReferenceType.OBJ:
       return ctx.obj[ref.name];
-      break;
     case ReferenceType.TMP:
       return ctx.tmp[ref.name];
-      break;
     case ReferenceType.INDIRECT_OBJ:
       return ctx.obj[ctx.obj[ref.name]];
-      break;
     case ReferenceType.INDIRECT_TMP:
       return ctx.obj[ctx.tmp[ref.name]];
-      break;
   }
 }
 
@@ -207,24 +203,22 @@ export class ReadArchive extends Archive {
   public endBuffer(): boolean {
     return true;
   }
-  public endSaveGame(): void {
-
-  }
-  public missingBytes: number = 0;
+  public endSaveGame(): void {}
+  public missingBytes = 0;
   private buffer: Buffer;
-  private cursor: number = 0;
-  private rollbackCursor: number = 0;
-  private rollbackBytesRead: number = 0;
+  private cursor = 0;
+  private rollbackCursor = 0;
+  private rollbackBytesRead = 0;
 
   // TODO pass bytesRead to the next Chunk
-  private bytesRead: number = 0;
+  private bytesRead = 0;
   constructor(buffer: Buffer, bytesRead: number) {
     super();
     this.buffer = buffer;
     this.bytesRead = bytesRead;
   }
 
-  public read(bytes: number, shouldCount: boolean = true): Buffer | undefined {
+  public read(bytes: number, shouldCount = true): Buffer | undefined {
     if (this.cursor + bytes > this.buffer.length) {
       // Not enough bytes in this chunk
       this.missingBytes = this.cursor + bytes - this.buffer.length;
@@ -240,7 +234,7 @@ export class ReadArchive extends Archive {
   public transformInt(
     ctx: Context,
     ref: Reference,
-    shouldCount: boolean = true,
+    shouldCount = true,
     defaultValue?: (ctx: Context) => number
   ): boolean {
     const result = this.readInt(shouldCount);
@@ -274,7 +268,7 @@ export class ReadArchive extends Archive {
       return undefined;
     }
     if (length === 0) {
-      return "";
+      return '';
     }
 
     let utf16 = false;
@@ -299,7 +293,7 @@ export class ReadArchive extends Archive {
         return undefined;
       }
       // .slice(this.cursor, this.cursor + length - 2);
-      resultStr = decodeUTF16LE(result.toString("binary"));
+      resultStr = decodeUTF16LE(result.toString('binary'));
     } else {
       const result = this.read(length - 1);
       if (result === undefined) {
@@ -308,7 +302,7 @@ export class ReadArchive extends Archive {
         return undefined;
       }
       // .slice(this.cursor, this.cursor + length - 1);
-      resultStr = result.toString("utf8");
+      resultStr = result.toString('utf8');
     }
     // TODO overflow
     /*      if (this.cursor < 0) {
@@ -435,9 +429,9 @@ interface LengthPlaceholder {
 export class WriteArchive extends Archive {
   private buffers: Buffer[] = [];
   private buffer: Buffer;
-  private cursor: number = 0;
-  public bufferLength: number = 0;
-  private totalBytes: number = 0;
+  private cursor = 0;
+  public bufferLength = 0;
+  private totalBytes = 0;
   private lengthPlaceholders: LengthPlaceholder[] = [];
 
   constructor() {
@@ -453,7 +447,6 @@ export class WriteArchive extends Archive {
       // If there are placeholders left in one of the filled chunks we need to hold it back until the placeholder is filled
       return [];
     }
-
   }
   public clearFilledChunks() {
     if (this.lengthPlaceholders.length === 0) {
@@ -593,7 +586,7 @@ export class WriteArchive extends Archive {
     ref: Reference,
     shouldCount: boolean
   ): boolean {
-    let value = getVar(ctx, ref);
+    const value = getVar(ctx, ref);
 
     const bytes = 4;
 
@@ -680,26 +673,24 @@ export class WriteArchive extends Archive {
     if (this.lengthPlaceholders.length > 10) {
       debugger;
     }
-    this.lengthPlaceholders.push(
-      {
-        buffer: this.buffers.length,
-        cursor: this.cursor,
-        startBufferLength: this.bufferLength + 4 // +4 because this length counts for the encompassing counter
-      }
-    );
+    this.lengthPlaceholders.push({
+      buffer: this.buffers.length,
+      cursor: this.cursor,
+      startBufferLength: this.bufferLength + 4 // +4 because this length counts for the encompassing counter
+    });
 
     // TODO TOODODOOOO
     return this.writeInt(4919, true); // 0x1337 as placeholder
   }
   public endBuffer(ctx: Context): boolean {
-
-    // write the int to the previously allocated placeholder 
+    // write the int to the previously allocated placeholder
     const lengthPlaceholder = this.lengthPlaceholders.pop();
     if (lengthPlaceholder === undefined) {
-      throw new Error('No length placeholder left over. endBuffer() was called more often than startBuffer() ?');
+      throw new Error(
+        'No length placeholder left over. endBuffer() was called more often than startBuffer() ?'
+      );
     }
     const value = this.bufferLength - lengthPlaceholder.startBufferLength;
-
 
     // fix the buffer length for enclosing counters
     // they also count the bytes that were not included in our calculation
@@ -711,19 +702,18 @@ export class WriteArchive extends Archive {
     }
     actualLengthInBytes += this.cursor - currentCursor - 4;
 
+    this.bufferLength =
+      lengthPlaceholder.startBufferLength + actualLengthInBytes;
 
-
-    this.bufferLength = lengthPlaceholder.startBufferLength + actualLengthInBytes;
-
-
-
-    if (value != ctx.obj._length && ctx.obj.name != 'mPickupItems') { // TODO remove
-
+    if (value != ctx.obj._length && ctx.obj.name != 'mPickupItems') {
+      // TODO remove
       //debugger;
     }
 
-
-    let buffer = lengthPlaceholder.buffer < this.buffers.length ? this.buffers[lengthPlaceholder.buffer] : this.buffer;
+    let buffer =
+      lengthPlaceholder.buffer < this.buffers.length
+        ? this.buffers[lengthPlaceholder.buffer]
+        : this.buffer;
     const bytes = 4;
     if (lengthPlaceholder.cursor + bytes > MAX_CHUNK_SIZE) {
       // not enough place in the buffer
@@ -737,7 +727,10 @@ export class WriteArchive extends Archive {
 
       lengthPlaceholder.buffer++;
       lengthPlaceholder.cursor = 0;
-      buffer = lengthPlaceholder.buffer < this.buffers.length ? this.buffers[lengthPlaceholder.buffer] : this.buffer;
+      buffer =
+        lengthPlaceholder.buffer < this.buffers.length
+          ? this.buffers[lengthPlaceholder.buffer]
+          : this.buffer;
       const rest = freePlace > 0 ? smallBuffer.slice(freePlace) : smallBuffer;
       buffer.set(rest, lengthPlaceholder.cursor);
       // TODO return false only if there is a chunk finished that can be written out because lengthPlaceholders is empty
@@ -752,7 +745,6 @@ export class WriteArchive extends Archive {
 
   // correctly puts the values in the chunks
   private putInNewChunk(buffer: Buffer, bytes: number) {
-
     const freePlace = MAX_CHUNK_SIZE - this.cursor;
     if (freePlace > 0) {
       this.buffer.set(buffer.slice(0, freePlace), this.cursor);

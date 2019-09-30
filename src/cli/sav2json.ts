@@ -15,7 +15,9 @@ function quitWithError(message: any) {
 }
 
 program
-  .description('Converts Satisfactory save games (.sav) into a more readable format (.json)')
+  .description(
+    'Converts Satisfactory save games (.sav) into a more readable format (.json)'
+  )
   .arguments('<source> <target>')
   .option('-t, --time', 'time program')
   .option('-p --profile', 'export profile as sav2json.cpuprofile')
@@ -59,7 +61,6 @@ if (program.time) {
   console.time('sav2json');
 }
 
-
 const sav2json = new Sav2JsonTransform();
 
 const stringifyTransform = new Transform({
@@ -78,7 +79,6 @@ stream
   .pipe(stringifyTransform)
   .pipe(outStream)
   .on('finish', () => {
-
     if (program.time) {
       console.timeEnd('sav2json');
       //console.time('writeFile');
@@ -88,8 +88,7 @@ stream
       const profile = profiler.stopProfiling('probe');
       profile.export((error: any, result: any) => {
         console.log('Profile stored.');
-        fs.writeFileSync(
-          'sav2json.cpuprofile', result);
+        fs.writeFileSync('sav2json.cpuprofile', result);
         profile.delete();
         process.exit();
       });

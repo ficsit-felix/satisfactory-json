@@ -1,14 +1,14 @@
-import { Transform, TransformCallback } from "stream";
-import { TransformationEngine } from "./TransformationEngine";
-import { Archive } from "./Archive";
-import { inflate, deflate } from "pako";
+import { Transform, TransformCallback } from 'stream';
+import { TransformationEngine } from './TransformationEngine';
+import { Archive } from './Archive';
+import { inflate, deflate } from 'pako';
 
 export class CompressionTransform extends Transform {
   //private buffers: Buffer[] = [];
   //private bufferedBytes: number = 0;
 
-  private maxChunkSize: number = 131072;
-  private packageFileTag: bigint = 2653586369n;
+  private maxChunkSize = 131072;
+  private packageFileTag = 2653586369n;
 
   constructor() {
     super({ highWaterMark: 131072 });
