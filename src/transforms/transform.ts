@@ -3,7 +3,7 @@ import { transformEntity } from './Entity';
 
 function transformHeader(builder: Builder): void {
   builder
-    .obj('header')
+    //.obj('header')
     .int('saveHeaderType')
     .int('saveVersion')
     .int('buildVersion')
@@ -23,7 +23,7 @@ function transformHeader(builder: Builder): void {
         builder.startCompression().bufferStart('_length', true);
       }
     )
-    .endObj();
+  //.endObj();
 }
 
 function transformActor(builder: Builder): void {

@@ -52,6 +52,7 @@ export class Json2SavTransform extends Transform {
   }
 
   _final(callback: (error?: Error | null) => void): void {
+    console.log('---fin---');
     // @ts-ignore
     this.transformationEngine.end(callback);
   }

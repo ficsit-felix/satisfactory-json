@@ -23,7 +23,7 @@
   ],
   "license": "MIT",
   "main": "lib/index.js",
-  "name": "@ficsit-felix/satisfactory-json",
+  "name": "satisfactory-json",
   "publishConfig": {
     "access": "public"
   },

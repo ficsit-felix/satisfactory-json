@@ -1,6 +1,7 @@
 import { SaveGame } from './types';
 
 export { Sav2JsonTransform } from './Sav2JsonTransform';
+export { Json2SavTransform } from './Json2SavTransform';
 
 export * from './types';
 
