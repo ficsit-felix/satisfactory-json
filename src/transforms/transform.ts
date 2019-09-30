@@ -11,14 +11,14 @@ export function transform(builder: Builder) {
     )
 
     .loop("_entryCount", builder => {
-      builder.debug("AoC", ctx => ctx.tmp._index);
+      //builder.debug("AoC", ctx => ctx.tmp._index);
       builder.call(transformActorOrComponent);
     })
     //.exec(() => console.log('Actors and Components done'))
     .int("_entryCount")
     //.exec((ctx) => console.log('entryCount', ctx.vars._entryCount))
     .loop("_entryCount", builder => {
-      builder.debug("entity", ctx => ctx.tmp._index);
+      //builder.debug("entity", ctx => ctx.tmp._index);
       builder.if(
         ctx => ctx.tmp._index < ctx.obj.actors.length,
         builder => {
