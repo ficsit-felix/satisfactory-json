@@ -44,6 +44,7 @@ jobs:
           registry-url: https://npm.pkg.github.com/
           scope: '@ficsit-felix'
       - run: yarn
+      - run: sed -i 's/"name": "satisfactory-json"/"name":"@ficsit-felix\/satisfactory-json"/' package.json
       - run: yarn publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
