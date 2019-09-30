@@ -1,5 +1,5 @@
+/* global BigInt, Uint8Array */
 import { Context, Reference, ReferenceType } from './commands';
-
 
 // Polyfill for browser until https://github.com/feross/buffer/pull/247 is merged
 if (Buffer.prototype.readBigInt64LE === undefined) {
@@ -44,7 +44,6 @@ if (Buffer.prototype.readBigInt64LE === undefined) {
   }
 }
 /* eslint-enable */
-
 
 export abstract class Archive {
   public missingBytes = 0;
@@ -105,7 +104,7 @@ export abstract class Archive {
   public abstract endSaveGame(): void;
 }
 
-function setVar(ctx: Context, ref: Reference, value: any) {
+function setVar(ctx: Context, ref: Reference, value: any): void {
   switch (ref.type) {
     case ReferenceType.OBJ:
       ctx.obj[ref.name] = value;
@@ -249,7 +248,9 @@ export class ReadArchive extends Archive {
   public endBuffer(): boolean {
     return true;
   }
-  public endSaveGame(): void { }
+  public endSaveGame(): void {
+    // nothing
+  }
   public missingBytes = 0;
   private buffer: Buffer;
   private cursor = 0;
@@ -264,7 +265,7 @@ export class ReadArchive extends Archive {
     this.bytesRead = bytesRead;
   }
 
-  public read(bytes: number, shouldCount = true): Buffer | undefined {
+  public read(bytes: number, _shouldCount = true): Buffer | undefined {
     if (this.cursor + bytes > this.buffer.length) {
       // Not enough bytes in this chunk
       this.missingBytes = this.cursor + bytes - this.buffer.length;
@@ -281,7 +282,7 @@ export class ReadArchive extends Archive {
     ctx: Context,
     ref: Reference,
     shouldCount = true,
-    defaultValue?: (ctx: Context) => number
+    _defaultValue?: (ctx: Context) => number
   ): boolean {
     const result = this.readInt(shouldCount);
     if (result === undefined) {
@@ -292,7 +293,7 @@ export class ReadArchive extends Archive {
     return true;
   }
 
-  private readInt(shouldCount = true): number | undefined {
+  private readInt(_shouldCount = true): number | undefined {
     const bytes = 4;
 
     if (this.cursor + bytes > this.buffer.length) {
@@ -306,7 +307,7 @@ export class ReadArchive extends Archive {
     return result;
   }
 
-  public readStr(shouldCount = true): string | undefined {
+  public readStr(_shouldCount = true): string | undefined {
     // store rewind point in case something gets wrong in the middle of this
     this.setRollbackPoint();
     let length = this.readInt();
@@ -382,7 +383,7 @@ export class ReadArchive extends Archive {
     return resultStr;
   }
 
-  public readLong(shouldCount = true): bigint | undefined {
+  public readLong(_shouldCount = true): bigint | undefined {
     const bytes = 8;
 
     if (this.cursor + bytes > this.buffer.length) {
@@ -399,7 +400,7 @@ export class ReadArchive extends Archive {
     return result;
   }
 
-  public readByte(shouldCount = true): number | undefined {
+  public readByte(_shouldCount = true): number | undefined {
     const bytes = 1;
 
     if (this.cursor + bytes > this.buffer.length) {
@@ -413,7 +414,7 @@ export class ReadArchive extends Archive {
     return result;
   }
 
-  public readFloat(shouldCount = true): number | undefined {
+  public readFloat(_shouldCount = true): number | undefined {
     const bytes = 4;
 
     if (this.cursor + bytes > this.buffer.length) {
@@ -432,7 +433,7 @@ export class ReadArchive extends Archive {
     return this.read(length - this.bytesRead, shouldCount);
   }
 
-  public setRollbackPoint() {
+  public setRollbackPoint(): void {
     this.rollbackCursor = this.cursor;
     this.rollbackBytesRead = this.bytesRead;
   }
@@ -448,8 +449,7 @@ export class ReadArchive extends Archive {
     return this.buffer.slice(this.cursor);
   }
 
-  public resetBytesRead() {
-    //console.log('resetBytesRead');
+  public resetBytesRead(): void {
     this.bytesRead = 0;
   }
 
@@ -464,7 +464,7 @@ function decodeUTF16LE(binaryStr: string): string {
   for (let i = 0; i < binaryStr.length; i += 2) {
     cp.push(binaryStr.charCodeAt(i) | (binaryStr.charCodeAt(i + 1) << 8));
   }
-  return String.fromCharCode.apply(String, cp);
+  return String.fromCharCode(...cp);
 }
 
 const MAX_CHUNK_SIZE = 131072;
@@ -497,7 +497,7 @@ export class WriteArchive extends Archive {
       return [];
     }
   }
-  public clearFilledChunks() {
+  public clearFilledChunks(): void {
     if (this.lengthPlaceholders.length === 0) {
       this.buffers = [];
     }
@@ -715,20 +715,16 @@ export class WriteArchive extends Archive {
     return this.transformHex(ctx, ref, 0, shouldCount);
   }
   public startBuffer(
-    ctx: Context,
-    ref: Reference,
-    resetBytesRead: boolean
+    _ctx: Context,
+    _ref: Reference,
+    _resetBytesRead: boolean
   ): boolean {
-    if (this.lengthPlaceholders.length > 10) {
-      debugger;
-    }
     this.lengthPlaceholders.push({
       buffer: this.buffers.length,
       cursor: this.cursor,
       startBufferLength: this.bufferLength + 4 // +4 because this length counts for the encompassing counter
     });
 
-    // TODO TOODODOOOO
     return this.writeInt(4919, true); // 0x1337 as placeholder
   }
   public endBuffer(ctx: Context): boolean {
@@ -793,7 +789,7 @@ export class WriteArchive extends Archive {
   }
 
   // correctly puts the values in the chunks
-  private putInNewChunk(buffer: Buffer, bytes: number) {
+  private putInNewChunk(buffer: Buffer, bytes: number): void {
     const freePlace = MAX_CHUNK_SIZE - this.cursor;
     if (freePlace > 0) {
       this.buffer.set(buffer.slice(0, freePlace), this.cursor);
@@ -806,7 +802,7 @@ export class WriteArchive extends Archive {
     this.cursor += bytes - freePlace;
   }
 
-  public endSaveGame() {
+  public endSaveGame(): void {
     // mark the last not completely filled chunk as finished
     this.buffers.push(this.buffer.slice(0, this.cursor));
     this.buffer = Buffer.alloc(0);
@@ -815,14 +811,15 @@ export class WriteArchive extends Archive {
 
 // https://stackoverflow.com/a/14313213
 function isASCII(str: string): boolean {
+  // eslint-disable-next-line no-control-regex
   return /^[\x00-\x7F]*$/.test(str);
 }
 // https://stackoverflow.com/a/24391376
-function encodeUTF16LE(text: string) {
+function encodeUTF16LE(text: string): string {
   const byteArray = new Uint8Array(text.length * 2);
   for (let i = 0; i < text.length; i++) {
     byteArray[i * 2] = text.charCodeAt(i) & 0xff;
     byteArray[i * 2 + 1] = (text.charCodeAt(i) >> 8) & 0xff;
   }
-  return String.fromCharCode.apply(String, byteArray as any);
+  return String.fromCharCode(...byteArray);
 }

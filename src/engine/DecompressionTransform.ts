@@ -1,16 +1,14 @@
-import { Transform, TransformCallback } from 'stream';
-import { TransformationEngine } from './TransformationEngine';
-import { Archive, ReadArchive } from './Archive';
 import { inflate } from 'pako';
+import { ReadArchive } from './Archive';
+import { TransformationEngine } from './TransformationEngine';
 
 export class DecompressionTransform {
   private buffers: Buffer[] = [];
   private bufferedBytes = 0;
   private needBytes = 0;
   private firstRead = true;
-  constructor() {}
 
-  transform(buffer: Buffer, transformationEngine: TransformationEngine) {
+  transform(buffer: Buffer, transformationEngine: TransformationEngine): void {
     //console.log('transform');
     this.bufferedBytes += buffer.length;
     if (this.bufferedBytes < this.needBytes) {
@@ -28,7 +26,7 @@ export class DecompressionTransform {
 
     const chunk = new ReadArchive(buffer, 0);
 
-    while (true) {
+    for (;;) {
       chunk.setRollbackPoint();
       const compressedChunk = this.readChunk(chunk);
       if (compressedChunk === undefined) {

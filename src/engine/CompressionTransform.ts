@@ -1,7 +1,6 @@
+/* global BigInt */
+import { deflate } from 'pako';
 import { Transform, TransformCallback } from 'stream';
-import { TransformationEngine } from './TransformationEngine';
-import { Archive } from './Archive';
-import { inflate, deflate } from 'pako';
 
 export class CompressionTransform extends Transform {
   //private buffers: Buffer[] = [];
@@ -14,7 +13,11 @@ export class CompressionTransform extends Transform {
     super({ highWaterMark: 131072 });
   }
 
-  _transform(buffer: Buffer, encoding: string, callback: TransformCallback) {
+  _transform(
+    buffer: Buffer,
+    encoding: string,
+    callback: TransformCallback
+  ): void {
     //this.bufferedBytes += buffer.length;
     /*if (this.buffers.length > 0) {
       // concatenate all the buffers

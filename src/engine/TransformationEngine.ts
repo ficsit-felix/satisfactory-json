@@ -37,11 +37,11 @@ export class TransformationEngine {
     console.log('commands', inspect(this.commands, false, 10));
   }
 
-  prepare(isLoading: boolean) {
+  prepare(isLoading: boolean): void {
     this.isLoading = isLoading;
   }
 
-  transformRead(buffer: Buffer) {
+  transformRead(buffer: Buffer): void {
     this.bufferedBytes += buffer.length;
     if (this.bufferedBytes < this.needBytes) {
       console.log(`still missing ${this.needBytes - this.bufferedBytes} bytes`);
@@ -67,6 +67,7 @@ export class TransformationEngine {
       const saveGame = {}; // TODO put save game here when saving
 
       // make this global for debugging purposes
+      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       global.saveGame = saveGame;
 
@@ -84,7 +85,7 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    while (true) {
+    for (;;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {
@@ -202,6 +203,7 @@ export class TransformationEngine {
       // Stack empty: Begin of program or something went wrong
 
       // make this global for debugging purposes
+      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
       // @ts-ignore
       global.saveGame = saveGame;
 
@@ -219,7 +221,7 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    while (true) {
+    for (;;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {
@@ -316,7 +318,7 @@ export class TransformationEngine {
     return true;
   }
 
-  end(callback: (error?: Error | null | undefined) => void) {
+  end(callback: (error?: Error | null | undefined) => void): void {
     if (this.needBytes !== 0) {
       callback(new Error(`Missing ${this.needBytes} bytes`));
     } else {

@@ -22,7 +22,7 @@ function transformHeader(builder: Builder): void {
       builder => {
         builder.startCompression().bufferStart('_length', true);
       }
-    )
+    );
   //.endObj();
 }
 

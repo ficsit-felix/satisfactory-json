@@ -2,7 +2,6 @@
 import * as fs from 'fs';
 import program from 'commander';
 
-//@ts-ignore
 import * as profiler from 'v8-profiler-next';
 import { Transform, TransformCallback } from 'stream';
 import { Json2SavTransform } from '../Json2SavTransform';
@@ -10,7 +9,7 @@ import { Json2SavTransform } from '../Json2SavTransform';
 let sourceValue: string | undefined;
 let targetValue: string | undefined;
 
-function quitWithError(message: any) {
+function quitWithError(message: any): void {
   console.error(message);
   process.exit(1);
 }
@@ -32,77 +31,75 @@ program
 if (sourceValue === undefined) {
   program.outputHelp();
   quitWithError('No source file specified.');
-}
-
-if (targetValue === undefined) {
+} else if (targetValue === undefined) {
   program.outputHelp();
   quitWithError('No target file specified.');
-}
-
-if (program.time) {
-  console.time('readFile');
-}
-
-if (program.profile) {
-  profiler.startProfiling('probe', true);
-}
-
-const opts = { highWaterMark: 1024 * 512 };
-const stream = fs.createReadStream(sourceValue!, opts);
-const outStream = fs.createWriteStream(targetValue!, opts);
-/*
-
-fs.readFile(sourceValue!, 'binary', (error, data) => {
-  if (error) {
-    quitWithError(error);
-  }
-  const binaryData = Buffer.from(data, 'binary');*/
-
-if (program.time) {
-  console.timeEnd('readFile');
-  console.time('json2sav');
-}
-
-const json2sav = new Json2SavTransform();
-
-class JSONparseTransform extends Transform {
-  private buffers: Buffer[] = [];
-  constructor() {
-    super({
-      readableObjectMode: true
-    });
+} else {
+  if (program.time) {
+    console.time('readFile');
   }
 
-  _transform(chunk: Buffer, encoding: string, cb: TransformCallback) {
-    this.buffers.push(chunk);
-    cb();
+  if (program.profile) {
+    profiler.startProfiling('probe', true);
   }
 
-  _flush(cb: TransformCallback) {
-    this.push(JSON.parse(Buffer.concat(this.buffers).toString('utf8')));
-    cb();
+  const opts = { highWaterMark: 1024 * 512 };
+  const stream = fs.createReadStream(sourceValue, opts);
+  const outStream = fs.createWriteStream(targetValue, opts);
+  /*
+    
+    fs.readFile(sourceValue!, 'binary', (error, data) => {
+      if (error) {
+        quitWithError(error);
+      }
+      const binaryData = Buffer.from(data, 'binary');*/
+
+  if (program.time) {
+    console.timeEnd('readFile');
+    console.time('json2sav');
   }
-}
 
-const parseTransform = new JSONparseTransform();
+  const json2sav = new Json2SavTransform();
 
-stream
-  .pipe(parseTransform)
-  .pipe(json2sav)
-  .pipe(outStream)
-  .on('finish', () => {
-    if (program.time) {
-      console.timeEnd('json2sav');
-      //console.time('writeFile');
-    }
-
-    if (program.profile) {
-      const profile = profiler.stopProfiling('probe');
-      profile.export((error: any, result: any) => {
-        console.log('Profile stored.');
-        fs.writeFileSync('json2sav.cpuprofile', result);
-        profile.delete();
-        process.exit();
+  class JSONparseTransform extends Transform {
+    private buffers: Buffer[] = [];
+    constructor() {
+      super({
+        readableObjectMode: true
       });
     }
-  });
+
+    _transform(chunk: Buffer, encoding: string, cb: TransformCallback): void {
+      this.buffers.push(chunk);
+      cb();
+    }
+
+    _flush(cb: TransformCallback): void {
+      this.push(JSON.parse(Buffer.concat(this.buffers).toString('utf8')));
+      cb();
+    }
+  }
+
+  const parseTransform = new JSONparseTransform();
+
+  stream
+    .pipe(parseTransform)
+    .pipe(json2sav)
+    .pipe(outStream)
+    .on('finish', () => {
+      if (program.time) {
+        console.timeEnd('json2sav');
+        //console.time('writeFile');
+      }
+
+      if (program.profile) {
+        const profile = profiler.stopProfiling('probe');
+        profile.export((error: any, result: any) => {
+          console.log('Profile stored.');
+          fs.writeFileSync('json2sav.cpuprofile', result);
+          profile.delete();
+          process.exit();
+        });
+      }
+    });
+}

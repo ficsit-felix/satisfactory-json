@@ -65,6 +65,7 @@ function buildReference(name: Name): Reference {
   };
 }
 
+// TODO replace with references and getVar from Archive
 function getVar(ctx: Context, name: Name): any {
   switch (name.toString().charAt(0)) {
     case '#':
@@ -76,26 +77,13 @@ function getVar(ctx: Context, name: Name): any {
   }
 }
 
-function setVar(ctx: Context, name: Name, value: any): void {
-  switch (name.toString().charAt(0)) {
-    case '#':
-      ctx.obj[getVar(ctx, name.toString().substring(1))] = value;
-      break;
-    case '_':
-      ctx.tmp[name] = value;
-      break;
-    default:
-      ctx.obj[name] = value;
-      break;
-  }
-}
-
 export abstract class Command {
   protected id: number;
   private location: string;
 
   constructor() {
     this.id = genCmdId();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.location = new Error().stack!.split('\n')[4].split('at ')[1];
   }
   /**
@@ -125,7 +113,6 @@ export class EnterObjectCommand extends Command {
       if (ctx.obj[this.name] === undefined) {
         ctx.obj[this.name] = {};
       }
-    } else {
     }
 
     // Descend to the child object
@@ -147,10 +134,13 @@ export class LeaveObjectCommand extends Command {
   exec(ctx: Context): number {
     // Ascend to the parent context
     // TODO check that we actually ended an object?
-    ctx.obj = ctx.parent!.obj;
-    ctx.tmp = ctx.parent!.tmp;
-    ctx.path = ctx.parent!.path;
-    ctx.parent = ctx.parent!.parent;
+    if (ctx.parent === undefined) {
+      throw new Error('No parent context');
+    }
+    ctx.obj = ctx.parent.obj;
+    ctx.tmp = ctx.parent.tmp;
+    ctx.path = ctx.parent.path;
+    ctx.parent = ctx.parent.parent;
 
     return 0;
   }
@@ -169,7 +159,6 @@ export class EnterArrayCommand extends Command {
       if (ctx.obj[this.name] === undefined) {
         ctx.obj[this.name] = [];
       }
-    } else {
     }
 
     // Descend to the child array
@@ -191,10 +180,13 @@ export class LeaveArrayCommand extends Command {
   exec(ctx: Context): number {
     // Ascend to the parent context
     // TODO check that we actually ended an array?
-    ctx.obj = ctx.parent!.obj;
-    ctx.tmp = ctx.parent!.tmp;
-    ctx.path = ctx.parent!.path;
-    ctx.parent = ctx.parent!.parent;
+    if (ctx.parent === undefined) {
+      throw new Error('No parent context');
+    }
+    ctx.obj = ctx.parent.obj;
+    ctx.tmp = ctx.parent.tmp;
+    ctx.path = ctx.parent.path;
+    ctx.parent = ctx.parent.parent;
     return 0;
   }
 }
@@ -214,7 +206,6 @@ export class EnterElemCommand extends Command {
       if (ctx.obj[index] === undefined) {
         ctx.obj[index] = {};
       }
-    } else {
     }
 
     // Descend to the child array
@@ -236,10 +227,13 @@ export class LeaveElemCommand extends Command {
   exec(ctx: Context): number {
     // Ascend to the parent context
     // TODO check that we actually ended an element?
-    ctx.obj = ctx.parent!.obj;
-    ctx.tmp = ctx.parent!.tmp;
-    ctx.path = ctx.parent!.path;
-    ctx.parent = ctx.parent!.parent;
+    if (ctx.parent === undefined) {
+      throw new Error('No parent context');
+    }
+    ctx.obj = ctx.parent.obj;
+    ctx.tmp = ctx.parent.tmp;
+    ctx.path = ctx.parent.path;
+    ctx.parent = ctx.parent.parent;
     return 0;
   }
 }
@@ -499,7 +493,7 @@ export class LoopBodyCommand extends Command {
   }
   exec(
     ctx: Context,
-    ar: Archive,
+    _ar: Archive,
     newStackFrameCallback: (commands: Command[]) => void
   ): number {
     ctx.locals.index++;
@@ -533,7 +527,7 @@ export class CondCommand extends Command {
   }
   exec(
     ctx: Context,
-    ar: Archive,
+    _ar: Archive,
     newStackFrameCallback: (commands: Command[]) => void
   ): number {
     const result = this.cond(ctx);
@@ -556,8 +550,8 @@ export class CallCommand extends Command {
     this.name = name;
   }
   exec(
-    ctx: Context,
-    ar: Archive,
+    _ctx: Context,
+    _ar: Archive,
     newStackFrameCallback: (commands: Command[]) => void
   ): number {
     if (functionCommands[this.name] === undefined) {
@@ -679,7 +673,7 @@ export class SwitchCommand extends Command {
   }
   exec(
     ctx: Context,
-    ar: Archive,
+    _ar: Archive,
     newStackFrameCallback: (commands: Command[]) => void
   ): number {
     const value = getVar(ctx, this.name).toString();
@@ -713,8 +707,9 @@ export class DebuggerCommand extends Command {
     _context: Context,
     _ar: Archive,
     _newStackFrameCallback: (commands: Command[]) => void,
-    dropStackFrameCallback: () => void
+    _dropStackFrameCallback: () => void
   ): number {
+    // eslint-disable-next-line no-debugger
     debugger;
     return 0;
   }
@@ -725,7 +720,7 @@ export class StartCompressionCommand extends Command {
     _context: Context,
     _ar: Archive,
     _newStackFrameCallback: (commands: Command[]) => void,
-    dropStackFrameCallback: () => void
+    _dropStackFrameCallback: () => void
   ): number {
     // to break the while loop and let the compression kick in
     return -2;
@@ -734,10 +729,10 @@ export class StartCompressionCommand extends Command {
 
 export class EndSaveGameCommand extends Command {
   exec(
-    ctx: Context,
+    _ctx: Context,
     ar: Archive,
-    newStackFrameCallback: (commands: Command[]) => void,
-    dropStackFrameCallback: () => void
+    _newStackFrameCallback: (commands: Command[]) => void,
+    _dropStackFrameCallback: () => void
   ): number {
     console.log('finished');
     ar.endSaveGame();
