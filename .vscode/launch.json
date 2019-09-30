@@ -14,12 +14,8 @@
         "${workspaceFolder}/lib/**/*.js"
       ],
       "args": [
-        //"nurso_250919-192142.sav",
-        //"Forest factory_250919-193000.sav",
-        //"after_intro_new.sav",
-        //"test.json"
-        "test.sav",
-        "test3.json"
+        "debug.sav",
+        "debug.json"
       ]
     },
     {
@@ -32,8 +28,8 @@
         "${workspaceFolder}/lib/**/*.js"
       ],
       "args": [
-        "letsplay.json",
-        "letsplay.sav"
+        "debug.json",
+        "debug.sav"
       ]
     }
   ]

@@ -563,13 +563,28 @@ export class CallCommand extends Command {
 }
 
 export class ExecCommand extends Command {
-  private code: (ctx: Context, ar: Archive) => void;
-  constructor(code: (ctx: Context, ar: Archive) => void) {
+  private code: (
+    ctx: Context,
+    ar: Archive,
+    dropStackFrameCallback: () => void
+  ) => void;
+  constructor(
+    code: (
+      ctx: Context,
+      ar: Archive,
+      dropStackFrameCallback: () => void
+    ) => void
+  ) {
     super();
     this.code = code;
   }
-  exec(ctx: Context, ar: Archive): number {
-    this.code(ctx, ar);
+  exec(
+    ctx: Context,
+    ar: Archive,
+    _newStackFrameCallback: (commands: Command[]) => void,
+    dropStackFrameCallback: () => void
+  ): number {
+    this.code(ctx, ar, dropStackFrameCallback);
     return 0;
   }
 }

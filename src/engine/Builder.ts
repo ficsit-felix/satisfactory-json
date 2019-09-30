@@ -145,7 +145,13 @@ export class Builder {
    * Execute arbitrary javascript code when the TransformEngine gets to this point
    * @param code
    */
-  public exec(code: (ctx: Context, ar: Archive) => void): Builder {
+  public exec(
+    code: (
+      ctx: Context,
+      ar: Archive,
+      dropStackFrameCallback: () => void
+    ) => void
+  ): Builder {
     this.commands.push(new ExecCommand(code));
     return this;
   }
