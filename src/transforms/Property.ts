@@ -7,11 +7,11 @@ import { transformBoolProperty } from './properties/BoolProperty';
 import { transformStringProperty } from './properties/StringProperty';
 import { transformObjectProperty } from './properties/ObjectProperty';
 import { transformStructProperty } from './properties/StructProperty';
-import { transformMapProperty } from './properties/structs/MapProperty';
+import { transformMapProperty } from './properties/MapProperty';
 import { transformByteProperty } from './properties/ByteProperty';
 import { transformTextProperty } from './properties/TextProperty';
 
-export function transformProperty(builder: Builder) {
+export function transformProperty(builder: Builder): void {
   builder
     .exec(ctx => {
       ctx.obj.name = ctx.tmp._name;
@@ -20,19 +20,21 @@ export function transformProperty(builder: Builder) {
     .bufferStart('_tagSize', false) // Tag.Size
     .int('index', undefined, false) // Tag.ArrayIndex
     .switch('type', {
-      IntProperty: builder => builder.call(transformIntProperty),
-      BoolProperty: builder => builder.call(transformBoolProperty),
-      FloatProperty: builder => builder.call(transformFloatProperty),
-      StrProperty: builder => builder.call(transformStringProperty),
-      NameProperty: builder => builder.call(transformStringProperty),
-      TextProperty: builder => builder.call(transformTextProperty),
-      ByteProperty: builder => builder.call(transformByteProperty),
-      EnumProperty: builder => builder.call(transformEnumProperty),
-      ObjectProperty: builder => builder.call(transformObjectProperty),
-      StructProperty: builder => builder.call(transformStructProperty),
-      ArrayProperty: builder => builder.call(transformArrayProperty),
-      MapProperty: builder => builder.call(transformMapProperty),
-      $default: builder =>
+      IntProperty: (builder: Builder) => builder.call(transformIntProperty),
+      BoolProperty: (builder: Builder) => builder.call(transformBoolProperty),
+      FloatProperty: (builder: Builder) => builder.call(transformFloatProperty),
+      StrProperty: (builder: Builder) => builder.call(transformStringProperty),
+      NameProperty: (builder: Builder) => builder.call(transformStringProperty),
+      TextProperty: (builder: Builder) => builder.call(transformTextProperty),
+      ByteProperty: (builder: Builder) => builder.call(transformByteProperty),
+      EnumProperty: (builder: Builder) => builder.call(transformEnumProperty),
+      ObjectProperty: (builder: Builder) =>
+        builder.call(transformObjectProperty),
+      StructProperty: (builder: Builder) =>
+        builder.call(transformStructProperty),
+      ArrayProperty: (builder: Builder) => builder.call(transformArrayProperty),
+      MapProperty: (builder: Builder) => builder.call(transformMapProperty),
+      $default: (builder: Builder) =>
         builder.error(ctx => `Unknown property ${ctx.obj.type}`)
     })
     .bufferEnd();

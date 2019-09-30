@@ -1,6 +1,6 @@
-import { Builder } from '../../../engine/Builder';
-import { transformProperties } from '../../Entity';
-import { transformBoolProperty } from '../BoolProperty';
+import { Builder } from '../../engine/Builder';
+import { transformProperties } from '../Entity';
+import { transformBoolProperty } from './BoolProperty';
 
 export function transformMapProperty(builder: Builder) {
   builder
