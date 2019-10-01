@@ -6,7 +6,7 @@ export function transformMapProperty(builder: Builder): void {
     .obj('value')
     .str('keyType', false) // Tag.InnerType
     .str('valueType', false) // Tag.ValueType
-    .assertNullByte() // Tag.HasPropertyGuid
+    .assertNullByte(false) // Tag.HasPropertyGuid
     .int('_zero', () => 0)
     .exec(ctx => {
       if (ctx.tmp._zero !== 0) {

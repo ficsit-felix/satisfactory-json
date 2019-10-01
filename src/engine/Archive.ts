@@ -752,10 +752,12 @@ export class WriteArchive extends Archive {
     this.bufferLength =
       lengthPlaceholder.startBufferLength + actualLengthInBytes;
 
-    if (value != ctx.obj._length && ctx.obj.name != 'mPickupItems') {
+    //console.log(ctx.path);
+    /*if (value != ctx.obj._length) {
+      console.warn(`Wrong length: ${value} != ${ctx.obj._length} ${ctx.path}`);
       // TODO remove
       //debugger;
-    }
+    }*/
 
     let buffer =
       lengthPlaceholder.buffer < this.buffers.length

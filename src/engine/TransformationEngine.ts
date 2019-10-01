@@ -198,7 +198,7 @@ export class TransformationEngine {
     this.writeArchive = ar;
 
     if (this.stack.length === 0) {
-      console.info('Starting program...');
+      //console.info('Starting program...');
       // Stack empty: Begin of program or something went wrong
 
       // make this global for debugging purposes
