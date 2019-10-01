@@ -729,7 +729,7 @@ export class WriteArchive extends Archive {
 
     return this.writeInt(4919, true); // 0x1337 as placeholder
   }
-  public endBuffer(ctx: Context): boolean {
+  public endBuffer(_ctx: Context): boolean {
     // write the int to the previously allocated placeholder
     const lengthPlaceholder = this.lengthPlaceholders.pop();
     if (lengthPlaceholder === undefined) {
