@@ -1,13 +1,13 @@
-/* global BigInt */
 import { deflate } from 'pako';
 import { Transform, TransformCallback } from 'stream';
-
+import { writeBigInt64LE } from './Archive';
+import JSBI from 'jsbi';
 export class CompressionTransform extends Transform {
   //private buffers: Buffer[] = [];
   //private bufferedBytes: number = 0;
 
   private maxChunkSize = 131072;
-  private packageFileTag = 2653586369n;
+  private packageFileTag = JSBI.BigInt('2653586369');
 
   constructor() {
     super({ highWaterMark: 131072 });
@@ -30,12 +30,12 @@ export class CompressionTransform extends Transform {
     //this.bufferedBytes -= this.maxChunkSize;
     const deflatedChunk = deflate(chunk);
     const chunkHeader = Buffer.alloc(48);
-    chunkHeader.writeBigInt64LE(this.packageFileTag, 0);
-    chunkHeader.writeBigInt64LE(BigInt(this.maxChunkSize), 8);
-    chunkHeader.writeBigInt64LE(BigInt(deflatedChunk.length), 16);
-    chunkHeader.writeBigInt64LE(BigInt(chunk.length), 24);
-    chunkHeader.writeBigInt64LE(BigInt(deflatedChunk.length), 32);
-    chunkHeader.writeBigInt64LE(BigInt(chunk.length), 40);
+    writeBigInt64LE(chunkHeader, this.packageFileTag, 0);
+    writeBigInt64LE(chunkHeader, JSBI.BigInt(this.maxChunkSize), 8);
+    writeBigInt64LE(chunkHeader, JSBI.BigInt(deflatedChunk.length), 16);
+    writeBigInt64LE(chunkHeader, JSBI.BigInt(chunk.length), 24);
+    writeBigInt64LE(chunkHeader, JSBI.BigInt(deflatedChunk.length), 32);
+    writeBigInt64LE(chunkHeader, JSBI.BigInt(chunk.length), 40);
 
     this.push(chunkHeader);
     this.push(deflatedChunk);

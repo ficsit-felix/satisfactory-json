@@ -1,6 +1,7 @@
 {
   "author": "ficsit-felix",
   "dependencies": {
+    "jsbi": "^3.1.1",
     "pako": "^1.0.10"
   },
   "description": "Convert Satisfactory save files to JSON and back",
@@ -36,8 +37,8 @@
     "sav2json:js": "node lib/cli/sav2json.js",
     "json2sav": "ts-node src/cli/json2sav.ts",
     "json2sav:js": "node lib/cli/json2sav.js",
-    "prepare-gpr": "sed -i 's/\"name\": \"satisfactory-json\"/\"name\": \"@ficsit-felix\\\/satisfactory-json\"/' package.json"
+    "prepare-gpr": "sed -i 's/\"name\": \"satisfactory-json\"/\"name\": \"@ficsit-felix\\/satisfactory-json\"/' package.json"
   },
   "types": "lib/index.d.ts",
-  "version": "0.0.24"
+  "version": "0.0.25"
 }

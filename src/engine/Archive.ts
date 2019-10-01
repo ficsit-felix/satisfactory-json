@@ -1,47 +1,44 @@
-/* global BigInt */
 import { Context, Reference, ReferenceType } from './commands';
+import JSBI from 'jsbi';
 
 // Polyfill for browser until https://github.com/feross/buffer/pull/247 is merged
-if (Buffer.prototype.readBigInt64LE === undefined) {
-  /* eslint-disable */
-  Buffer.prototype.readBigInt64LE = function readBigInt64LE(offset = 0) {
-    const first = this[offset]
-    const last = this[offset + 7]
+/* eslint-disable */
+export function readBigInt64LE(buffer: Buffer, offset = 0) {
+  const first = buffer[offset]
+  const last = buffer[offset + 7]
+  const val = buffer[offset + 4] +
+    buffer[offset + 5] * 2 ** 8 +
+    buffer[offset + 6] * 2 ** 16 +
+    (last << 24) // Overflow
 
-    const val = this[offset + 4] +
-      this[offset + 5] * 2 ** 8 +
-      this[offset + 6] * 2 ** 16 +
-      (last << 24) // Overflow
+  return JSBI.add(JSBI.leftShift(JSBI.BigInt(val), JSBI.BigInt(32)),
+    JSBI.BigInt(first +
+      buffer[++offset] * 2 ** 8 +
+      buffer[++offset] * 2 ** 16 +
+      buffer[++offset] * 2 ** 24));
+};
 
-    return (BigInt(val) << 32n) +
-      BigInt(first +
-        this[++offset] * 2 ** 8 +
-        this[++offset] * 2 ** 16 +
-        this[++offset] * 2 ** 24)
-  };
-
-  function wrtBigUInt64LE(buf: Buffer | number[], value: bigint, offset: number, min: bigint, max: bigint) {
-    let lo = Number(value & 0xffffffffn)
-    buf[offset++] = lo
-    lo = lo >> 8
-    buf[offset++] = lo
-    lo = lo >> 8
-    buf[offset++] = lo
-    lo = lo >> 8
-    buf[offset++] = lo
-    let hi = Number(value >> 32n & 0xffffffffn)
-    buf[offset++] = hi
-    hi = hi >> 8
-    buf[offset++] = hi
-    hi = hi >> 8
-    buf[offset++] = hi
-    hi = hi >> 8
-    buf[offset++] = hi
-    return offset
-  }
-  Buffer.prototype.writeBigInt64LE = function writeBigInt64LE(value, offset = 0) {
-    return wrtBigUInt64LE(this, value, offset, -0x8000000000000000n, 0x7fffffffffffffffn)
-  }
+function wrtBigUInt64LE(buf: Buffer | number[], value: JSBI, offset: number, min: JSBI, max: JSBI) {
+  let lo = Number(JSBI.bitwiseAnd(value, JSBI.BigInt("0xffffffff")))
+  buf[offset++] = lo
+  lo = lo >> 8
+  buf[offset++] = lo
+  lo = lo >> 8
+  buf[offset++] = lo
+  lo = lo >> 8
+  buf[offset++] = lo
+  let hi = Number(JSBI.bitwiseAnd(JSBI.signedRightShift(value, JSBI.BigInt(32)), JSBI.BigInt("0xffffffff")))
+  buf[offset++] = hi
+  hi = hi >> 8
+  buf[offset++] = hi
+  hi = hi >> 8
+  buf[offset++] = hi
+  hi = hi >> 8
+  buf[offset++] = hi
+  return offset
+}
+export function writeBigInt64LE(buffer: Buffer, value: JSBI, offset = 0) {
+  return wrtBigUInt64LE(buffer, value, offset, JSBI.unaryMinus(JSBI.BigInt("0x8000000000000000")), JSBI.BigInt("0x7fffffffffffffff"))
 }
 /* eslint-enable */
 
@@ -383,7 +380,7 @@ export class ReadArchive extends Archive {
     return resultStr;
   }
 
-  public readLong(_shouldCount = true): bigint | undefined {
+  public readLong(_shouldCount = true): JSBI | undefined {
     const bytes = 8;
 
     if (this.cursor + bytes > this.buffer.length) {
@@ -392,7 +389,7 @@ export class ReadArchive extends Archive {
       return undefined;
     }
 
-    const result = this.buffer.readBigInt64LE(this.cursor);
+    const result = readBigInt64LE(this.buffer, this.cursor);
     // const result = new DataView(this.buffer, this.cursor, byte)
 
     this.cursor += bytes;
@@ -611,7 +608,7 @@ export class WriteArchive extends Archive {
     let value = getVar(ctx, ref);
 
     // TODO remove when this is no longer stored as a string in json
-    value = BigInt(value);
+    value = JSBI.BigInt(value);
 
     const bytes = 8;
 
@@ -623,11 +620,11 @@ export class WriteArchive extends Archive {
     if (this.cursor + bytes > MAX_CHUNK_SIZE) {
       // not enough place in the buffer
       const buffer = Buffer.alloc(bytes);
-      buffer.writeBigInt64LE(value, 0);
+      writeBigInt64LE(buffer, value, 0);
       this.putInNewChunk(buffer, bytes);
       return false;
     }
-    this.buffer.writeBigInt64LE(value, this.cursor);
+    writeBigInt64LE(this.buffer, value, this.cursor);
     this.cursor += bytes;
     return true;
   }
