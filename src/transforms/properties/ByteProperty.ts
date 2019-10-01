@@ -1,18 +1,14 @@
-import { Archive } from '../../Archive';
-import { ByteProperty } from '../../types';
+import { Builder } from '../../engine/Builder';
 
-export default function transformByteProperty(
-    ar: Archive, property: ByteProperty) {
-    if (ar.isLoading()) {
-        property.value = {
-            enumName: ''
-        };
-    }
-    ar.transformString(property.value.enumName); // Tag.EnumName
-    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    if (property.value.enumName === 'None') {
-        ar.transformByte(property.value.value!);
-    } else {
-        ar.transformString(property.value.valueName!);
-    }
+export function transformByteProperty(builder: Builder): void {
+  builder
+    .obj('value')
+    .str('enumName', false) // Tag.EnumName
+    .assertNullByte(false) // Tag.HasPropertyGuid
+    .if(
+      ctx => ctx.obj.enumName === 'None',
+      builder => builder.byte('value'),
+      builder => builder.str('valueName')
+    )
+    .endObj();
 }

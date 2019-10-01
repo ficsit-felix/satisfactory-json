@@ -1,8 +1,7 @@
-import { Archive } from '../../Archive';
-import { FloatProperty } from '../../types';
+import { Builder } from '../../engine/Builder';
 
-export default function transformFloatProperty(
-    ar: Archive, property: FloatProperty) {
-    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    ar.transformFloat(property.value);
+export function transformFloatProperty(builder: Builder): void {
+  builder
+    .assertNullByte(false) // Tag.HasPropertyGuid
+    .float('value');
 }

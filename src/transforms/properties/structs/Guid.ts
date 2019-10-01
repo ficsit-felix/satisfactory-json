@@ -1,8 +1,8 @@
 import { Builder } from '../../../engine/Builder';
 
-export function transformTimerHandle(builder: Builder): void {
+export function transformGuid(builder: Builder): void {
   builder
     //.obj('value')
-    .str('handle');
+    .hex('value', 16);
   //.endObj();
 }

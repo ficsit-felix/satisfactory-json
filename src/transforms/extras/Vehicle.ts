@@ -1,21 +1,17 @@
-import { Archive } from '../../Archive';
-import { Entity } from '../../types';
+import { Builder } from '../../engine/Builder';
 
-export default function transformVehicle(ar: Archive, entity: Entity) {
-    if (ar.isLoading()) {
-        entity.extra = {
-            objects: []
-        };
-    }
-    const objects = { length: entity.extra.objects.length };
-    ar.transformInt(objects.length);
-
-    for (let i = 0; i < objects.length; i++) {
-
-        if (ar.isLoading()) {
-            entity.extra.objects.push({});
-        }
-        ar.transformString(entity.extra.objects[i].name);
-        ar.transformHex(entity.extra.objects[i].unknown, 53);
-    }
+export function transformVehicle(builder: Builder): void {
+  builder
+    .obj('extra')
+    .int('_objectCount', ctx => ctx.obj.objects.length)
+    .arr('objects')
+    .loop('_objectCount', builder => {
+      builder
+        .elem('_index')
+        .str('name')
+        .hex('unknown', 53)
+        .endElem();
+    })
+    .endArr()
+    .endObj();
 }

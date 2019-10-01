@@ -1,66 +1,41 @@
-import { Archive } from '../Archive';
-import {
-    Property,
-    ByteProperty,
-    IntProperty,
-    BoolProperty,
-    FloatProperty,
-    StringProperty,
-    TextProperty, EnumProperty, ObjectProperty, StructProperty, ArrayProperty, MapProperty
-} from '../types';
-import transformIntProperty from './properties/IntProperty';
-import transformBoolProperty from './properties/BoolProperty';
-import transformFloatProperty from './properties/FloatProperty';
-import transformStringProperty from './properties/StringProperty';
-import transformTextProperty from './properties/TextProperty';
-import transformByteProperty from './properties/ByteProperty';
-import transformEnumProperty from './properties/EnumProperty';
-import transformObjectProperty from './properties/ObjectProperty';
-import transformMapProperty from './properties/MapProperty';
-import transformArrayProperty from './properties/ArrayProperty';
-import transformStructProperty from './properties/StructProperty';
-// compare to FPropertyTag
-export default function transformProperty(ar: Archive, property: Property) {
-    ar.transformString(property.type); // Tag.Type
-    ar.transformBufferStart(false); // Tag.Size
-    ar.transformInt(property.index, false); // Tag.ArrayIndex
-    switch (property.type) {
-        case 'IntProperty':
-            transformIntProperty(ar, property as IntProperty);
-            break;
-        case 'BoolProperty':
-            transformBoolProperty(ar, property as BoolProperty);
-            break;
-        case 'FloatProperty':
-            transformFloatProperty(ar, property as FloatProperty);
-            break;
-        case 'StrProperty':
-        case 'NameProperty':
-            transformStringProperty(ar, property as StringProperty);
-            break;
-        case 'TextProperty':
-            transformTextProperty(ar, property as TextProperty);
-            break;
-        case 'ByteProperty':
-            transformByteProperty(ar, property as ByteProperty);
-            break;
-        case 'EnumProperty':
-            transformEnumProperty(ar, property as EnumProperty);
-            break;
-        case 'ObjectProperty':
-            transformObjectProperty(ar, property as ObjectProperty);
-            break;
-        case 'StructProperty':
-            transformStructProperty(ar, property as StructProperty);
-            break;
-        case 'ArrayProperty':
-            transformArrayProperty(ar, property as ArrayProperty);
-            break;
-        case 'MapProperty':
-            transformMapProperty(ar, property as MapProperty);
-            break;
-        default:
-            throw Error(`Unkown property type ${property.type}`);
-    }
-    ar.transformBufferEnd();
+import { Builder } from '../engine/Builder';
+import { transformArrayProperty } from './properties/ArrayProperty';
+import { transformFloatProperty } from './properties/FloatProperty';
+import { transformIntProperty } from './properties/IntProperty';
+import { transformEnumProperty } from './properties/EnumProperty';
+import { transformBoolProperty } from './properties/BoolProperty';
+import { transformStringProperty } from './properties/StringProperty';
+import { transformObjectProperty } from './properties/ObjectProperty';
+import { transformStructProperty } from './properties/StructProperty';
+import { transformMapProperty } from './properties/MapProperty';
+import { transformByteProperty } from './properties/ByteProperty';
+import { transformTextProperty } from './properties/TextProperty';
+
+export function transformProperty(builder: Builder): void {
+  builder
+    .exec(ctx => {
+      ctx.obj.name = ctx.tmp._name;
+    })
+    .str('type') // Tag.Type
+    .bufferStart('_tagSize', false) // Tag.Size
+    .int('index', undefined, false) // Tag.ArrayIndex
+    .switch('type', {
+      IntProperty: (builder: Builder) => builder.call(transformIntProperty),
+      BoolProperty: (builder: Builder) => builder.call(transformBoolProperty),
+      FloatProperty: (builder: Builder) => builder.call(transformFloatProperty),
+      StrProperty: (builder: Builder) => builder.call(transformStringProperty),
+      NameProperty: (builder: Builder) => builder.call(transformStringProperty),
+      TextProperty: (builder: Builder) => builder.call(transformTextProperty),
+      ByteProperty: (builder: Builder) => builder.call(transformByteProperty),
+      EnumProperty: (builder: Builder) => builder.call(transformEnumProperty),
+      ObjectProperty: (builder: Builder) =>
+        builder.call(transformObjectProperty),
+      StructProperty: (builder: Builder) =>
+        builder.call(transformStructProperty),
+      ArrayProperty: (builder: Builder) => builder.call(transformArrayProperty),
+      MapProperty: (builder: Builder) => builder.call(transformMapProperty),
+      $default: (builder: Builder) =>
+        builder.error(ctx => `Unknown property ${ctx.obj.type}`)
+    })
+    .bufferEnd();
 }

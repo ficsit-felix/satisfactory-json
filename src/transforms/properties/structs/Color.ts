@@ -1,8 +1,11 @@
-import { Archive } from '../../../Archive';
-import { StructProperty } from '../../../types';
-export function transformColor(ar: Archive, property: StructProperty) {
-    ar.transformByte(property.value.b);
-    ar.transformByte(property.value.g);
-    ar.transformByte(property.value.r);
-    ar.transformByte(property.value.a);
+import { Builder } from '../../../engine/Builder';
+
+export function transformColor(builder: Builder): void {
+  builder
+    //.obj('value') // TODO readd
+    .byte('b')
+    .byte('g')
+    .byte('r')
+    .byte('a');
+  //.endObj();
 }

@@ -1,8 +1,7 @@
-import { Archive } from '../../Archive';
-import { IntProperty } from '../../types';
+import { Builder } from '../../engine/Builder';
 
-export default function transformIntProperty(
-    ar: Archive, property: IntProperty) {
-    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-    ar.transformInt(property.value);
+export function transformIntProperty(builder: Builder): void {
+  builder
+    .assertNullByte(false) // Tag.HasPropertyGuid
+    .int('value');
 }

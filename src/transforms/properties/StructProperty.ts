@@ -1,70 +1,52 @@
-import { Archive } from '../../Archive';
-import { StructProperty } from '../../types';
+import { Builder } from '../../engine/Builder';
 import { transformVector } from './structs/Vector';
-import { transformTimerHandle } from './structs/TimerHandle';
-import { transformRailroadTrackPosition } from './structs/RailroadTrackPosition';
-import { transformQuat } from './structs/Quat';
-import { transformLinearColor } from './structs/LinearColor';
-import { transformColor } from './structs/Color';
-import { transformInventoryItem } from './structs/IventoryItem';
 import { transformArbitraryStruct } from './structs/ArbitraryStruct';
 import { transformBox } from './structs/Box';
-import { transformGuuid } from './structs/Guuid';
+import { transformInventoryItem } from './structs/InventoryItem';
+import { transformColor } from './structs/Color';
+import { transformLinearColor } from './structs/LinearColor';
+import { transformQuat } from './structs/Quat';
+import { transformRailroadTrackPosition } from './structs/RailroadTrackPosition';
+import { transformTimerHandle } from './structs/TimerHandle';
+import { transformGuid } from './structs/Guid';
 
-export default function transformStructProperty(
-    ar: Archive, property: StructProperty) {
-    if (ar.isLoading()) {
-        property.value = {
-            type: ''
-        };
-    }
-    ar.transformString(property.value.type); // Tag.StructName
-
-    const zero = { zero: 0 };
-    for (let i = 0; i < 4; i++) { // Tag.StructGuid
-        ar.transformInt(zero.zero, false);
-        if (zero.zero !== 0) {
-            throw new Error(`Not zero, but ${zero.zero}`);
-        }
-    }
-    ar.transformAssertNullByte(false); // Tag.HasPropertyGuid
-
-    switch (property.value.type) {
-        case 'Vector':
-        case 'Rotator':
-            transformVector(ar, property);
-            break;
-        case 'Box':
-            transformBox(ar, property);
-            break;
-        case 'Color':
-            transformColor(ar, property);
-            break;
-        case 'LinearColor':
-            transformLinearColor(ar, property);
-            break;
-        case 'Quat':
-            transformQuat(ar, property);
-            break;
-        case 'InventoryItem':
-            transformInventoryItem(ar, property);
-            break;
-        case 'RailroadTrackPosition':
-            transformRailroadTrackPosition(ar, property);
-            break;
-        case 'TimerHandle':
-            transformTimerHandle(ar, property);
-            break;
-        case 'Transform':
-        case 'RemovedInstanceArray':
-        case 'InventoryStack':
-        case 'ProjectileData':
-            transformArbitraryStruct(ar, property);
-            break;
-        case 'Guid':
-            transformGuuid(ar, property);
-            break;
-        default:
-            throw new Error(`Unknown struct type ${property.value.type}`);
-    }
+export function transformStructProperty(builder: Builder): void {
+  builder
+    .obj('value')
+    .str('type', false) // Tag.StructName
+    .int('_zero0', _ => 0, false) // Tag.StructGuid
+    .int('_zero1', _ => 0, false)
+    .int('_zero2', _ => 0, false)
+    .int('_zero3', _ => 0, false)
+    .exec(ctx => {
+      if (
+        ctx.tmp._zero0 !== 0 ||
+        ctx.tmp._zero1 !== 0 ||
+        ctx.tmp._zero2 !== 0 ||
+        ctx.tmp._zero3 !== 0
+      ) {
+        throw new Error('Struct GUID not 0');
+      }
+    })
+    .assertNullByte(false) // Tag.HasPropertyGuid
+    .switch('type', {
+      Vector: builder => transformVector(builder),
+      Rotator: builder => transformVector(builder),
+      Box: builder => transformBox(builder),
+      Color: builder => transformColor(builder),
+      LinearColor: builder => transformLinearColor(builder),
+      Quat: builder => transformQuat(builder),
+      InventoryItem: builder => transformInventoryItem(builder),
+      RailroadTrackPosition: builder => transformRailroadTrackPosition(builder),
+      TimerHandle: builder => transformTimerHandle(builder),
+      Transform: builder => transformArbitraryStruct(builder),
+      RemovedInstanceArray: builder => transformArbitraryStruct(builder),
+      InventoryStack: builder => transformArbitraryStruct(builder),
+      ProjectileData: builder => transformArbitraryStruct(builder),
+      Guid: builder => transformGuid(builder),
+      TrainSimulationData: builder => transformArbitraryStruct(builder),
+      $default: builder =>
+        builder.error(ctx => `Unknown struct property ${ctx.obj.type}`)
+    })
+    .endObj();
 }
