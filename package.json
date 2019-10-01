@@ -40,5 +40,5 @@
     "prepare-gpr": "sed -i 's/\"name\": \"satisfactory-json\"/\"name\": \"@ficsit-felix\\/satisfactory-json\"/' package.json"
   },
   "types": "lib/index.d.ts",
-  "version": "0.0.26"
+  "version": "0.0.27"
 }
