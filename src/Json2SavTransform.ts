@@ -27,28 +27,36 @@ export class Json2SavTransform extends Transform {
   }
 
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {
-    let continueWriting = true;
-    while (continueWriting) {
-      continueWriting = this.transformationEngine.transformWrite(chunk);
+    try {
+      let continueWriting = true;
+      while (continueWriting) {
+        continueWriting = this.transformationEngine.transformWrite(chunk);
 
-      // chunk is filled
-      const ar = this.transformationEngine.getWriteArchive();
-      if (ar) {
-        for (const chunk of ar.getFilledChunks()) {
-          if (this.compressionTransform !== undefined) {
-            this.compressionTransform.write(chunk);
-            //            this.compressionTransform.push(chunk);
-          } else {
-            this.push(chunk);
+        // chunk is filled
+        const ar = this.transformationEngine.getWriteArchive();
+        if (ar) {
+          for (const chunk of ar.getFilledChunks()) {
+            if (this.compressionTransform !== undefined) {
+              this.compressionTransform.write(chunk);
+              //            this.compressionTransform.push(chunk);
+            } else {
+              this.push(chunk);
+            }
           }
+          ar.clearFilledChunks();
         }
-        ar.clearFilledChunks();
       }
+      callback();
+    } catch (error) {
+      callback(error);
     }
-    callback();
   }
 
   _final(callback: (error?: Error | null) => void): void {
-    this.transformationEngine.end(callback);
+    try {
+      this.transformationEngine.end(callback);
+    } catch (error) {
+      callback(error);
+    }
   }
 }

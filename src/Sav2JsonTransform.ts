@@ -25,24 +25,32 @@ export class Sav2JsonTransform extends Transform {
   }
 
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {
-    // We can only handle Buffers
-    if (encoding !== 'buffer') {
-      throw new Error(`We can only handle Buffers and not ${encoding}`);
-    }
+    try {
+      // We can only handle Buffers
+      if (encoding !== 'buffer') {
+        throw new Error(`We can only handle Buffers and not ${encoding}`);
+      }
 
-    if (this.compressionTransform) {
-      this.compressionTransform.transform(chunk, this.transformationEngine);
-    } else {
-      this.transformationEngine.transformRead(chunk);
+      if (this.compressionTransform) {
+        this.compressionTransform.transform(chunk, this.transformationEngine);
+      } else {
+        this.transformationEngine.transformRead(chunk);
+      }
+      callback();
+    } catch (error) {
+      callback(error);
     }
-    callback();
   }
 
   _final(callback: (error?: Error | null) => void): void {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
-    // TODO get saveGame from transformation engine
-    this.push(global.saveGame);
-    this.transformationEngine.end(callback);
+    try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+      // @ts-ignore
+      // TODO get saveGame from transformation engine
+      this.push(global.saveGame);
+      this.transformationEngine.end(callback);
+    } catch (error) {
+      callback(error);
+    }
   }
 }
