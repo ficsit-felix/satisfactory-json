@@ -1,7 +1,7 @@
 import { Builder } from '../engine/Builder';
-import { transformEntity } from './Entity';
+import { RegisteredFunction } from '../engine/TransformationEngine';
 
-function transformHeader(builder: Builder): void {
+export function transformHeader(builder: Builder): void {
   builder
     //.obj('header')
     .int('saveHeaderType')
@@ -62,7 +62,7 @@ function transformComponent(builder: Builder): void {
     .str('outerPathName');
 }
 
-function transformActorOrComponent(builder: Builder): void {
+export function transformActorOrComponent(builder: Builder): void {
   builder
     .int('_type', ctx => (ctx.tmp._index < ctx.obj.actors.length ? 1 : 0))
     .if(
@@ -94,7 +94,7 @@ function transformActorOrComponent(builder: Builder): void {
 }
 export function transform(builder: Builder): void {
   builder
-    .call(transformHeader)
+    .call(RegisteredFunction.transformHeader)
     //.exec(() => console.log('Header done'))
     .int(
       '_entryCount',
@@ -103,7 +103,7 @@ export function transform(builder: Builder): void {
 
     .loop('_entryCount', builder => {
       //builder.debug("AoC", ctx => ctx.tmp._index);
-      builder.call(transformActorOrComponent);
+      builder.call(RegisteredFunction.transformActorOrComponent);
     })
     //.exec(() => console.log('Actors and Components done'))
     .int('_entryCount')
@@ -121,7 +121,7 @@ export function transform(builder: Builder): void {
             .obj('actors')
             .elem('_index')
             .obj('entity')
-            .call(transformEntity)
+            .call(RegisteredFunction.transformEntity)
             .endObj()
             .endElem()
             .endObj();
@@ -137,7 +137,7 @@ export function transform(builder: Builder): void {
             .obj('components')
             .elem('_componentIndex')
             .obj('entity')
-            .call(transformEntity)
+            .call(RegisteredFunction.transformEntity)
             .endObj()
             .endElem()
             .endObj();

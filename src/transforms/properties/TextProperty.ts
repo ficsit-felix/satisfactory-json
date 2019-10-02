@@ -1,10 +1,11 @@
 import { Builder } from '../../engine/Builder';
+import { RegisteredFunction } from '../../engine/TransformationEngine';
 
 export function transformTextProperty(builder: Builder): void {
   builder
     .assertNullByte(false) // Tag.HasPropertyGuid
     .obj('value')
-    .call(transformFText)
+    .call(RegisteredFunction.transformFText)
     .endObj();
 }
 
@@ -33,7 +34,7 @@ const FORMATARGUMENTTYPE_TEXT = 4;
 const FORMATARGUMENTTYPE_GENDER = 5;
 */
 
-function transformFText(builder: Builder): void {
+export function transformFText(builder: Builder): void {
   builder
     .int('flags') // Value.Flags
     .byte('historyType') // HistoryType
@@ -50,7 +51,7 @@ function transformFText(builder: Builder): void {
       '3' /*HISTORYTYPE_ARGUMENTFORMAT*/: builder => {
         builder
           .obj('sourceFmt')
-          .call(transformFText)
+          .call(RegisteredFunction.transformFText)
           .endObj()
           // Arguments
           .int('_argumentCount', ctx => ctx.obj.arguments.length)
@@ -64,7 +65,7 @@ function transformFText(builder: Builder): void {
                 '4' /*FORMATARGUMENTTYPE_TEXT*/: builder => {
                   builder
                     .obj('argumentValue')
-                    .call(transformFText)
+                    .call(RegisteredFunction.transformFText)
                     .endObj();
                 },
                 $default: builder => {

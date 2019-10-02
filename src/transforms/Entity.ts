@@ -1,6 +1,5 @@
 import { Builder } from '../engine/Builder';
-import { transformExtra } from './Extra';
-import { transformProperty } from './Property';
+import { RegisteredFunction } from '../engine/TransformationEngine';
 
 export function transformProperties(builder: Builder): void {
   // TODO fix loop for writing
@@ -23,7 +22,7 @@ export function transformProperties(builder: Builder): void {
         //.exec(ctx => console.log('properties._index', ctx.vars._index))
         .elem('_index')
         .exec(ctx => (ctx.obj.name = ctx.tmp._name))
-        .call(transformProperty)
+        .call(RegisteredFunction.transformProperty)
         .endElem();
     })
     .if(
@@ -61,7 +60,7 @@ export function transformEntity(builder: Builder): void {
       }
     )
 
-    .call(transformProperties)
+    .call(RegisteredFunction.transformProperties)
     /*.exec(ctx => {
       if (ctx.path.startsWith('saveGame.actors[473]')) {
         debugger;
@@ -76,7 +75,7 @@ export function transformEntity(builder: Builder): void {
         );
       }
     })
-    .call(transformExtra);
+    .call(RegisteredFunction.transformExtra);
 
   builder
     // TODO read missing data

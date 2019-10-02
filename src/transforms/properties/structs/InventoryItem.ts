@@ -1,6 +1,6 @@
 import { Builder } from '../../../engine/Builder';
-import { transformProperty } from '../../Property';
 import { WriteArchive } from '../../../engine/Archive';
+import { RegisteredFunction } from '../../../engine/TransformationEngine';
 
 export function transformInventoryItem(builder: Builder): void {
   builder
@@ -37,7 +37,7 @@ export function transformInventoryItem(builder: Builder): void {
           .elem('_index')
           .exec(ctx => (ctx.obj.name = ctx.tmp._name))
 
-          .call(transformProperty)
+          .call(RegisteredFunction.transformProperty)
           .endElem();
       }
     )

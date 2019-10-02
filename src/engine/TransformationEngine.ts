@@ -1,12 +1,79 @@
 import { SaveGame } from '../types';
 import { ReadArchive, WriteArchive } from './Archive';
-import { Builder } from './Builder';
+import { Builder, functionCommands } from './Builder';
 import { Command, Context, LoopBodyCommand } from './commands';
+import {
+  transformHeader,
+  transformActorOrComponent
+} from '../transforms/transform';
+import { transformEntity, transformProperties } from '../transforms/Entity';
+import { transformProperty } from '../transforms/Property';
+import { transformExtra } from '../transforms/Extra';
+import { transformPowerLine } from '../transforms/extras/PowerLine';
+import { transformCircuitSubsystem } from '../transforms/extras/CircuitSubsystem';
+import { transformGameMode } from '../transforms/extras/GameMode';
+import { transformGameState } from '../transforms/extras/GameState';
+import { transformPlayerState } from '../transforms/extras/PlayerState';
+import { transformVehicle } from '../transforms/extras/Vehicle';
+import { transformConveyorBelt } from '../transforms/extras/ConveyorBelt';
+import { transformTrain } from '../transforms/extras/Train';
+import { transformIntProperty } from '../transforms/properties/IntProperty';
+import { transformBoolProperty } from '../transforms/properties/BoolProperty';
+import { transformFloatProperty } from '../transforms/properties/FloatProperty';
+import { transformStringProperty } from '../transforms/properties/StringProperty';
+import {
+  transformTextProperty,
+  transformFText
+} from '../transforms/properties/TextProperty';
+import { transformByteProperty } from '../transforms/properties/ByteProperty';
+import { transformEnumProperty } from '../transforms/properties/EnumProperty';
+import { transformObjectProperty } from '../transforms/properties/ObjectProperty';
+import { transformStructProperty } from '../transforms/properties/StructProperty';
+import { transformArrayProperty } from '../transforms/properties/ArrayProperty';
+import { transformMapProperty } from '../transforms/properties/MapProperty';
 
 interface StackFrame {
   commands: Command[];
   currentCommand: number;
   ctx: Context;
+}
+
+function registerFunction(
+  functionName: RegisteredFunction,
+  rulesFunction: (builder: Builder) => void
+): void {
+  const builder = new Builder();
+  rulesFunction(builder);
+  functionCommands[functionName] = builder.getCommands();
+}
+
+export enum RegisteredFunction {
+  transformHeader = 'transformHeader',
+  transformActorOrComponent = 'transformActorOrComponent',
+  transformEntity = 'transformEntity',
+  transformProperties = 'transformProperties',
+  transformProperty = 'transformProperty',
+  transformExtra = 'transformExtra',
+  transformPowerLine = 'transformPowerLine',
+  transformCircuitSubsystem = 'transformCircuitSubsystem',
+  transformGameMode = 'transformGameMode',
+  transformGameState = 'transformGameState',
+  transformPlayerState = 'transformPlayerState',
+  transformVehicle = 'transformVehicle',
+  transformConveyorBelt = 'transformConveyorBelt',
+  transformTrain = 'transformTrain',
+  transformIntProperty = 'transformIntProperty',
+  transformBoolProperty = 'transformBoolProperty',
+  transformFloatProperty = 'transformFloatProperty',
+  transformStringProperty = 'transformStringProperty',
+  transformTextProperty = 'transformTextProperty',
+  transformByteProperty = 'transformByteProperty',
+  transformEnumProperty = 'transformEnumProperty',
+  transformObjectProperty = 'transformObjectProperty',
+  transformStructProperty = 'transformStructProperty',
+  transformArrayProperty = 'transformArrayProperty',
+  transformMapProperty = 'transformMapProperty',
+  transformFText = 'transformFText'
 }
 
 export class TransformationEngine {
@@ -29,10 +96,86 @@ export class TransformationEngine {
   ) {
     this.startCompressionCallback = startCompressionCallback;
     const builder = new Builder();
+
     // build the rules
     rulesFunction(builder);
     this.commands = builder.getCommands();
 
+    // build functions
+    registerFunction(RegisteredFunction.transformHeader, transformHeader);
+    registerFunction(
+      RegisteredFunction.transformActorOrComponent,
+      transformActorOrComponent
+    );
+    registerFunction(RegisteredFunction.transformEntity, transformEntity);
+    registerFunction(
+      RegisteredFunction.transformProperties,
+      transformProperties
+    );
+    registerFunction(RegisteredFunction.transformProperty, transformProperty);
+    registerFunction(RegisteredFunction.transformExtra, transformExtra);
+    registerFunction(RegisteredFunction.transformPowerLine, transformPowerLine);
+    registerFunction(
+      RegisteredFunction.transformCircuitSubsystem,
+      transformCircuitSubsystem
+    );
+    registerFunction(RegisteredFunction.transformGameMode, transformGameMode);
+    registerFunction(RegisteredFunction.transformGameState, transformGameState);
+    registerFunction(
+      RegisteredFunction.transformPlayerState,
+      transformPlayerState
+    );
+    registerFunction(RegisteredFunction.transformVehicle, transformVehicle);
+    registerFunction(
+      RegisteredFunction.transformConveyorBelt,
+      transformConveyorBelt
+    );
+    registerFunction(RegisteredFunction.transformTrain, transformTrain);
+    registerFunction(
+      RegisteredFunction.transformIntProperty,
+      transformIntProperty
+    );
+    registerFunction(
+      RegisteredFunction.transformBoolProperty,
+      transformBoolProperty
+    );
+    registerFunction(
+      RegisteredFunction.transformFloatProperty,
+      transformFloatProperty
+    );
+    registerFunction(
+      RegisteredFunction.transformStringProperty,
+      transformStringProperty
+    );
+    registerFunction(
+      RegisteredFunction.transformTextProperty,
+      transformTextProperty
+    );
+    registerFunction(
+      RegisteredFunction.transformByteProperty,
+      transformByteProperty
+    );
+    registerFunction(
+      RegisteredFunction.transformEnumProperty,
+      transformEnumProperty
+    );
+    registerFunction(
+      RegisteredFunction.transformObjectProperty,
+      transformObjectProperty
+    );
+    registerFunction(
+      RegisteredFunction.transformStructProperty,
+      transformStructProperty
+    );
+    registerFunction(
+      RegisteredFunction.transformArrayProperty,
+      transformArrayProperty
+    );
+    registerFunction(
+      RegisteredFunction.transformMapProperty,
+      transformMapProperty
+    );
+    registerFunction(RegisteredFunction.transformFText, transformFText);
     //console.log('commands', inspect(this.commands, false, 10));
   }
 

@@ -30,6 +30,7 @@ import {
   EndSaveGameCommand
 } from './commands';
 import { Archive } from './Archive';
+import { RegisteredFunction } from './TransformationEngine';
 
 export const functionCommands: { [id: string]: Command[] } = {};
 
@@ -123,8 +124,10 @@ export class Builder {
     return this;
   }
 
-  public call(rulesFunction: (builder: Builder) => void): Builder {
-    if (rulesFunction.name === '') {
+  public call(
+    functionName: RegisteredFunction /*rulesFunction: (builder: Builder) => void*/
+  ): Builder {
+    /*if (rulesFunction.name === '') {
       throw new Error('call() can only be used with named functions');
     }
 
@@ -137,8 +140,8 @@ export class Builder {
       const builder = new Builder();
       rulesFunction(builder);
       functionCommands[rulesFunction.name] = builder.getCommands();
-    }
-    this.commands.push(new CallCommand(rulesFunction.name));
+    }*/
+    this.commands.push(new CallCommand(functionName /*rulesFunction.name*/));
     return this;
   }
   /**

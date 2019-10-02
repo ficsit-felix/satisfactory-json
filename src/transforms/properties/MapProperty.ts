@@ -1,5 +1,5 @@
 import { Builder } from '../../engine/Builder';
-import { transformProperties } from '../Entity';
+import { RegisteredFunction } from '../../engine/TransformationEngine';
 
 export function transformMapProperty(builder: Builder): void {
   builder
@@ -76,7 +76,7 @@ export function transformMapProperty(builder: Builder): void {
           StructProperty: builder => {
             builder
               //.obj('value') TODO add value here
-              .call(transformProperties);
+              .call(RegisteredFunction.transformProperties);
             //.endObj();
           },
           ByteProperty: builder => {

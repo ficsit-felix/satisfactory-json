@@ -1,5 +1,5 @@
 import { Builder } from '../../engine/Builder';
-import { transformProperty } from '../Property';
+import { RegisteredFunction } from '../../engine/TransformationEngine';
 
 export function transformArrayProperty(builder: Builder): void {
   builder
@@ -7,6 +7,7 @@ export function transformArrayProperty(builder: Builder): void {
     .str('type', false) // Tag.InnerType
     .assertNullByte(false) // Tag.HasPropertyGuid
     .int('_itemCount', ctx => ctx.obj.values.length)
+
     .switch('type', {
       IntProperty: builder => {
         builder
@@ -104,7 +105,7 @@ export function transformArrayProperty(builder: Builder): void {
                       //.exec(ctx => console.log('properties._index', ctx.vars._index))
                       .elem('_index')
                       .exec(ctx => (ctx.obj.name = ctx.tmp._name))
-                      .call(transformProperty)
+                      .call(RegisteredFunction.transformProperty)
                       .endElem();
                   })
                   .if(
