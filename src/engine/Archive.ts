@@ -574,6 +574,9 @@ export class WriteArchive extends Archive {
     shouldCount: boolean
   ): boolean {
     const value = getVar(ctx, ref);
+    if (value === undefined) {
+      throw new Error(`Undefined string ${ref.name}`);
+    }
     if (value.length === 0) {
       return this.writeInt(0, shouldCount);
     }
@@ -601,6 +604,9 @@ export class WriteArchive extends Archive {
     shouldCount: boolean
   ): boolean {
     const value = getVar(ctx, ref);
+    if (value === undefined) {
+      throw new Error(`Undefined byte ${ref.name}`);
+    }
     return this.writeByte(value, shouldCount);
   }
 
@@ -631,7 +637,9 @@ export class WriteArchive extends Archive {
     shouldCount: boolean
   ): boolean {
     let value = getVar(ctx, ref);
-
+    if (value === undefined) {
+      throw new Error(`Undefined long ${ref.name}`);
+    }
     // TODO remove when this is no longer stored as a string in json
     value = JSBI.BigInt(value);
 
@@ -660,7 +668,9 @@ export class WriteArchive extends Archive {
     shouldCount: boolean
   ): boolean {
     const value = getVar(ctx, ref);
-
+    if (value === undefined) {
+      throw new Error(`Undefined float ${ref.name}`);
+    }
     const bytes = 4;
 
     if (shouldCount) {
@@ -728,6 +738,9 @@ export class WriteArchive extends Archive {
     shouldCount: boolean
   ): boolean {
     const value = getVar(ctx, ref);
+    if (value === undefined) {
+      throw new Error(`Undefined hex ${ref.name}`);
+    }
     return this.writeBuffer(Buffer.from(value, 'hex'), shouldCount); // TODO somehow directly write the buffer?
   }
   public transformHexRemaining(
