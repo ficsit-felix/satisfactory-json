@@ -88,7 +88,8 @@ export class TransformationEngine {
   private bufferedBytes = 0;
   private bytesRead = 0;
   private startCompressionCallback: (buffer: Buffer) => void;
-  // TODO collects Buffers and then concat them all at once
+
+  private saveGame: any;
 
   constructor(
     rulesFunction: (builder: Builder) => void,
@@ -206,12 +207,9 @@ export class TransformationEngine {
       //console.info('Starting program...');
       // Stack empty: Begin of program or something went wrong
 
-      const saveGame = {}; // TODO put save game here when saving
+      const saveGame = {};
 
-      // make this global for debugging purposes
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      // @ts-ignore
-      global.saveGame = saveGame;
+      this.saveGame = saveGame;
 
       const frame = {
         commands: this.commands,
@@ -344,10 +342,7 @@ export class TransformationEngine {
       //console.info('Starting program...');
       // Stack empty: Begin of program or something went wrong
 
-      // make this global for debugging purposes
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      // @ts-ignore
-      global.saveGame = saveGame;
+      this.saveGame = saveGame;
 
       const frame = {
         commands: this.commands,
@@ -460,7 +455,11 @@ export class TransformationEngine {
     return true;
   }
 
-  end(callback: (error?: Error | null | undefined) => void): void {
+  getSaveGame(): any {
+    return this.saveGame;
+  }
+
+  end(callback: (error?: Error | undefined) => void): void {
     if (this.needBytes !== 0) {
       callback(new Error(`Missing ${this.needBytes} bytes`));
     } else {

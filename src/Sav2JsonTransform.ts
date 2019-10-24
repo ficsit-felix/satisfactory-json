@@ -44,11 +44,14 @@ export class Sav2JsonTransform extends Transform {
 
   _final(callback: (error?: Error | null) => void): void {
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      // @ts-ignore
-      // TODO get saveGame from transformation engine
-      this.push(global.saveGame);
-      this.transformationEngine.end(callback);
+      this.transformationEngine.end((error?: Error) => {
+        if (error === undefined) {
+          console.log('push data', error);
+          this.push(this.transformationEngine.getSaveGame());
+        }
+
+        callback(error);
+      });
     } catch (error) {
       callback(error);
     }

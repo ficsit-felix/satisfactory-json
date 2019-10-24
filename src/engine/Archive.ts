@@ -4,41 +4,63 @@ import JSBI from 'jsbi';
 // Polyfill for browser until https://github.com/feross/buffer/pull/247 is merged
 /* eslint-disable */
 export function readBigInt64LE(buffer: Buffer, offset = 0) {
-  const first = buffer[offset]
-  const last = buffer[offset + 7]
-  const val = buffer[offset + 4] +
+  const first = buffer[offset];
+  const last = buffer[offset + 7];
+  const val =
+    buffer[offset + 4] +
     buffer[offset + 5] * 2 ** 8 +
     buffer[offset + 6] * 2 ** 16 +
-    (last << 24) // Overflow
+    (last << 24); // Overflow
 
-  return JSBI.add(JSBI.leftShift(JSBI.BigInt(val), JSBI.BigInt(32)),
-    JSBI.BigInt(first +
-      buffer[++offset] * 2 ** 8 +
-      buffer[++offset] * 2 ** 16 +
-      buffer[++offset] * 2 ** 24));
-};
+  return JSBI.add(
+    JSBI.leftShift(JSBI.BigInt(val), JSBI.BigInt(32)),
+    JSBI.BigInt(
+      first +
+        buffer[++offset] * 2 ** 8 +
+        buffer[++offset] * 2 ** 16 +
+        buffer[++offset] * 2 ** 24
+    )
+  );
+}
 
-function wrtBigUInt64LE(buf: Buffer | number[], value: JSBI, offset: number, min: JSBI, max: JSBI) {
-  let lo = Number(JSBI.bitwiseAnd(value, JSBI.BigInt("0xffffffff")))
-  buf[offset++] = lo
-  lo = lo >> 8
-  buf[offset++] = lo
-  lo = lo >> 8
-  buf[offset++] = lo
-  lo = lo >> 8
-  buf[offset++] = lo
-  let hi = Number(JSBI.bitwiseAnd(JSBI.signedRightShift(value, JSBI.BigInt(32)), JSBI.BigInt("0xffffffff")))
-  buf[offset++] = hi
-  hi = hi >> 8
-  buf[offset++] = hi
-  hi = hi >> 8
-  buf[offset++] = hi
-  hi = hi >> 8
-  buf[offset++] = hi
-  return offset
+function wrtBigUInt64LE(
+  buf: Buffer | number[],
+  value: JSBI,
+  offset: number,
+  min: JSBI,
+  max: JSBI
+) {
+  let lo = Number(JSBI.bitwiseAnd(value, JSBI.BigInt("0xffffffff")));
+  buf[offset++] = lo;
+  lo = lo >> 8;
+  buf[offset++] = lo;
+  lo = lo >> 8;
+  buf[offset++] = lo;
+  lo = lo >> 8;
+  buf[offset++] = lo;
+  let hi = Number(
+    JSBI.bitwiseAnd(
+      JSBI.signedRightShift(value, JSBI.BigInt(32)),
+      JSBI.BigInt("0xffffffff")
+    )
+  );
+  buf[offset++] = hi;
+  hi = hi >> 8;
+  buf[offset++] = hi;
+  hi = hi >> 8;
+  buf[offset++] = hi;
+  hi = hi >> 8;
+  buf[offset++] = hi;
+  return offset;
 }
 export function writeBigInt64LE(buffer: Buffer, value: JSBI, offset = 0) {
-  return wrtBigUInt64LE(buffer, value, offset, JSBI.unaryMinus(JSBI.BigInt("0x8000000000000000")), JSBI.BigInt("0x7fffffffffffffff"))
+  return wrtBigUInt64LE(
+    buffer,
+    value,
+    offset,
+    JSBI.unaryMinus(JSBI.BigInt("0x8000000000000000")),
+    JSBI.BigInt("0x7fffffffffffffff")
+  );
 }
 /* eslint-enable */
 
@@ -520,6 +542,9 @@ export class WriteArchive extends Archive {
     if (defaultValue !== undefined) {
       value = defaultValue(ctx);
       setVar(ctx, ref, value);
+    }
+    if (value === undefined) {
+      throw new Error(`Undefined integer ${ref.name}`);
     }
     return this.writeInt(value, shouldCount);
   }
