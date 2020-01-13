@@ -25,6 +25,15 @@ export function transformArrayProperty(builder: Builder): void {
           })
           .endArr();
       },
+      FloatProperty: builder => {
+        // Used in the ProgrammableElevatorMod
+        builder
+          .arr('values')
+          .loop('_itemCount', builder => {
+            builder.float('#_index');
+          })
+          .endArr();
+      },
       EnumProperty: builder => {
         builder
           .arr('values')
