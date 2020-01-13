@@ -35,8 +35,10 @@ export function transformProperty(builder: Builder): void {
         builder.call(RegisteredFunction.transformArrayProperty),
       MapProperty: (builder: Builder) =>
         builder.call(RegisteredFunction.transformMapProperty),
+      SetProperty: (builder: Builder) =>
+        builder.call(RegisteredFunction.transformSetProperty),
       $default: (builder: Builder) =>
-        builder.error(ctx => `Unknown property ${ctx.obj.type}`)
+        builder.error(ctx => `Unknown property ...${ctx.obj.type}`)
     })
     .bufferEnd();
 }

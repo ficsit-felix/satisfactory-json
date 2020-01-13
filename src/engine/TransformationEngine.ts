@@ -31,6 +31,7 @@ import { transformObjectProperty } from '../transforms/properties/ObjectProperty
 import { transformStructProperty } from '../transforms/properties/StructProperty';
 import { transformArrayProperty } from '../transforms/properties/ArrayProperty';
 import { transformMapProperty } from '../transforms/properties/MapProperty';
+import { transformSetProperty } from '../transforms/properties/SetProperty';
 
 interface StackFrame {
   commands: Command[];
@@ -73,7 +74,8 @@ export enum RegisteredFunction {
   transformStructProperty = 'transformStructProperty',
   transformArrayProperty = 'transformArrayProperty',
   transformMapProperty = 'transformMapProperty',
-  transformFText = 'transformFText'
+  transformFText = 'transformFText',
+  transformSetProperty = 'transformSetProperty'
 }
 
 export class TransformationEngine {
@@ -177,6 +179,10 @@ export class TransformationEngine {
       transformMapProperty
     );
     registerFunction(RegisteredFunction.transformFText, transformFText);
+    registerFunction(
+      RegisteredFunction.transformSetProperty,
+      transformSetProperty
+    );
     //console.log('commands', inspect(this.commands, false, 10));
   }
 
