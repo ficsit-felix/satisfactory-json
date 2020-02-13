@@ -133,6 +133,18 @@ export function transformArrayProperty(builder: Builder): void {
           .endArr()
           .bufferEnd();
       },
+      InterfaceProperty: builder => {
+        builder
+          .arr('values')
+          .loop('_itemCount', builder => {
+            builder
+              .elem('_index')
+              .str('levelName')
+              .str('pathName')
+              .endElem();
+          })
+          .endArr();
+      },
       $default: builder => {
         builder.error(ctx => `Unknown array type: ${ctx.obj.type}`);
       }

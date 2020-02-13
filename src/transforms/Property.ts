@@ -39,8 +39,10 @@ export function transformProperty(builder: Builder): void {
         builder.call(RegisteredFunction.transformSetProperty),
       Int64Property: (builder: Builder) =>
         builder.call(RegisteredFunction.transformInt64Property),
+      InterfaceProperty: (builder: Builder) =>
+        builder.call(RegisteredFunction.transformObjectProperty),
       $default: (builder: Builder) =>
-        builder.error(ctx => `Unknown property ...${ctx.obj.type}`)
+        builder.error(ctx => `Unknown property: ${ctx.obj.type}`)
     })
     .bufferEnd();
 }
