@@ -237,7 +237,7 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    for (; ;) {
+    for (;;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {
@@ -370,7 +370,7 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    for (; ;) {
+    for (;;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {
