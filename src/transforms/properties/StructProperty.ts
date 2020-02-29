@@ -47,6 +47,7 @@ export function transformStructProperty(builder: Builder): void {
       Guid: builder => transformGuid(builder),
       TrainSimulationData: builder => transformArbitraryStruct(builder),
       FluidBox: builder => transformFluidBox(builder),
+      ResearchData: builder => transformArbitraryStruct(builder),
       $default: builder =>
         builder.error(ctx => `Unknown struct property: ${ctx.obj.type}`)
     })
