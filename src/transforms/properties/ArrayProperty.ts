@@ -1,5 +1,6 @@
 import { Builder } from '../../engine/Builder';
 import { RegisteredFunction } from '../../engine/TransformationEngine';
+import { transformTextProperty, transformFText } from './TextProperty';
 
 export function transformArrayProperty(builder: Builder): void {
   builder
@@ -47,6 +48,16 @@ export function transformArrayProperty(builder: Builder): void {
           .arr('values')
           .loop('_itemCount', builder => {
             builder.str('#_index');
+          })
+          .endArr();
+      },
+      TextProperty: builder => {
+        builder
+          .arr('values')
+          .loop('_itemCount', builder => {
+            builder.obj('#_index');
+            transformFText(builder);
+            builder.endObj();
           })
           .endArr();
       },
