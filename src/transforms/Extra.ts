@@ -21,6 +21,10 @@ export function transformExtra(builder: Builder): void {
       builder.call(RegisteredFunction.transformVehicle),
     '/Game/FactoryGame/Buildable/Vehicle/Explorer/BP_Explorer.BP_Explorer_C': builder =>
       builder.call(RegisteredFunction.transformVehicle),
+    '/Game/FactoryGame/Buildable/Vehicle/Cyberwagon/Testa_BP_WB.Testa_BP_WB_C': builder =>
+      builder.call(RegisteredFunction.transformVehicle),
+    '/Game/FactoryGame/Buildable/Vehicle/Golfcart/BP_Golfcart.BP_Golfcart_C': builder =>
+      builder.call(RegisteredFunction.transformVehicle),
 
     '/Game/FactoryGame/Buildable/Factory/ConveyorBeltMk1/Build_ConveyorBeltMk1.Build_ConveyorBeltMk1_C': builder =>
       builder.call(RegisteredFunction.transformConveyorBelt),
