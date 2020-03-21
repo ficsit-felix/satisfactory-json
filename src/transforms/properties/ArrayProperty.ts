@@ -7,79 +7,75 @@ export function transformArrayProperty(builder: Builder): void {
     .obj('value')
     .str('type', false) // Tag.InnerType
     .assertNullByte(false) // Tag.HasPropertyGuid
-    .int('_itemCount', ctx => ctx.obj.values.length)
+    .int('_itemCount', (ctx) => ctx.obj.values.length)
 
     .switch('type', {
-      IntProperty: builder => {
+      IntProperty: (builder) => {
         builder
           .arr('values')
-          .loop('_itemCount', builder => {
+          .loop('_itemCount', (builder) => {
             builder.int('#_index');
           })
           .endArr();
       },
-      ByteProperty: builder => {
+      ByteProperty: (builder) => {
         builder
           .arr('values')
-          .loop('_itemCount', builder => {
+          .loop('_itemCount', (builder) => {
             builder.byte('#_index');
           })
           .endArr();
       },
-      FloatProperty: builder => {
+      FloatProperty: (builder) => {
         // Used in the ProgrammableElevatorMod
         builder
           .arr('values')
-          .loop('_itemCount', builder => {
+          .loop('_itemCount', (builder) => {
             builder.float('#_index');
           })
           .endArr();
       },
-      EnumProperty: builder => {
+      EnumProperty: (builder) => {
         builder
           .arr('values')
-          .loop('_itemCount', builder => {
+          .loop('_itemCount', (builder) => {
             builder.str('#_index');
           })
           .endArr();
       },
-      StrProperty: builder => {
+      StrProperty: (builder) => {
         builder
           .arr('values')
-          .loop('_itemCount', builder => {
+          .loop('_itemCount', (builder) => {
             builder.str('#_index');
           })
           .endArr();
       },
-      TextProperty: builder => {
+      TextProperty: (builder) => {
         builder
           .arr('values')
-          .loop('_itemCount', builder => {
+          .loop('_itemCount', (builder) => {
             builder.obj('#_index');
             transformFText(builder);
             builder.endObj();
           })
           .endArr();
       },
-      ObjectProperty: builder => {
+      ObjectProperty: (builder) => {
         builder
           .arr('values')
-          .loop('_itemCount', builder => {
-            builder
-              .elem('_index')
-              .str('levelName')
-              .str('pathName')
-              .endElem();
+          .loop('_itemCount', (builder) => {
+            builder.elem('_index').str('levelName').str('pathName').endElem();
           })
           .endArr();
       },
-      StructProperty: builder => {
+      StructProperty: (builder) => {
         builder
           .str('structName')
           .str('structType')
           .bufferStart('_length', false)
-          .int('_zero', _ => 0, false)
-          .exec(ctx => {
+          .int('_zero', (_) => 0, false)
+          .exec((ctx) => {
             if (ctx.tmp._zero !== 0) {
               throw new Error(`Not zero, but ${ctx.tmp._zero}`);
             }
@@ -88,15 +84,15 @@ export function transformArrayProperty(builder: Builder): void {
           .hex('propertyGuid', 16, false)
           .assertNullByte(false)
           .arr('values')
-          .loop('_itemCount', builder => {
+          .loop('_itemCount', (builder) => {
             builder.if(
-              ctx =>
+              (ctx) =>
                 ctx.parent !== undefined &&
                 ctx.parent.obj.structInnerType === 'Guid',
-              builder => {
+              (builder) => {
                 builder.hex('#_index', 16);
               },
-              builder => {
+              (builder) => {
                 builder
                   .elem('_index')
 
@@ -104,14 +100,14 @@ export function transformArrayProperty(builder: Builder): void {
                   // TODO fix loop for writing
                   .arr('properties')
                   .exec(
-                    ctx =>
+                    (ctx) =>
                       (ctx.tmp._propertiesCount = ctx.isLoading
                         ? 999999999
                         : ctx.obj.length)
                   )
-                  .loop('_propertiesCount', builder => {
+                  .loop('_propertiesCount', (builder) => {
                     builder
-                      .exec(ctx => {
+                      .exec((ctx) => {
                         if (!ctx.isLoading) {
                           ctx.tmp._name = ctx.obj[ctx.tmp._index].name;
                         }
@@ -119,20 +115,20 @@ export function transformArrayProperty(builder: Builder): void {
                       .str('_name')
                       //.debug('_name', ctx => ctx.vars._name)
                       .if(
-                        ctx => ctx.tmp._name === 'None',
-                        builder => builder.break()
+                        (ctx) => ctx.tmp._name === 'None',
+                        (builder) => builder.break()
                       )
                       //.exec(ctx => console.log('properties._index', ctx.vars._index))
                       .elem('_index')
-                      .exec(ctx => (ctx.obj.name = ctx.tmp._name))
+                      .exec((ctx) => (ctx.obj.name = ctx.tmp._name))
                       .call(RegisteredFunction.transformProperty)
                       .endElem();
                   })
                   .if(
-                    ctx => !ctx.isLoading,
-                    builder => {
+                    (ctx) => !ctx.isLoading,
+                    (builder) => {
                       builder
-                        .exec(ctx => (ctx.tmp._none = 'None'))
+                        .exec((ctx) => (ctx.tmp._none = 'None'))
                         .str('_none');
                     }
                   )
@@ -144,21 +140,17 @@ export function transformArrayProperty(builder: Builder): void {
           .endArr()
           .bufferEnd();
       },
-      InterfaceProperty: builder => {
+      InterfaceProperty: (builder) => {
         builder
           .arr('values')
-          .loop('_itemCount', builder => {
-            builder
-              .elem('_index')
-              .str('levelName')
-              .str('pathName')
-              .endElem();
+          .loop('_itemCount', (builder) => {
+            builder.elem('_index').str('levelName').str('pathName').endElem();
           })
           .endArr();
       },
-      $default: builder => {
-        builder.error(ctx => `Unknown array type: ${ctx.obj.type}`);
-      }
+      $default: (builder) => {
+        builder.error((ctx) => `Unknown array type: ${ctx.obj.type}`);
+      },
     })
     .endObj();
 }

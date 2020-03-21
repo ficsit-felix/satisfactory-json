@@ -10,7 +10,7 @@ export * from './types';
 export function sav2json(buffer: Buffer): Promise<SaveGame> {
   return new Promise<SaveGame>((resolve, _reject): void => {
     const transform = new Sav2JsonTransform();
-    transform.on('data', saveGame => {
+    transform.on('data', (saveGame) => {
       resolve(saveGame);
     });
     transform.write(buffer);
@@ -22,7 +22,7 @@ export function json2sav(saveGame: SaveGame): Promise<string> {
   return new Promise<string>((resolve, _reject): void => {
     const transform = new Json2SavTransform();
     const buffers: Buffer[] = [];
-    transform.on('data', chunk => {
+    transform.on('data', (chunk) => {
       buffers.push(chunk);
     });
     transform.on('finish', () => {

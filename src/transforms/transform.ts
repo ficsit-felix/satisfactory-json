@@ -12,14 +12,14 @@ export function transformHeader(builder: Builder): void {
     .str('sessionName')
     .int('playDurationSeconds')
     .long('saveDateTime')
-    .exec(ctx => (ctx.obj.saveDateTime = '' + ctx.obj.saveDateTime))
+    .exec((ctx) => (ctx.obj.saveDateTime = '' + ctx.obj.saveDateTime))
     .if(
-      ctx => ctx.obj.saveHeaderType >= 5,
-      bldr => bldr.byte('sessionVisibility')
+      (ctx) => ctx.obj.saveHeaderType >= 5,
+      (bldr) => bldr.byte('sessionVisibility')
     )
     .if(
-      ctx => ctx.obj.saveVersion >= 21,
-      builder => {
+      (ctx) => ctx.obj.saveVersion >= 21,
+      (builder) => {
         builder.startCompression().bufferStart('_length', true);
       }
     );
@@ -64,28 +64,28 @@ function transformComponent(builder: Builder): void {
 
 export function transformActorOrComponent(builder: Builder): void {
   builder
-    .int('_type', ctx => (ctx.tmp._index < ctx.obj.actors.length ? 1 : 0))
+    .int('_type', (ctx) => (ctx.tmp._index < ctx.obj.actors.length ? 1 : 0))
     .if(
-      ctx => ctx.tmp._type === 1,
-      bldr => {
+      (ctx) => ctx.tmp._type === 1,
+      (bldr) => {
         // actor
         bldr
           .arr('actors')
           .elem('_index')
-          .exec(ctx => (ctx.obj.type = ctx.tmp._type));
+          .exec((ctx) => (ctx.obj.type = ctx.tmp._type));
         transformActor(bldr);
         bldr.endElem().endArr();
       },
-      bldr => {
+      (bldr) => {
         // component
         bldr
           .exec(
-            ctx =>
+            (ctx) =>
               (ctx.tmp._componentIndex = ctx.tmp._index - ctx.obj.actors.length)
           )
           .arr('components')
           .elem('_componentIndex')
-          .exec(ctx => (ctx.obj.type = ctx.tmp._type));
+          .exec((ctx) => (ctx.obj.type = ctx.tmp._type));
 
         transformComponent(bldr);
         bldr.endElem().endArr();
@@ -98,23 +98,23 @@ export function transform(builder: Builder): void {
     //.exec(() => console.log('Header done'))
     .int(
       '_entryCount',
-      ctx => ctx.obj.actors.length + ctx.obj.components.length
+      (ctx) => ctx.obj.actors.length + ctx.obj.components.length
     )
 
-    .loop('_entryCount', builder => {
+    .loop('_entryCount', (builder) => {
       //builder.debug("AoC", ctx => ctx.tmp._index);
       builder.call(RegisteredFunction.transformActorOrComponent);
     })
     //.exec(() => console.log('Actors and Components done'))
     .int('_entryCount')
     //.exec((ctx) => console.log('entryCount', ctx.vars._entryCount))
-    .loop('_entryCount', builder => {
+    .loop('_entryCount', (builder) => {
       //builder.debug("entity", ctx => ctx.tmp._index);
       builder.if(
-        ctx => ctx.tmp._index < ctx.obj.actors.length,
-        builder => {
+        (ctx) => ctx.tmp._index < ctx.obj.actors.length,
+        (builder) => {
           builder
-            .exec(ctx => {
+            .exec((ctx) => {
               ctx.tmp._withNames = true;
               ctx.tmp._className = ctx.obj.actors[ctx.tmp._index].className;
             })
@@ -126,9 +126,9 @@ export function transform(builder: Builder): void {
             .endElem()
             .endObj();
         },
-        builder => {
+        (builder) => {
           builder
-            .exec(ctx => {
+            .exec((ctx) => {
               ctx.tmp._withNames = false;
               ctx.tmp._componentIndex = ctx.tmp._index - ctx.obj.actors.length;
               ctx.tmp._className =
@@ -146,16 +146,15 @@ export function transform(builder: Builder): void {
     })
 
     .arr('collected')
-    .int('_collectedCount', ctx => ctx.obj.length)
-    .loop('_collectedCount', builder => {
-      builder
-        .elem('_index')
-        .str('levelName')
-        .str('pathName')
-        .endElem();
+    .int('_collectedCount', (ctx) => ctx.obj.length)
+    .loop('_collectedCount', (builder) => {
+      builder.elem('_index').str('levelName').str('pathName').endElem();
     })
     .endArr()
-    .if(ctx => ctx.obj.saveVersion >= 21, builder => builder.bufferEnd())
+    .if(
+      (ctx) => ctx.obj.saveVersion >= 21,
+      (builder) => builder.bufferEnd()
+    )
     .endSaveGame();
   // TODO missing
 }

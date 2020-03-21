@@ -33,7 +33,7 @@ export enum ReferenceType {
   OBJ, //
   TMP, // _
   INDIRECT_OBJ, // #
-  INDIRECT_TMP // #_
+  INDIRECT_TMP, // #_
 }
 export interface Reference {
   type: ReferenceType;
@@ -61,7 +61,7 @@ function buildReference(name: Name): Reference {
 
   return {
     type: type,
-    name: str
+    name: str,
   };
 }
 
@@ -122,7 +122,7 @@ export class EnterObjectCommand extends Command {
       parent: ctx.parent,
       isLoading: ctx.isLoading,
       path: ctx.path,
-      locals: ctx.locals
+      locals: ctx.locals,
     };
     ctx.obj = ctx.obj[this.name];
     ctx.path = ctx.path + '.' + this.name;
@@ -168,7 +168,7 @@ export class EnterArrayCommand extends Command {
       parent: ctx.parent,
       isLoading: ctx.isLoading,
       path: ctx.path,
-      locals: ctx.locals
+      locals: ctx.locals,
     };
     ctx.obj = ctx.obj[this.name];
     ctx.path = ctx.path + '.' + this.name;
@@ -215,7 +215,7 @@ export class EnterElemCommand extends Command {
       parent: ctx.parent,
       isLoading: ctx.isLoading,
       path: ctx.path,
-      locals: ctx.locals
+      locals: ctx.locals,
     };
     ctx.obj = ctx.obj[index];
     ctx.path = ctx.path + '[' + index + ']';

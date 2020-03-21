@@ -8,13 +8,13 @@ export function transformMapProperty(builder: Builder): void {
     .str('valueType', false) // Tag.ValueType
     .assertNullByte(false) // Tag.HasPropertyGuid
     .int('_zero', () => 0)
-    .exec(ctx => {
+    .exec((ctx) => {
       if (ctx.tmp._zero !== 0) {
         throw Error(`Not 0, but ${ctx.tmp._zero}`);
       }
     })
-    .int('_count', ctx => ctx.obj.values.length)
-    .exec(ctx => {
+    .int('_count', (ctx) => ctx.obj.values.length)
+    .exec((ctx) => {
       // decide key and value functions
       ctx.tmp._keyTransform = ctx.obj.keyType;
       ctx.tmp._valueTransform = ctx.obj.valueType;
@@ -49,49 +49,45 @@ export function transformMapProperty(builder: Builder): void {
     })
 
     .arr('values')
-    .loop('_count', builder => {
+    .loop('_count', (builder) => {
       builder
         .elem('_index')
         .switch('_keyTransform', {
-          IntProperty: builder => {
+          IntProperty: (builder) => {
             builder.int('key');
           },
-          ObjectProperty: builder => {
-            builder
-              .obj('key')
-              .str('levelName')
-              .str('pathName')
-              .endObj();
+          ObjectProperty: (builder) => {
+            builder.obj('key').str('levelName').str('pathName').endObj();
           },
-          StrProperty: builder => {
+          StrProperty: (builder) => {
             builder.str('key');
           },
-          $default: builder => {
-            builder.exec(ctx => {
+          $default: (builder) => {
+            builder.exec((ctx) => {
               throw Error(`Unimplemented key type ${ctx.tmp._keyTransform}`);
             });
-          }
+          },
         })
         .switch('_valueTransform', {
-          StructProperty: builder => {
+          StructProperty: (builder) => {
             builder
               //.obj('value') TODO add value here
               .call(RegisteredFunction.transformProperties);
             //.endObj();
           },
-          ByteProperty: builder => {
+          ByteProperty: (builder) => {
             builder.byte('value');
           },
-          EnumByteProperty: builder => {
+          EnumByteProperty: (builder) => {
             builder.str('value');
           },
-          $default: builder => {
-            builder.exec(ctx => {
+          $default: (builder) => {
+            builder.exec((ctx) => {
               throw Error(
                 `Unimplemented value type ${ctx.tmp._valueTransform}`
               );
             });
-          }
+          },
         })
         .endElem();
     })

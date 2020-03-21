@@ -759,7 +759,7 @@ export class WriteArchive extends Archive {
     this.lengthPlaceholders.push({
       buffer: this.buffers.length,
       cursor: this.cursor,
-      startBufferLength: this.bufferLength + 4 // +4 because this length counts for the encompassing counter
+      startBufferLength: this.bufferLength + 4, // +4 because this length counts for the encompassing counter
     });
 
     return this.writeInt(4919, true); // 0x1337 as placeholder

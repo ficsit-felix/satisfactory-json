@@ -41,46 +41,43 @@ export function transformFText(builder: Builder): void {
 
     // parse the TextHistory according to TextHistory.cpp
     .switch('historyType', {
-      '0' /*HISTORYTYPE_BASE*/: builder => {
-        builder
-          .str('namespace')
-          .str('key')
-          .str('sourceString');
+      '0' /*HISTORYTYPE_BASE*/: (builder) => {
+        builder.str('namespace').str('key').str('sourceString');
       },
-      '255' /*HISTORYTYPE_NONE*/: _builder => {}, // this is the end of the  no value ?
-      '3' /*HISTORYTYPE_ARGUMENTFORMAT*/: builder => {
+      '255' /*HISTORYTYPE_NONE*/: (_builder) => {}, // this is the end of the  no value ?
+      '3' /*HISTORYTYPE_ARGUMENTFORMAT*/: (builder) => {
         builder
           .obj('sourceFmt')
           .call(RegisteredFunction.transformFText)
           .endObj()
           // Arguments
-          .int('_argumentCount', ctx => ctx.obj.arguments.length)
+          .int('_argumentCount', (ctx) => ctx.obj.arguments.length)
           .arr('arguments')
-          .loop('_argumentCount', builder => {
+          .loop('_argumentCount', (builder) => {
             builder
               .elem('_index')
               .str('argumentName')
               .byte('argumentValueType')
               .switch('argumentValueType', {
-                '4' /*FORMATARGUMENTTYPE_TEXT*/: builder => {
+                '4' /*FORMATARGUMENTTYPE_TEXT*/: (builder) => {
                   builder
                     .obj('argumentValue')
                     .call(RegisteredFunction.transformFText)
                     .endObj();
                 },
-                $default: builder => {
+                $default: (builder) => {
                   builder.error(
-                    ctx =>
+                    (ctx) =>
                       `Unhandled FormatArgumentType: ${ctx.obj.argumentValueType}`
                   );
-                }
+                },
               })
               .endElem();
           })
           .endArr();
       },
-      $default: builder => {
-        builder.error(ctx => `Unhandled HistoryType: ${ctx.obj.historyType}`);
-      }
+      $default: (builder) => {
+        builder.error((ctx) => `Unhandled HistoryType: ${ctx.obj.historyType}`);
+      },
     });
 }

@@ -4,7 +4,7 @@ import { Builder, functionCommands } from './Builder';
 import { Command, Context, LoopBodyCommand } from './commands';
 import {
   transformHeader,
-  transformActorOrComponent
+  transformActorOrComponent,
 } from '../transforms/transform';
 import { transformEntity, transformProperties } from '../transforms/Entity';
 import { transformProperty } from '../transforms/Property';
@@ -23,7 +23,7 @@ import { transformFloatProperty } from '../transforms/properties/FloatProperty';
 import { transformStringProperty } from '../transforms/properties/StringProperty';
 import {
   transformTextProperty,
-  transformFText
+  transformFText,
 } from '../transforms/properties/TextProperty';
 import { transformByteProperty } from '../transforms/properties/ByteProperty';
 import { transformEnumProperty } from '../transforms/properties/EnumProperty';
@@ -77,7 +77,7 @@ export enum RegisteredFunction {
   transformMapProperty = 'transformMapProperty',
   transformFText = 'transformFText',
   transformSetProperty = 'transformSetProperty',
-  transformInt64Property = 'transformInt64Property'
+  transformInt64Property = 'transformInt64Property',
 }
 
 export class TransformationEngine {
@@ -231,8 +231,8 @@ export class TransformationEngine {
           tmp: {},
           locals: {},
           isLoading: this.isLoading,
-          path: 'saveGame'
-        }
+          path: 'saveGame',
+        },
       };
       this.stack.push(frame);
     }
@@ -258,7 +258,7 @@ export class TransformationEngine {
       const needBytes = cmd.exec(
         frame.ctx,
         chunk,
-        commands => {
+        (commands) => {
           //        console.log(frame.ctx.vars);
           /* const vars = {
            _length: frame.ctx.vars._length,
@@ -285,8 +285,8 @@ export class TransformationEngine {
               locals: {},
               parent: frame.ctx.parent,
               isLoading: frame.ctx.isLoading,
-              path: frame.ctx.path
-            }
+              path: frame.ctx.path,
+            },
           });
         },
         () => {
@@ -364,8 +364,8 @@ export class TransformationEngine {
           tmp: {},
           locals: {},
           isLoading: this.isLoading,
-          path: 'saveGame'
-        }
+          path: 'saveGame',
+        },
       };
       this.stack.push(frame);
     }
@@ -391,7 +391,7 @@ export class TransformationEngine {
       const needBytes = cmd.exec(
         frame.ctx,
         ar,
-        commands => {
+        (commands) => {
           //        console.log(frame.ctx.vars);
           /* const vars = {
            _length: frame.ctx.vars._length,
@@ -418,8 +418,8 @@ export class TransformationEngine {
               locals: {},
               parent: frame.ctx.parent,
               isLoading: frame.ctx.isLoading,
-              path: frame.ctx.path
-            }
+              path: frame.ctx.path,
+            },
           });
         },
         () => {

@@ -29,6 +29,14 @@
         "varsIgnorePattern": "^_",
         "argsIgnorePattern": "^_"
       }
+    ],
+    "@typescript-eslint/no-empty-function": [
+      "error",
+      {
+        "allow": [
+          "arrowFunctions"
+        ]
+      }
     ]
   },
   "parser": "@typescript-eslint/parser"

@@ -4,9 +4,9 @@ import { ReadArchive } from '../../engine/Archive';
 export function transformConveyorBelt(builder: Builder): void {
   builder
     .obj('extra')
-    .int('_itemCount', ctx => ctx.obj.items.length)
+    .int('_itemCount', (ctx) => ctx.obj.items.length)
     .arr('items')
-    .loop('_itemCount', builder => {
+    .loop('_itemCount', (builder) => {
       // TODO add check for less items than the count in here
       builder
         .exec((ctx, ar, dropStackFrameCallback) => {

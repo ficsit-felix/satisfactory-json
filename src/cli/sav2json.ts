@@ -67,7 +67,7 @@ if (sourceValue === undefined) {
     },
     flush(cb): void {
       cb();
-    }
+    },
   });
 
   stream

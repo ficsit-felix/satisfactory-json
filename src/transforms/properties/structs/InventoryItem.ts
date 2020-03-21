@@ -17,7 +17,7 @@ export function transformInventoryItem(builder: Builder): void {
       }
     })
     .arr('properties')
-    .exec(ctx => {
+    .exec((ctx) => {
       if (!ctx.isLoading) {
         if (ctx.obj.length === 0) {
           ctx.tmp._name = 'None';
@@ -30,12 +30,12 @@ export function transformInventoryItem(builder: Builder): void {
     //.debug('_name', ctx => ctx.vars._name)
 
     .if(
-      ctx => ctx.tmp._name !== 'None',
-      builder => {
+      (ctx) => ctx.tmp._name !== 'None',
+      (builder) => {
         builder
-          .exec(ctx => (ctx.tmp._index = 0))
+          .exec((ctx) => (ctx.tmp._index = 0))
           .elem('_index')
-          .exec(ctx => (ctx.obj.name = ctx.tmp._name))
+          .exec((ctx) => (ctx.obj.name = ctx.tmp._name))
 
           .call(RegisteredFunction.transformProperty)
           .endElem();

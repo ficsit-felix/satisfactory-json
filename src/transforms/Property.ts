@@ -3,7 +3,7 @@ import { RegisteredFunction } from '../engine/TransformationEngine';
 
 export function transformProperty(builder: Builder): void {
   builder
-    .exec(ctx => {
+    .exec((ctx) => {
       ctx.obj.name = ctx.tmp._name;
     })
     .str('type') // Tag.Type
@@ -42,7 +42,7 @@ export function transformProperty(builder: Builder): void {
       InterfaceProperty: (builder: Builder) =>
         builder.call(RegisteredFunction.transformObjectProperty),
       $default: (builder: Builder) =>
-        builder.error(ctx => `Unknown property: ${ctx.obj.type}`)
+        builder.error((ctx) => `Unknown property: ${ctx.obj.type}`),
     })
     .bufferEnd();
 }

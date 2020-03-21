@@ -27,7 +27,7 @@ import {
   LoopBodyCommand,
   LoopHeaderCommand,
   StartCompressionCommand,
-  EndSaveGameCommand
+  EndSaveGameCommand,
 } from './commands';
 import { Archive } from './Archive';
 import { RegisteredFunction } from './TransformationEngine';

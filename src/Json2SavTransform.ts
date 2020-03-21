@@ -17,7 +17,7 @@ export class Json2SavTransform extends Transform {
         this.push(buffer);
 
         this.compressionTransform = new CompressionTransform();
-        this.compressionTransform.on('data', chunk => {
+        this.compressionTransform.on('data', (chunk) => {
           this.push(chunk);
         });
       }

@@ -65,7 +65,7 @@ if (sourceValue === undefined) {
     private buffers: Buffer[] = [];
     constructor() {
       super({
-        readableObjectMode: true
+        readableObjectMode: true,
       });
     }
 

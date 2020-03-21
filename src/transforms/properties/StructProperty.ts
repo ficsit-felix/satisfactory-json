@@ -15,11 +15,11 @@ export function transformStructProperty(builder: Builder): void {
   builder
     .obj('value')
     .str('type', false) // Tag.StructName
-    .int('_zero0', _ => 0, false) // Tag.StructGuid
-    .int('_zero1', _ => 0, false)
-    .int('_zero2', _ => 0, false)
-    .int('_zero3', _ => 0, false)
-    .exec(ctx => {
+    .int('_zero0', (_) => 0, false) // Tag.StructGuid
+    .int('_zero1', (_) => 0, false)
+    .int('_zero2', (_) => 0, false)
+    .int('_zero3', (_) => 0, false)
+    .exec((ctx) => {
       if (
         ctx.tmp._zero0 !== 0 ||
         ctx.tmp._zero1 !== 0 ||
@@ -31,25 +31,26 @@ export function transformStructProperty(builder: Builder): void {
     })
     .assertNullByte(false) // Tag.HasPropertyGuid
     .switch('type', {
-      Vector: builder => transformVector(builder),
-      Rotator: builder => transformVector(builder),
-      Box: builder => transformBox(builder),
-      Color: builder => transformColor(builder),
-      LinearColor: builder => transformLinearColor(builder),
-      Quat: builder => transformQuat(builder),
-      InventoryItem: builder => transformInventoryItem(builder),
-      RailroadTrackPosition: builder => transformRailroadTrackPosition(builder),
-      TimerHandle: builder => transformTimerHandle(builder),
-      Transform: builder => transformArbitraryStruct(builder),
-      RemovedInstanceArray: builder => transformArbitraryStruct(builder),
-      InventoryStack: builder => transformArbitraryStruct(builder),
-      ProjectileData: builder => transformArbitraryStruct(builder),
-      Guid: builder => transformGuid(builder),
-      TrainSimulationData: builder => transformArbitraryStruct(builder),
-      FluidBox: builder => transformFluidBox(builder),
-      ResearchData: builder => transformArbitraryStruct(builder),
-      $default: builder =>
-        builder.error(ctx => `Unknown struct property: ${ctx.obj.type}`)
+      Vector: (builder) => transformVector(builder),
+      Rotator: (builder) => transformVector(builder),
+      Box: (builder) => transformBox(builder),
+      Color: (builder) => transformColor(builder),
+      LinearColor: (builder) => transformLinearColor(builder),
+      Quat: (builder) => transformQuat(builder),
+      InventoryItem: (builder) => transformInventoryItem(builder),
+      RailroadTrackPosition: (builder) =>
+        transformRailroadTrackPosition(builder),
+      TimerHandle: (builder) => transformTimerHandle(builder),
+      Transform: (builder) => transformArbitraryStruct(builder),
+      RemovedInstanceArray: (builder) => transformArbitraryStruct(builder),
+      InventoryStack: (builder) => transformArbitraryStruct(builder),
+      ProjectileData: (builder) => transformArbitraryStruct(builder),
+      Guid: (builder) => transformGuid(builder),
+      TrainSimulationData: (builder) => transformArbitraryStruct(builder),
+      FluidBox: (builder) => transformFluidBox(builder),
+      ResearchData: (builder) => transformArbitraryStruct(builder),
+      $default: (builder) =>
+        builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
     })
     .endObj();
 }
