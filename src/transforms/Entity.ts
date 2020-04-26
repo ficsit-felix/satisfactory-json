@@ -26,6 +26,12 @@ export function transformProperties(builder: Builder): void {
         .elem('_index')
         .exec((ctx) => (ctx.obj.name = ctx.tmp._name))
         .call(RegisteredFunction.transformProperty)
+        // special case for InventoryStack in berry items where there is only one 'None' after the InventoryItem which is supposed to close both the property list of the InventoryItem and the InventoryStack on experimental version 120219 for some reason?
+        .if(ctx => ctx.obj.value.type === 'InventoryItem' && ctx.obj.value.properties != undefined && ctx.obj.value.properties.length === 0, builder => {
+          builder.endElem();
+          builder.break();
+        })
+
         .endElem();
     })
     .if(
