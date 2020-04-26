@@ -85,6 +85,9 @@ export function transformArrayProperty(builder: Builder): void {
           .assertNullByte(false)
           .arr('values')
           .loop('_itemCount', (builder) => {
+
+            // Handle special cases for Guid and LinearColor
+
             builder.if(
               (ctx) =>
                 ctx.parent !== undefined &&
@@ -92,48 +95,65 @@ export function transformArrayProperty(builder: Builder): void {
               (builder) => {
                 builder.hex('#_index', 16);
               },
-              (builder) => {
-                builder
-                  .elem('_index')
+              (builder) => { // else
 
-                  // parse inner properties
-                  // TODO fix loop for writing
-                  .arr('properties')
-                  .exec(
-                    (ctx) =>
-                      (ctx.tmp._propertiesCount = ctx.isLoading
-                        ? 999999999
-                        : ctx.obj.length)
-                  )
-                  .loop('_propertiesCount', (builder) => {
-                    builder
-                      .exec((ctx) => {
-                        if (!ctx.isLoading) {
-                          ctx.tmp._name = ctx.obj[ctx.tmp._index].name;
-                        }
-                      })
-                      .str('_name')
-                      //.debug('_name', ctx => ctx.vars._name)
-                      .if(
-                        (ctx) => ctx.tmp._name === 'None',
-                        (builder) => builder.break()
-                      )
-                      //.exec(ctx => console.log('properties._index', ctx.vars._index))
-                      .elem('_index')
-                      .exec((ctx) => (ctx.obj.name = ctx.tmp._name))
-                      .call(RegisteredFunction.transformProperty)
+                builder.if(
+                  ctx => ctx.parent !== undefined && ctx.parent.obj.structInnerType === 'LinearColor',
+                  builder => {
+                    builder.elem('_index')
+                      .float('r')
+                      .float('g')
+                      .float('b')
+                      .float('a')
                       .endElem();
-                  })
-                  .if(
-                    (ctx) => !ctx.isLoading,
-                    (builder) => {
-                      builder
-                        .exec((ctx) => (ctx.tmp._none = 'None'))
-                        .str('_none');
-                    }
-                  )
-                  .endArr()
-                  .endElem();
+                  },
+                  builder => {
+                    // else
+
+                    builder
+                      .elem('_index')
+
+                      // parse inner properties
+                      // TODO fix loop for writing
+                      .arr('properties')
+                      .exec(
+                        (ctx) =>
+                          (ctx.tmp._propertiesCount = ctx.isLoading
+                            ? 999999999
+                            : ctx.obj.length)
+                      )
+                      .loop('_propertiesCount', (builder) => {
+                        builder
+                          .exec((ctx) => {
+                            if (!ctx.isLoading) {
+                              ctx.tmp._name = ctx.obj[ctx.tmp._index].name;
+                            }
+                          })
+                          .str('_name')
+                          //.debug('_name', ctx => ctx.vars._name)
+                          .if(
+                            (ctx) => ctx.tmp._name === 'None',
+                            (builder) => builder.break()
+                          )
+                          //.exec(ctx => console.log('properties._index', ctx.vars._index))
+                          .elem('_index')
+                          .exec((ctx) => (ctx.obj.name = ctx.tmp._name))
+                          .call(RegisteredFunction.transformProperty)
+                          .endElem();
+                      })
+                      .if(
+                        (ctx) => !ctx.isLoading,
+                        (builder) => {
+                          builder
+                            .exec((ctx) => (ctx.tmp._none = 'None'))
+                            .str('_none');
+                        }
+                      )
+                      .endArr()
+                      .endElem();
+                  }
+                )
+
               }
             );
           })
