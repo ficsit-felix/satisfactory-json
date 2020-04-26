@@ -85,7 +85,6 @@ export function transformArrayProperty(builder: Builder): void {
           .assertNullByte(false)
           .arr('values')
           .loop('_itemCount', (builder) => {
-
             // Handle special cases for Guid and LinearColor
 
             builder.if(
@@ -95,19 +94,23 @@ export function transformArrayProperty(builder: Builder): void {
               (builder) => {
                 builder.hex('#_index', 16);
               },
-              (builder) => { // else
+              (builder) => {
+                // else
 
                 builder.if(
-                  ctx => ctx.parent !== undefined && ctx.parent.obj.structInnerType === 'LinearColor',
-                  builder => {
-                    builder.elem('_index')
+                  (ctx) =>
+                    ctx.parent !== undefined &&
+                    ctx.parent.obj.structInnerType === 'LinearColor',
+                  (builder) => {
+                    builder
+                      .elem('_index')
                       .float('r')
                       .float('g')
                       .float('b')
                       .float('a')
                       .endElem();
                   },
-                  builder => {
+                  (builder) => {
                     // else
 
                     builder
@@ -152,8 +155,7 @@ export function transformArrayProperty(builder: Builder): void {
                       .endArr()
                       .endElem();
                   }
-                )
-
+                );
               }
             );
           })
