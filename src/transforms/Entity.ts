@@ -11,6 +11,18 @@ export function transformProperties(builder: Builder): void {
     )
     .loop('_propertiesCount', (builder) => {
       builder
+        // special case for berry bush InventoryStack, but when writing we need to break here already, so we don't write the None
+        .if(
+          (ctx) =>
+            !ctx.isLoading &&
+            ctx.obj[ctx.tmp._index].value.type === 'InventoryItem' &&
+            ctx.obj[ctx.tmp._index].value.properties != undefined &&
+            ctx.obj[ctx.tmp._index].value.properties.length === 0,
+          (builder) => {
+            builder.break();
+          }
+        )
+
         .exec((ctx) => {
           if (!ctx.isLoading) {
             ctx.tmp._name = ctx.obj[ctx.tmp._index].name;
@@ -26,6 +38,7 @@ export function transformProperties(builder: Builder): void {
         .elem('_index')
         .exec((ctx) => (ctx.obj.name = ctx.tmp._name))
         .call(RegisteredFunction.transformProperty)
+
         // special case for InventoryStack in berry items where there is only one 'None' after the InventoryItem which is supposed to close both the property list of the InventoryItem and the InventoryStack on experimental version 120219 for some reason?
         .if(
           (ctx) =>
@@ -81,8 +94,9 @@ export function transformEntity(builder: Builder): void {
     .int('_extraObjectCount', () => 0)
     .exec((ctx) => {
       if (ctx.tmp._extraObjectCount !== 0) {
-        throw Error(
-          `Extra object count not zero, but ${ctx.tmp._extraObjectCount}`
+        console.error(
+          `Extra object count not zero, but ${ctx.tmp._extraObjectCount}`,
+          ctx
         );
       }
     })
@@ -94,7 +108,7 @@ export function transformEntity(builder: Builder): void {
     .hexRemaining('missing', '_entityLength')
     .exec((ctx) => {
       if (ctx.obj.missing !== '') {
-        console.error('missing', ctx.obj.missing, ctx);
+        console.error('Too much data in object: ', ctx.obj.missing, ctx);
       }
     })
 

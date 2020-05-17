@@ -46,7 +46,6 @@ export class Sav2JsonTransform extends Transform {
     try {
       this.transformationEngine.end((error?: Error) => {
         if (error === undefined) {
-          console.log('push data', error);
           this.push(this.transformationEngine.getSaveGame());
         }
 
