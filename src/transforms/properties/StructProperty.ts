@@ -10,6 +10,7 @@ import { transformRailroadTrackPosition } from './structs/RailroadTrackPosition'
 import { transformTimerHandle } from './structs/TimerHandle';
 import { transformGuid } from './structs/Guid';
 import { transformFluidBox } from './structs/FluidBox';
+import { transformSlateBrush } from './structs/SlateBrush';
 
 export function transformStructProperty(builder: Builder): void {
   builder
@@ -49,6 +50,7 @@ export function transformStructProperty(builder: Builder): void {
       TrainSimulationData: (builder) => transformArbitraryStruct(builder),
       FluidBox: (builder) => transformFluidBox(builder),
       ResearchData: (builder) => transformArbitraryStruct(builder),
+      SlateBrush: (builder) => transformSlateBrush(builder),
       $default: (builder) =>
         builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
     })
