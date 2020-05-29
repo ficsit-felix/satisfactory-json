@@ -81,6 +81,9 @@ export function transformMapProperty(builder: Builder): void {
           EnumByteProperty: (builder) => {
             builder.str('value');
           },
+          StrProperty: (builder) => {
+            builder.str('value');
+          },
           $default: (builder) => {
             builder.exec((ctx) => {
               throw Error(

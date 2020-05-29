@@ -16,9 +16,9 @@ export function readBigInt64LE(buffer: Buffer, offset = 0) {
     JSBI.leftShift(JSBI.BigInt(val), JSBI.BigInt(32)),
     JSBI.BigInt(
       first +
-        buffer[++offset] * 2 ** 8 +
-        buffer[++offset] * 2 ** 16 +
-        buffer[++offset] * 2 ** 24
+      buffer[++offset] * 2 ** 8 +
+      buffer[++offset] * 2 ** 16 +
+      buffer[++offset] * 2 ** 24
     )
   );
 }
@@ -176,7 +176,7 @@ export class ReadArchive extends Archive {
     if (result === undefined) {
       return false;
     }
-    setVar(ctx, ref, result);
+    setVar(ctx, ref, result.toString());
 
     return true;
   }
