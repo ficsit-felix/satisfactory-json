@@ -33,6 +33,7 @@ import { transformArrayProperty } from '../transforms/properties/ArrayProperty';
 import { transformMapProperty } from '../transforms/properties/MapProperty';
 import { transformSetProperty } from '../transforms/properties/SetProperty';
 import { transformInt64Property } from '../transforms/properties/Int64Property';
+import { transformInt8Property } from '../transforms/properties/Int8Property';
 
 interface StackFrame {
   commands: Command[];
@@ -78,6 +79,7 @@ export enum RegisteredFunction {
   transformFText = 'transformFText',
   transformSetProperty = 'transformSetProperty',
   transformInt64Property = 'transformInt64Property',
+  transformInt8Property = 'transformInt8Property',
 }
 
 export class TransformationEngine {
@@ -189,6 +191,10 @@ export class TransformationEngine {
       RegisteredFunction.transformInt64Property,
       transformInt64Property
     );
+    registerFunction(
+      RegisteredFunction.transformInt8Property,
+      transformInt8Property
+    );
     //console.log('commands', inspect(this.commands, false, 10));
   }
 
@@ -237,7 +243,7 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    for (;;) {
+    for (; ;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {
@@ -370,7 +376,7 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    for (;;) {
+    for (; ;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {

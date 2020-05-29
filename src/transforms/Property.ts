@@ -41,6 +41,8 @@ export function transformProperty(builder: Builder): void {
         builder.call(RegisteredFunction.transformInt64Property),
       InterfaceProperty: (builder: Builder) =>
         builder.call(RegisteredFunction.transformObjectProperty),
+      Int8Property: (builder: Builder) =>
+        builder.call(RegisteredFunction.transformInt8Property),
       $default: (builder: Builder) =>
         builder.error((ctx) => `Unknown property: ${ctx.obj.type}`),
     })
