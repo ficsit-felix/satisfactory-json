@@ -99,6 +99,7 @@ export class TransformationEngine {
   private buffers: Buffer[] = [];
   private bufferedBytes = 0;
   private bytesRead = 0;
+  private finished = false;
 
   private saveGame: any;
 
@@ -354,7 +355,9 @@ export class TransformationEngine {
         this.startCompressionCallback(this.chunk.getRemaining());
         return TransformResult.WaitForNextFrame;
       } else if (needBytes === -3) {
+        console.log('finihsed');
         // end of the save game
+        this.finished = true;
         return TransformResult.Finished;
       } else if (needBytes === -4) {
         // Wait for a frame
@@ -490,6 +493,7 @@ export class TransformationEngine {
         return TransformResult.WaitForNextFrame;
       } else if (needBytes === -3) {
         // end of the save game
+        this.finished = true;
         return TransformResult.Finished;
       } else if (needBytes === -4) {
         // Wait for a frame
@@ -510,6 +514,8 @@ export class TransformationEngine {
   end(callback: (error?: Error | undefined) => void): void {
     if (this.needBytes !== 0) {
       callback(new Error(`Missing ${this.needBytes} bytes`));
+    } else if (!this.finished) {
+      callback(new Error(`Corruption after save file header`));
     } else {
       // TODO check for spare bytes
       callback();
