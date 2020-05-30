@@ -121,6 +121,7 @@ export abstract class Archive {
   public abstract endBuffer(ctx: Context): boolean;
 
   public abstract endSaveGame(): void;
+  public abstract emitProgress(progress: number): void;
 }
 
 function setVar(ctx: Context, ref: Reference, value: any): void {
@@ -278,7 +279,11 @@ export class ReadArchive extends Archive {
 
   // TODO pass bytesRead to the next Chunk
   private bytesRead = 0;
-  constructor(buffer: Buffer, bytesRead: number) {
+  constructor(
+    buffer: Buffer,
+    bytesRead: number,
+    private progressCallback: (progress: number) => void
+  ) {
     super();
     this.buffer = buffer;
     this.bytesRead = bytesRead;
@@ -475,6 +480,10 @@ export class ReadArchive extends Archive {
   public getBytesRead(): number {
     return this.bytesRead;
   }
+
+  public emitProgress(progress: number): void {
+    this.progressCallback(progress);
+  }
 }
 
 // https://stackoverflow.com/a/14601808
@@ -503,7 +512,7 @@ export class WriteArchive extends Archive {
   private totalBytes = 0;
   private lengthPlaceholders: LengthPlaceholder[] = [];
 
-  constructor() {
+  constructor(private progressCallback: (progress: number) => void) {
     super();
     this.missingBytes = 1; // no real meaning except, we need to write out the chunk
     this.buffer = Buffer.alloc(MAX_CHUNK_SIZE);
@@ -845,6 +854,10 @@ export class WriteArchive extends Archive {
     // mark the last not completely filled chunk as finished
     this.buffers.push(this.buffer.slice(0, this.cursor));
     this.buffer = Buffer.alloc(0);
+  }
+
+  public emitProgress(progress: number): void {
+    this.progressCallback(progress);
   }
 }
 

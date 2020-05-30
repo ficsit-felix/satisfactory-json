@@ -90,7 +90,9 @@ export abstract class Command {
    * Executes this command
    * Returns the number of bytes this function needs to complete
    * or -1 to indicate that the command pointer should not advance (only useful if the newStackFrameCallback was called)
-
+   * -2: break loop and let compression kick in
+   * -3: end save game
+   * -4: set timeout for a frame, to let UI show progress
    */
   abstract exec(
     ctx: Context,
@@ -752,5 +754,30 @@ export class EndSaveGameCommand extends Command {
     //console.log('finished');
     ar.endSaveGame();
     return -3;
+  }
+}
+
+export class EmitEntityProgressCommand extends Command {
+  constructor(private scale: number, private offset: number) {
+    super();
+  }
+  exec(
+    ctx: Context,
+    ar: Archive,
+    _newStackFrameCallback: (commands: Command[]) => void,
+    _dropStackFrameCallback: () => void
+  ): number {
+    const progress = Math.floor(
+      (ctx.tmp._index / ctx.tmp._entryCount) * this.scale + this.offset
+    );
+    if (
+      Math.floor(
+        ((ctx.tmp._index - 1) / ctx.tmp._entryCount) * this.scale + this.offset
+      ) != progress
+    ) {
+      ar.emitProgress(progress);
+      return -4;
+    }
+    return 0;
   }
 }

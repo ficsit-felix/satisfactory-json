@@ -50,6 +50,12 @@ function registerFunction(
   functionCommands[functionName] = builder.getCommands();
 }
 
+export enum TransformResult {
+  WaitForNextChunk,
+  WaitForNextFrame,
+  Finished,
+}
+
 export enum RegisteredFunction {
   transformHeader = 'transformHeader',
   transformActorOrComponent = 'transformActorOrComponent',
@@ -93,13 +99,16 @@ export class TransformationEngine {
   private buffers: Buffer[] = [];
   private bufferedBytes = 0;
   private bytesRead = 0;
-  private startCompressionCallback: (buffer: Buffer) => void;
 
   private saveGame: any;
 
+  // keep the chunk here in case we need to wait while emitting a progress event
+  private chunk!: ReadArchive;
+
   constructor(
     rulesFunction: (builder: Builder) => void,
-    startCompressionCallback: (buffer: Buffer) => void
+    private startCompressionCallback: (buffer: Buffer) => void,
+    public progressCallback: (progress: number) => void
   ) {
     this.startCompressionCallback = startCompressionCallback;
     const builder = new Builder();
@@ -202,24 +211,30 @@ export class TransformationEngine {
     this.isLoading = isLoading;
   }
 
-  transformRead(buffer: Buffer): void {
-    this.bufferedBytes += buffer.length;
-    if (this.bufferedBytes < this.needBytes) {
-      //console.log(`still missing ${this.needBytes - this.bufferedBytes} bytes`);
-      this.buffers.push(buffer);
-      // need to read more
-      return;
-    }
+  transformRead(buffer?: Buffer): TransformResult {
+    if (buffer !== undefined) {
+      this.bufferedBytes += buffer.length;
+      if (this.bufferedBytes < this.needBytes) {
+        //console.log(`still missing ${this.needBytes - this.bufferedBytes} bytes`);
+        this.buffers.push(buffer);
+        // need to read more
+        return TransformResult.WaitForNextChunk;
+      }
 
-    if (this.buffers.length > 0) {
-      // concatenate all the buffers
-      this.buffers.push(buffer);
-      buffer = Buffer.concat(this.buffers);
-      this.buffers = [];
-    }
-    this.needBytes = 0;
+      if (this.buffers.length > 0) {
+        // concatenate all the buffers
+        this.buffers.push(buffer);
+        buffer = Buffer.concat(this.buffers);
+        this.buffers = [];
+      }
+      this.needBytes = 0;
 
-    const chunk = new ReadArchive(buffer, this.bytesRead);
+      this.chunk = new ReadArchive(
+        buffer,
+        this.bytesRead,
+        this.progressCallback
+      );
+    }
 
     if (this.stack.length === 0) {
       //console.info('Starting program...');
@@ -243,7 +258,7 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    for (; ;) {
+    for (;;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {
@@ -263,7 +278,7 @@ export class TransformationEngine {
       //console.log('executing', cmd);
       const needBytes = cmd.exec(
         frame.ctx,
-        chunk,
+        this.chunk,
         (commands) => {
           //        console.log(frame.ctx.vars);
           /* const vars = {
@@ -322,27 +337,35 @@ export class TransformationEngine {
         console.log(frame.ctx.vars);*/
         this.needBytes = needBytes;
         // pass bytesRead to next chunk
-        this.bytesRead = chunk.getBytesRead();
+        this.bytesRead = this.chunk.getBytesRead();
 
         // put remaining bytes into buffer for next iteration
-        this.buffers = [chunk.getRemaining()];
+        this.buffers = [this.chunk.getRemaining()];
         break;
       } else if (needBytes === -1) {
         // -1 indicates that the command pointer should not advance
-      } else if (needBytes === 0 || needBytes === -3) {
+      } else if (needBytes === 0) {
         frame.currentCommand++;
       } else if (needBytes === -2) {
         // -2 indicates turning on compression
         frame.currentCommand++;
         this.buffers = [];
         this.needBytes = 0;
-        this.startCompressionCallback(chunk.getRemaining());
-        return;
+        this.startCompressionCallback(this.chunk.getRemaining());
+        return TransformResult.WaitForNextFrame;
+      } else if (needBytes === -3) {
+        // end of the save game
+        return TransformResult.Finished;
+      } else if (needBytes === -4) {
+        // Wait for a frame
+        frame.currentCommand++;
+        return TransformResult.WaitForNextFrame;
       }
 
       //console.log(frame.ctx);
     }
     //console.log(saveGame);
+    return TransformResult.WaitForNextChunk;
   }
 
   private writeArchive?: WriteArchive;
@@ -352,21 +375,24 @@ export class TransformationEngine {
   }
 
   // return true if writing the save file is not finished
-  transformWrite(saveGame: SaveGame): boolean {
-    const ar = this.writeArchive ? this.writeArchive : new WriteArchive();
+  transformWrite(saveGame?: SaveGame): TransformResult {
+    const ar = this.writeArchive
+      ? this.writeArchive
+      : new WriteArchive(this.progressCallback);
     this.writeArchive = ar;
 
     if (this.stack.length === 0) {
       //console.info('Starting program...');
       // Stack empty: Begin of program or something went wrong
-
-      this.saveGame = saveGame;
+      if (saveGame !== undefined) {
+        this.saveGame = saveGame;
+      }
 
       const frame = {
         commands: this.commands,
         currentCommand: 0,
         ctx: {
-          obj: saveGame,
+          obj: this.saveGame,
           tmp: {},
           locals: {},
           isLoading: this.isLoading,
@@ -376,7 +402,7 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    for (; ;) {
+    for (;;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {
@@ -451,7 +477,7 @@ export class TransformationEngine {
 
         // this command actually finished
         frame.currentCommand++;
-        return true;
+        return TransformResult.WaitForNextChunk;
       } else if (needBytes === -1) {
         // -1 indicates that the command pointer should not advance
       } else if (needBytes === 0) {
@@ -461,16 +487,20 @@ export class TransformationEngine {
         frame.currentCommand++;
         this.startCompressionCallback(this.writeArchive.getHeaderChunk());
         //this.writeArchive.writeInt(0, true);
-        return true;
+        return TransformResult.WaitForNextFrame;
       } else if (needBytes === -3) {
         // end of the save game
-        return false;
+        return TransformResult.Finished;
+      } else if (needBytes === -4) {
+        // Wait for a frame
+        frame.currentCommand++;
+        return TransformResult.WaitForNextFrame;
       }
 
       //console.log(frame.ctx);
     }
     //console.log(saveGame);
-    return true;
+    return TransformResult.WaitForNextChunk;
   }
 
   getSaveGame(): any {

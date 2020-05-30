@@ -28,6 +28,7 @@ import {
   LoopHeaderCommand,
   StartCompressionCommand,
   EndSaveGameCommand,
+  EmitEntityProgressCommand,
 } from './commands';
 import { Archive } from './Archive';
 import { RegisteredFunction } from './TransformationEngine';
@@ -264,6 +265,11 @@ export class Builder {
 
   public endSaveGame(): Builder {
     this.commands.push(new EndSaveGameCommand());
+    return this;
+  }
+
+  public emitEntityProgress(scale: number, offset: number): Builder {
+    this.commands.push(new EmitEntityProgressCommand(scale, offset));
     return this;
   }
 }
