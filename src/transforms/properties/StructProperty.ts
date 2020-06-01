@@ -51,6 +51,7 @@ export function transformStructProperty(builder: Builder): void {
       FluidBox: (builder) => transformFluidBox(builder),
       ResearchData: (builder) => transformArbitraryStruct(builder),
       SlateBrush: (builder) => transformSlateBrush(builder),
+      Hotbar: (builder) => transformArbitraryStruct(builder),
       $default: (builder) =>
         builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
     })

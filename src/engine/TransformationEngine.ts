@@ -259,7 +259,7 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    for (;;) {
+    for (; ;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {
@@ -355,7 +355,6 @@ export class TransformationEngine {
         this.startCompressionCallback(this.chunk.getRemaining());
         return TransformResult.WaitForNextFrame;
       } else if (needBytes === -3) {
-        console.log('finihsed');
         // end of the save game
         this.finished = true;
         return TransformResult.Finished;
@@ -405,7 +404,7 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    for (;;) {
+    for (; ;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {
