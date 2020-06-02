@@ -95,23 +95,18 @@ export function transformActorOrComponent(builder: Builder): void {
 export function transform(builder: Builder): void {
   builder
     .call(RegisteredFunction.transformHeader)
-    //.exec(() => console.log('Header done'))
     .int(
       '_entryCount',
       (ctx) => ctx.obj.actors.length + ctx.obj.components.length
     )
 
     .loop('_entryCount', (builder) => {
-      //builder.debug("AoC", ctx => ctx.tmp._index);
       builder
         .emitEntityProgress(50, 0)
         .call(RegisteredFunction.transformActorOrComponent);
     })
-    //.exec(() => console.log('Actors and Components done'))
     .int('_entryCount')
-    //.exec((ctx) => console.log('entryCount', ctx.vars._entryCount))
     .loop('_entryCount', (builder) => {
-      //builder.debug("entity", ctx => ctx.tmp._index);
       builder.emitEntityProgress(50, 50).if(
         (ctx) => ctx.tmp._index < ctx.obj.actors.length,
         (builder) => {

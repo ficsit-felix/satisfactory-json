@@ -265,24 +265,6 @@ export class IntCommand extends Command {
       return ar.missingBytes;
     }
     return 0;
-
-    /*    if (ctx.isLoading) {
-      const result = ar.readInt(this.shouldCount);
-      if (result === undefined) {
-        // return the amount of missing bytes
-        return ar.missingBytes;
-      }
-      setVar(ctx, this.name, result);
-      return 0;
-    } else {
-      const value = getVar(ctx, this.name);
-
-      ar.writeInt(value, this.shouldCount);
-
-      // TODO writing
-      throw Error("Unimplemented");
-      return 0;
-    }*/
   }
 }
 
@@ -300,19 +282,6 @@ export class StrCommand extends Command {
       return ar.missingBytes;
     }
     return 0;
-
-    /*    if (ctx.isLoading) {
-      const result = ar.readStr(this.shouldCount);
-      if (result === undefined) {
-        return ar.missingBytes;
-      }
-      setVar(ctx, this.name, result);
-      return 0;
-    } else {
-      // TODO writing
-      throw Error("Unimplemented");
-      return 0;
-    }*/
   }
 }
 
@@ -328,20 +297,6 @@ export class LongCommand extends Command {
       return ar.missingBytes;
     }
     return 0;
-
-    /*    if (ctx.isLoading) {
-      const result = ar.readLong();
-      if (result === undefined) {
-        // return the amount of missing bytes
-        return ar.missingBytes;
-      }
-      setVar(ctx, this.name, result);
-      return 0;
-    } else {
-      // TODO writing
-      throw Error("Unimplemented");
-      return 0;
-    }*/
   }
 }
 
@@ -359,20 +314,6 @@ export class ByteCommand extends Command {
       return ar.missingBytes;
     }
     return 0;
-    /*
-    if (ctx.isLoading) {
-      const result = ar.readByte(this.shouldCount);
-      if (result === undefined) {
-        // return the amount of missing bytes
-        return ar.missingBytes;
-      }
-      setVar(ctx, this.name, result);
-      return 0;
-    } else {
-      // TODO writing
-      throw Error("Unimplemented");
-      return 0;
-    }*/
   }
 }
 
@@ -389,20 +330,6 @@ export class FloatCommand extends Command {
     }
 
     return 0;
-    /*
-    if (ctx.isLoading) {
-      const result = ar.readFloat();
-      if (result === undefined) {
-        // return the amount of missing bytes
-        return ar.missingBytes;
-      }
-      setVar(ctx, this.name, result);
-      return 0;
-    } else {
-      // TODO writing
-      throw Error("Unimplemented");
-      return 0;
-    }*/
   }
 }
 
@@ -419,23 +346,6 @@ export class AssertNullByteCommand extends Command {
       return ar.missingBytes;
     }
     return 0;
-    /*
-    if (ctx.isLoading) {
-      const result = ar.readByte(this.shouldCount);
-      if (result === undefined) {
-        // return the amount of missing bytes
-        return ar.missingBytes;
-      }
-      const zero = result;
-      if (zero !== 0) {
-        throw new Error(`Byte not 0, but ${zero}`);
-      }
-      return 0;
-    } else {
-      // TODO writing
-      throw Error("Unimplemented");
-      return 0;
-    }*/
   }
 }
 
@@ -455,20 +365,6 @@ export class HexCommand extends Command {
       return ar.missingBytes;
     }
     return 0;
-    /*
-    if (ctx.isLoading) {
-      const result = ar.read(this.bytes, this.shouldCount);
-      if (result === undefined) {
-        // return the amount of missing bytes
-        return ar.missingBytes;
-      }
-      setVar(ctx, this.name, result.toString("hex"));
-      return 0;
-    } else {
-      // TODO writing
-      throw Error("Unimplemented");
-      return 0;
-    }*/
   }
 }
 
@@ -533,7 +429,6 @@ export class CondCommand extends Command {
     newStackFrameCallback: (commands: Command[]) => void
   ): number {
     const result = this.cond(ctx);
-    //console.log(`----------COND: ${result}`);
     if (result) {
       // execute then branch
       newStackFrameCallback(this.thenCommands);
@@ -605,24 +500,6 @@ export class BufferStartCommand extends Command {
       return ar.missingBytes;
     }
     return 0;
-    /*
-    if (ctx.isLoading) {
-      const result = ar.readInt();
-      if (result === undefined) {
-        return ar.missingBytes;
-      }
-      setVar(ctx, this.name, result);
-      if (this.resetBytesRead) {
-        ar.resetBytesRead();
-      }
-
-      // TODO preload the next ${result} bytes?
-    } else {
-      // TODO writing
-      throw Error("Unimplemented");
-    }
-    return 0;
-    */
   }
 }
 
@@ -633,12 +510,6 @@ export class BufferEndCommand extends Command {
       return ar.missingBytes;
     }
     return 0;
-    /*if (ctx.isLoading) {
-    } else {
-      // TODO writing
-      throw Error("Unimplemented");
-    }
-    return 0;*/
   }
 }
 
@@ -661,22 +532,6 @@ export class HexRemainingCommand extends Command {
       return ar.missingBytes;
     }
     return 0;
-    /*
-    if (ctx.isLoading) {
-      const length = getVar(ctx, this.lengthVar);
-      const result = ar.readUntil(length);
-
-      if (result === undefined) {
-        // return the amount of missing bytes
-        return ar.missingBytes;
-      }
-      setVar(ctx, this.name, result.toString("hex"));
-      return 0;
-    } else {
-      // TODO writing
-      throw Error("Unimplemented");
-      return 0;
-    }*/
   }
 }
 
@@ -694,8 +549,6 @@ export class SwitchCommand extends Command {
     newStackFrameCallback: (commands: Command[]) => void
   ): number {
     const value = getVar(ctx, this.name).toString();
-    //console.log(`Fetch ${value}`);
-
     if (this.cases[value] !== undefined) {
       newStackFrameCallback(this.cases[value]);
     } else if (this.cases['$default'] !== undefined) {
@@ -751,7 +604,6 @@ export class EndSaveGameCommand extends Command {
     _newStackFrameCallback: (commands: Command[]) => void,
     _dropStackFrameCallback: () => void
   ): number {
-    //console.log('finished');
     ar.endSaveGame();
     return -3;
   }

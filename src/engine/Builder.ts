@@ -125,26 +125,11 @@ export class Builder {
     return this;
   }
 
-  public call(
-    functionName: RegisteredFunction /*rulesFunction: (builder: Builder) => void*/
-  ): Builder {
-    /*if (rulesFunction.name === '') {
-      throw new Error('call() can only be used with named functions');
-    }
-
-    // Only build each function once
-    if (functionCommands[rulesFunction.name] === undefined) {
-      //console.log('building', rulesFunction.name);
-      // Already set this, so that we don't get into infinite recursion
-      functionCommands[rulesFunction.name] = [];
-
-      const builder = new Builder();
-      rulesFunction(builder);
-      functionCommands[rulesFunction.name] = builder.getCommands();
-    }*/
-    this.commands.push(new CallCommand(functionName /*rulesFunction.name*/));
+  public call(functionName: RegisteredFunction): Builder {
+    this.commands.push(new CallCommand(functionName));
     return this;
   }
+
   /**
    * Execute arbitrary javascript code when the TransformEngine gets to this point
    * @param code

@@ -133,12 +133,10 @@ export function transformArrayProperty(builder: Builder): void {
                             }
                           })
                           .str('_name')
-                          //.debug('_name', ctx => ctx.vars._name)
                           .if(
                             (ctx) => ctx.tmp._name === 'None',
                             (builder) => builder.break()
                           )
-                          //.exec(ctx => console.log('properties._index', ctx.vars._index))
                           .elem('_index')
                           .exec((ctx) => (ctx.obj.name = ctx.tmp._name))
                           .call(RegisteredFunction.transformProperty)

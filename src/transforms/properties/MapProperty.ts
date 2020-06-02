@@ -70,10 +70,7 @@ export function transformMapProperty(builder: Builder): void {
         })
         .switch('_valueTransform', {
           StructProperty: (builder) => {
-            builder
-              //.obj('value') TODO add value here
-              .call(RegisteredFunction.transformProperties);
-            //.endObj();
+            builder.call(RegisteredFunction.transformProperties);
           },
           ByteProperty: (builder) => {
             builder.byte('value');

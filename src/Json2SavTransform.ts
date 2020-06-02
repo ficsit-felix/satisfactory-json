@@ -58,7 +58,6 @@ export class Json2SavTransform extends Transform {
           for (const chunk of ar.getFilledChunks()) {
             if (this.compressionTransform !== undefined) {
               this.compressionTransform.write(chunk);
-              //            this.compressionTransform.push(chunk);
             } else {
               this.push(chunk);
             }

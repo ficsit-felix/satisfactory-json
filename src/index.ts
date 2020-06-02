@@ -32,25 +32,3 @@ export function json2sav(saveGame: SaveGame): Promise<string> {
     transform.end();
   });
 }
-
-/*
-export function sav2json(buffer: Buffer): SaveGame {
-  const saveGame: SaveGame = {
-    saveHeaderType: 0,
-    saveVersion: 0,
-    buildVersion: 0,
-    mapName: '',
-    mapOptions: '',
-    sessionName: '',
-    playDurationSeconds: 0,
-    saveDateTime: '',
-    sessionVisibility: 0,
-    actors: [],
-    components: [],
-    collected: [],
-    missing: ''
-  };
-  return saveGame;
-}
-
-*/

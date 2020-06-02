@@ -258,7 +258,6 @@ export class ReadArchive extends Archive {
       return false;
     }
     setVar(ctx, ref, result);
-    //ctx.obj._length = result; // TODO remove
     if (resetBytesRead) {
       this.resetBytesRead();
     }
@@ -796,13 +795,6 @@ export class WriteArchive extends Archive {
     this.bufferLength =
       lengthPlaceholder.startBufferLength + actualLengthInBytes;
 
-    //console.log(ctx.path);
-    /*if (value != ctx.obj._length) {
-      console.warn(`Wrong length: ${value} != ${ctx.obj._length} ${ctx.path}`);
-      // TODO remove
-      //debugger;
-    }*/
-
     let buffer =
       lengthPlaceholder.buffer < this.buffers.length
         ? this.buffers[lengthPlaceholder.buffer]
@@ -833,7 +825,6 @@ export class WriteArchive extends Archive {
 
     // TODO return false if there is a chunk finished that can be written out because lengthPlaceholders is empty
     return true;
-    //throw new Error("Method not implemented.");
   }
 
   // correctly puts the values in the chunks

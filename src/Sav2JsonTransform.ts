@@ -14,11 +14,9 @@ export class Sav2JsonTransform extends Transform {
   constructor(private progressTimeoutMs: number = 15) {
     super({ readableObjectMode: true });
 
-    //console.time('buildRules');
     this.transformationEngine = new TransformationEngine(
       transform,
       (buffer): void => {
-        //console.log('enable compression')
         this.compressionTransform = new DecompressionTransform();
         this._transform(buffer, 'buffer', () => {});
       },
@@ -28,7 +26,6 @@ export class Sav2JsonTransform extends Transform {
     );
 
     this.transformationEngine.prepare(true);
-    //console.timeEnd('buildRules');
   }
 
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {

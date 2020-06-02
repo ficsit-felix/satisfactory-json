@@ -12,10 +12,7 @@ export function transformConveyorBelt(builder: Builder): void {
         .exec((ctx, ar, dropStackFrameCallback) => {
           if (ctx.isLoading) {
             if ((ar as ReadArchive).getBytesRead() >= ctx.tmp._entityLength) {
-              //console.warn('Item count is ' + items.length +
-              //' while there are only ' + i + ' items in there');
-
-              // break:
+              // wrong amount of items on conveyor belt
               dropStackFrameCallback();
             }
           }

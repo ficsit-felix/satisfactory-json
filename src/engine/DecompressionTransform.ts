@@ -14,7 +14,6 @@ export class DecompressionTransform {
     buffer: Buffer,
     transformationEngine: TransformationEngine
   ): TransformResult {
-    //console.log('transform');
     let result;
     if (buffer !== undefined) {
       this.bufferedBytes += buffer.length;
@@ -42,7 +41,6 @@ export class DecompressionTransform {
         this.chunk.setRollbackPoint();
         const compressedChunk = this.readChunk(this.chunk);
         if (compressedChunk === undefined) {
-          //console.log('READ MORE: ' + chunk.missingBytes);
           // need to read more
           this.needBytes = this.chunk.missingBytes + this.chunk.rollback();
           this.buffers = [this.chunk.getRemaining()];
@@ -50,13 +48,10 @@ export class DecompressionTransform {
         }
         const inflated = inflate(compressedChunk);
 
-        this.uncompressedBuffer = Buffer.from(inflated); // Buffer.from(this.firstRead ? inflated.slice(4) : inflated);
+        this.uncompressedBuffer = Buffer.from(inflated);
         this.firstRead = false;
         result = transformationEngine.transformRead(this.uncompressedBuffer);
       } else {
-        /*if (this.firstRead) {
-        console.log('first 4 bytes', Buffer.from(inflated.slice(0, 4)).readInt32LE(0));
-      }*/
         result = transformationEngine.transformRead(undefined);
       }
 
@@ -78,7 +73,6 @@ export class DecompressionTransform {
     if (packageFileTag === undefined) {
       return undefined;
     }
-    //console.log(packageFileTag);
 
     const maxChunkSize = chunk.readLong();
     if (maxChunkSize === undefined) {
@@ -105,7 +99,6 @@ export class DecompressionTransform {
       return undefined;
     }
 
-    // return compressedSize;
     return chunk.read(Number(compressedSize));
   }
 }

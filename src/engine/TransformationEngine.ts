@@ -205,7 +205,6 @@ export class TransformationEngine {
       RegisteredFunction.transformInt8Property,
       transformInt8Property
     );
-    //console.log('commands', inspect(this.commands, false, 10));
   }
 
   prepare(isLoading: boolean): void {
@@ -216,7 +215,6 @@ export class TransformationEngine {
     if (buffer !== undefined) {
       this.bufferedBytes += buffer.length;
       if (this.bufferedBytes < this.needBytes) {
-        //console.log(`still missing ${this.needBytes - this.bufferedBytes} bytes`);
         this.buffers.push(buffer);
         // need to read more
         return TransformResult.WaitForNextChunk;
@@ -238,7 +236,6 @@ export class TransformationEngine {
     }
 
     if (this.stack.length === 0) {
-      //console.info('Starting program...');
       // Stack empty: Begin of program or something went wrong
 
       const saveGame = {};
@@ -259,14 +256,13 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    for (; ;) {
+    for (;;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {
         // move one stack frame up
         this.stack.pop();
         if (this.stack.length === 0) {
-          //console.warn('No more stack frames');
           //throw new Error('EOW');
           // End of program?
           break;
@@ -276,34 +272,17 @@ export class TransformationEngine {
       }
 
       const cmd = frame.commands[frame.currentCommand];
-      //console.log('executing', cmd);
       const needBytes = cmd.exec(
         frame.ctx,
         this.chunk,
         (commands) => {
-          //        console.log(frame.ctx.vars);
-          /* const vars = {
-           _length: frame.ctx.vars._length,
-           _index: frame.ctx.vars._index,
-           _name: frame.ctx.vars._name,
-           _entryCount: frame.ctx.vars._entryCount,
-           _tagSize: frame.ctx.vars._tagSize,
-           _type: frame.ctx.vars._type,
-           _keyTransform: frame.ctx.vars._keyTransform,
-           _valueTransform: frame.ctx.vars._valueTransform,
-           _withNames: frame.ctx.vars._withNames,
-           _className: frame.ctx.vars._className,
-           _itemCount: frame.ctx.vars._itemCount,
-           _childCount: frame.ctx.vars._childCount,
-         };*/
-
           // create new stack frame
           this.stack.push({
             commands,
             currentCommand: 0,
-            ctx: /*frame.ctx*/ {
+            ctx: {
               obj: frame.ctx.obj,
-              tmp: frame.ctx.tmp, //Object.assign({}, frame.ctx.vars), // shallow copy the variables so that the old ones still will be there when the stack is popped
+              tmp: frame.ctx.tmp,
               locals: {},
               parent: frame.ctx.parent,
               isLoading: frame.ctx.isLoading,
@@ -331,11 +310,6 @@ export class TransformationEngine {
       );
       if (needBytes > 0) {
         // This command needs more bytes to successfully execute
-
-        /*console.log(chunk.cursor);
-        console.log('---------------------------');
-        console.error(`Need ${needBytes} more bytes.`);
-        console.log(frame.ctx.vars);*/
         this.needBytes = needBytes;
         // pass bytesRead to next chunk
         this.bytesRead = this.chunk.getBytesRead();
@@ -363,10 +337,7 @@ export class TransformationEngine {
         frame.currentCommand++;
         return TransformResult.WaitForNextFrame;
       }
-
-      //console.log(frame.ctx);
     }
-    //console.log(saveGame);
     return TransformResult.WaitForNextChunk;
   }
 
@@ -384,7 +355,6 @@ export class TransformationEngine {
     this.writeArchive = ar;
 
     if (this.stack.length === 0) {
-      //console.info('Starting program...');
       // Stack empty: Begin of program or something went wrong
       if (saveGame !== undefined) {
         this.saveGame = saveGame;
@@ -404,7 +374,7 @@ export class TransformationEngine {
       this.stack.push(frame);
     }
 
-    for (; ;) {
+    for (;;) {
       // get current stack frame
       const frame = this.stack[this.stack.length - 1];
       if (frame.currentCommand >= frame.commands.length) {
@@ -421,34 +391,17 @@ export class TransformationEngine {
       }
 
       const cmd = frame.commands[frame.currentCommand];
-      //console.log('executing', cmd);
       const needBytes = cmd.exec(
         frame.ctx,
         ar,
         (commands) => {
-          //        console.log(frame.ctx.vars);
-          /* const vars = {
-           _length: frame.ctx.vars._length,
-           _index: frame.ctx.vars._index,
-           _name: frame.ctx.vars._name,
-           _entryCount: frame.ctx.vars._entryCount,
-           _tagSize: frame.ctx.vars._tagSize,
-           _type: frame.ctx.vars._type,
-           _keyTransform: frame.ctx.vars._keyTransform,
-           _valueTransform: frame.ctx.vars._valueTransform,
-           _withNames: frame.ctx.vars._withNames,
-           _className: frame.ctx.vars._className,
-           _itemCount: frame.ctx.vars._itemCount,
-           _childCount: frame.ctx.vars._childCount,
-         };*/
-
           // create new stack frame
           this.stack.push({
             commands,
             currentCommand: 0,
-            ctx: /*frame.ctx*/ {
+            ctx: {
               obj: frame.ctx.obj,
-              tmp: frame.ctx.tmp, //Object.assign({}, frame.ctx.vars), // shallow copy the variables so that the old ones still will be there when the stack is popped
+              tmp: frame.ctx.tmp,
               locals: {},
               parent: frame.ctx.parent,
               isLoading: frame.ctx.isLoading,
@@ -499,10 +452,7 @@ export class TransformationEngine {
         frame.currentCommand++;
         return TransformResult.WaitForNextFrame;
       }
-
-      //console.log(frame.ctx);
     }
-    //console.log(saveGame);
     return TransformResult.WaitForNextChunk;
   }
 

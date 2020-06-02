@@ -35,10 +35,6 @@ if (sourceValue === undefined) {
   program.outputHelp();
   quitWithError('No target file specified.');
 } else {
-  if (program.time) {
-    console.time('readFile');
-  }
-
   if (program.profile) {
     profiler.startProfiling('probe', true);
   }
@@ -46,16 +42,8 @@ if (sourceValue === undefined) {
   const opts = { highWaterMark: 1024 * 512 };
   const stream = fs.createReadStream(sourceValue, opts);
   const outStream = fs.createWriteStream(targetValue, opts);
-  /*
-    
-    fs.readFile(sourceValue!, 'binary', (error, data) => {
-      if (error) {
-        quitWithError(error);
-      }
-      const binaryData = Buffer.from(data, 'binary');*/
 
   if (program.time) {
-    console.timeEnd('readFile');
     console.time('json2sav');
   }
 
@@ -89,7 +77,6 @@ if (sourceValue === undefined) {
     .on('finish', () => {
       if (program.time) {
         console.timeEnd('json2sav');
-        //console.time('writeFile');
       }
 
       if (program.profile) {

@@ -34,7 +34,6 @@ export function transformProperties(builder: Builder): void {
           (ctx) => ctx.tmp._name === 'None',
           (builder) => builder.break()
         )
-        //.exec(ctx => console.log('properties._index', ctx.vars._index))
         .elem('_index')
         .exec((ctx) => (ctx.obj.name = ctx.tmp._name))
         .call(RegisteredFunction.transformProperty)
@@ -85,12 +84,6 @@ export function transformEntity(builder: Builder): void {
     )
 
     .call(RegisteredFunction.transformProperties)
-    /*.exec(ctx => {
-      if (ctx.path.startsWith('saveGame.actors[473]')) {
-        debugger;
-      }
-    })*/
-    //.exec(ctx => console.log('entity', ctx.obj))
     .int('_extraObjectCount', () => 0)
     .exec((ctx) => {
       if (ctx.tmp._extraObjectCount !== 0) {
@@ -104,7 +97,6 @@ export function transformEntity(builder: Builder): void {
 
   builder
     // TODO read missing data
-    //.debug('>_entityLength', ctx => ctx.tmp._entityLength)
     .hexRemaining('missing', '_entityLength')
     .exec((ctx) => {
       if (ctx.obj.missing !== '') {

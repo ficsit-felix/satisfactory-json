@@ -46,3 +46,6 @@ json2sav(saveGame).then((saveData: string) => {
 ### Stability
 This package follows the [Semantic Versioning](https://semver.org/) schema. As the major and minor version are still 0 the JSON this package creates cannot yet be considered stable and will probably change with every version. 
 Progress towards a stable JSON interface can be observed at [milestone 0.1.0](https://github.com/ficsit-felix/satisfactory-json/issues?q=is%3Aopen+is%3Aissue+milestone%3A0.1.0). As Satisfactory itself is still in Early Access the save file format will also probably change in breaking ways with each new game update.
+
+### Debugging
+To debug using the cli call `yarn sav2json:debug` or `yarn json2sav:debug` and then use a node.js Inspector Client, e.g. Chrome DevTool to debug the program.
