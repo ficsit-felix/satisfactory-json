@@ -1,4 +1,6 @@
-lib/
+!lib/
+lib/*
+!lib/vendor
 node_modules/
 *.sav
 *.cpuprofile

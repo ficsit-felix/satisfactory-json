@@ -1,5 +1,5 @@
 import { Context, Reference, ReferenceType } from './commands';
-import JSBI from 'jsbi';
+import JSBI from '../vendor/jsbi';
 
 // Polyfill for browser until https://github.com/feross/buffer/pull/247 is merged
 /* eslint-disable */
