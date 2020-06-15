@@ -71,21 +71,25 @@ export function transformActorOrComponent(builder: Builder): void {
         // actor
         bldr
           .arr('actors')
-          .elem('_index')
-          .exec((ctx) => (ctx.obj.type = ctx.tmp._type));
+          .elem('_actorIndex')
+          .exec((ctx) => {
+            ctx.obj.type = ctx.tmp._type;
+            ctx.tmp._objectTypes[ctx.tmp._index] = 1;
+            ctx.tmp._actorIndex++;
+          });
         transformActor(bldr);
         bldr.endElem().endArr();
       },
       (bldr) => {
         // component
         bldr
-          .exec(
-            (ctx) =>
-              (ctx.tmp._componentIndex = ctx.tmp._index - ctx.obj.actors.length)
-          )
           .arr('components')
           .elem('_componentIndex')
-          .exec((ctx) => (ctx.obj.type = ctx.tmp._type));
+          .exec((ctx) => {
+            ctx.obj.type = ctx.tmp._type;
+            ctx.tmp._componentIndex++;
+            ctx.tmp._objectTypes[ctx.tmp._index] = 0;
+          });
 
         transformComponent(bldr);
         bldr.endElem().endArr();
@@ -99,35 +103,46 @@ export function transform(builder: Builder): void {
       '_entryCount',
       (ctx) => ctx.obj.actors.length + ctx.obj.components.length
     )
-
+    .exec((ctx) => {
+      // In very rare cases, actors can follow the components. Therefore we need to count the indices seperately and cannot rely on _componentIndex = _index - ctx.actors.length
+      ctx.tmp._actorIndex = 0;
+      ctx.tmp._componentIndex = 0;
+      // To correctly assign the entities, we still need to store whether it was an entity or a component
+      ctx.tmp._objectTypes = [];
+    })
     .loop('_entryCount', (builder) => {
       builder
         .emitEntityProgress(50, 0)
         .call(RegisteredFunction.transformActorOrComponent);
     })
     .int('_entryCount')
+    .exec((ctx) => {
+      ctx.tmp._actorIndex = 0;
+      ctx.tmp._componentIndex = 0;
+    })
     .loop('_entryCount', (builder) => {
       builder.emitEntityProgress(50, 50).if(
-        (ctx) => ctx.tmp._index < ctx.obj.actors.length,
+        (ctx) => ctx.tmp._objectTypes[ctx.tmp._index] === 1, //ctx.tmp._index < ctx.obj.actors.length,
         (builder) => {
           builder
             .exec((ctx) => {
               ctx.tmp._withNames = true;
-              ctx.tmp._className = ctx.obj.actors[ctx.tmp._index].className;
+              ctx.tmp._className =
+                ctx.obj.actors[ctx.tmp._actorIndex].className;
             })
             .obj('actors')
-            .elem('_index')
+            .elem('_actorIndex')
             .obj('entity')
             .call(RegisteredFunction.transformEntity)
             .endObj()
             .endElem()
-            .endObj();
+            .endObj()
+            .exec((ctx) => ctx.tmp._actorIndex++);
         },
         (builder) => {
           builder
             .exec((ctx) => {
               ctx.tmp._withNames = false;
-              ctx.tmp._componentIndex = ctx.tmp._index - ctx.obj.actors.length;
               ctx.tmp._className =
                 ctx.obj.components[ctx.tmp._componentIndex].className;
             })
@@ -137,8 +152,8 @@ export function transform(builder: Builder): void {
             .call(RegisteredFunction.transformEntity)
             .endObj()
             .endElem()
-
-            .endObj();
+            .endObj()
+            .exec((ctx) => ctx.tmp._componentIndex++);
         }
       );
     })
