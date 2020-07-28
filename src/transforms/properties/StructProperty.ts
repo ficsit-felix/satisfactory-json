@@ -52,6 +52,7 @@ export function transformStructProperty(builder: Builder): void {
       ResearchData: (builder) => transformArbitraryStruct(builder),
       SlateBrush: (builder) => transformSlateBrush(builder),
       Hotbar: (builder) => transformArbitraryStruct(builder),
+      EnabledCheats: (builder) => transformArbitraryStruct(builder),
       $default: (builder) =>
         builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
     })
