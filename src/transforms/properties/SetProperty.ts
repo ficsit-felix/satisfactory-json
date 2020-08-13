@@ -22,11 +22,7 @@ export function transformSetProperty(builder: Builder): void {
         builder
           .arr('values')
           .loop('_itemCount', (builder) => {
-            builder
-              .elem('_index')
-              .str('levelName')
-              .str('pathName')
-              .endElem();
+            builder.elem('_index').str('levelName').str('pathName').endElem();
           })
           .endArr();
       },

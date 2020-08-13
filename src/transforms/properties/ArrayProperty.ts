@@ -87,88 +87,92 @@ export function transformArrayProperty(builder: Builder): void {
           .loop('_itemCount', (builder) => {
             // Handle special cases for InventoryItem(FicsIt-Networks mod), Guid and LinearColor
 
-            builder.if(ctx => ctx.parent !== undefined && ctx.parent.obj.structInnerType === 'InventoryItem', (builder) => {
-              builder
-                .elem('_index')
-                .str('unk1', false)
-                .str('itemName')
-                .str('levelName')
-                .str('pathName')
-                // The Inventory Item is stored here without properties
-                .endElem();
-            }, (builder) => {
-              builder.if(
-                (ctx) =>
-                  ctx.parent !== undefined &&
-                  ctx.parent.obj.structInnerType === 'Guid',
-                (builder) => {
-                  builder.hex('#_index', 16);
-                },
-                (builder) => {
-                  // else
+            builder.if(
+              (ctx) =>
+                ctx.parent !== undefined &&
+                ctx.parent.obj.structInnerType === 'InventoryItem',
+              (builder) => {
+                builder
+                  .elem('_index')
+                  .str('unk1', false)
+                  .str('itemName')
+                  .str('levelName')
+                  .str('pathName')
+                  // The Inventory Item is stored here without properties
+                  .endElem();
+              },
+              (builder) => {
+                builder.if(
+                  (ctx) =>
+                    ctx.parent !== undefined &&
+                    ctx.parent.obj.structInnerType === 'Guid',
+                  (builder) => {
+                    builder.hex('#_index', 16);
+                  },
+                  (builder) => {
+                    // else
 
-                  builder.if(
-                    (ctx) =>
-                      ctx.parent !== undefined &&
-                      ctx.parent.obj.structInnerType === 'LinearColor',
-                    (builder) => {
-                      builder
-                        .elem('_index')
-                        .float('r')
-                        .float('g')
-                        .float('b')
-                        .float('a')
-                        .endElem();
-                    },
-                    (builder) => {
-                      // else
+                    builder.if(
+                      (ctx) =>
+                        ctx.parent !== undefined &&
+                        ctx.parent.obj.structInnerType === 'LinearColor',
+                      (builder) => {
+                        builder
+                          .elem('_index')
+                          .float('r')
+                          .float('g')
+                          .float('b')
+                          .float('a')
+                          .endElem();
+                      },
+                      (builder) => {
+                        // else
 
-                      builder
-                        .elem('_index')
+                        builder
+                          .elem('_index')
 
-                        // parse inner properties
-                        // TODO fix loop for writing
-                        .arr('properties')
-                        .exec(
-                          (ctx) =>
-                            (ctx.tmp._propertiesCount = ctx.isLoading
-                              ? 999999999
-                              : ctx.obj.length)
-                        )
-                        .loop('_propertiesCount', (builder) => {
-                          builder
-                            .exec((ctx) => {
-                              if (!ctx.isLoading) {
-                                ctx.tmp._name = ctx.obj[ctx.tmp._index].name;
-                              }
-                            })
-                            .str('_name')
-                            .if(
-                              (ctx) => ctx.tmp._name === 'None',
-                              (builder) => builder.break()
-                            )
-                            .elem('_index')
-                            .exec((ctx) => (ctx.obj.name = ctx.tmp._name))
-                            .call(RegisteredFunction.transformProperty)
-                            .endElem();
-                        })
-                        .if(
-                          (ctx) => !ctx.isLoading,
-                          (builder) => {
+                          // parse inner properties
+                          // TODO fix loop for writing
+                          .arr('properties')
+                          .exec(
+                            (ctx) =>
+                              (ctx.tmp._propertiesCount = ctx.isLoading
+                                ? 999999999
+                                : ctx.obj.length)
+                          )
+                          .loop('_propertiesCount', (builder) => {
                             builder
-                              .exec((ctx) => (ctx.tmp._none = 'None'))
-                              .str('_none');
-                          }
-                        )
-                        .endArr()
-                        .endElem();
-                    }
-                  );
-                }
-              );
-            });
-
-
+                              .exec((ctx) => {
+                                if (!ctx.isLoading) {
+                                  ctx.tmp._name = ctx.obj[ctx.tmp._index].name;
+                                }
+                              })
+                              .str('_name')
+                              .if(
+                                (ctx) => ctx.tmp._name === 'None',
+                                (builder) => builder.break()
+                              )
+                              .elem('_index')
+                              .exec((ctx) => (ctx.obj.name = ctx.tmp._name))
+                              .call(RegisteredFunction.transformProperty)
+                              .endElem();
+                          })
+                          .if(
+                            (ctx) => !ctx.isLoading,
+                            (builder) => {
+                              builder
+                                .exec((ctx) => (ctx.tmp._none = 'None'))
+                                .str('_none');
+                            }
+                          )
+                          .endArr()
+                          .endElem();
+                      }
+                    );
+                  }
+                );
+              }
+            );
           })
           .endArr()
           .bufferEnd();
