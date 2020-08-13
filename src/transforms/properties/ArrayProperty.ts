@@ -55,9 +55,9 @@ export function transformArrayProperty(builder: Builder): void {
         builder
           .arr('values')
           .loop('_itemCount', (builder) => {
-            builder.obj('#_index');
+            builder.elem('_index');
             transformFText(builder);
-            builder.endObj();
+            builder.endElem();
           })
           .endArr();
       },

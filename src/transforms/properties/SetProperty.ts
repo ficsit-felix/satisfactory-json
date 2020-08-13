@@ -18,6 +18,18 @@ export function transformSetProperty(builder: Builder): void {
           })
           .endArr();
       },
+      ObjectProperty: (builder) => {
+        builder
+          .arr('values')
+          .loop('_itemCount', (builder) => {
+            builder
+              .elem('_index')
+              .str('levelName')
+              .str('pathName')
+              .endElem();
+          })
+          .endArr();
+      },
       $default: (builder) => {
         builder.error((ctx) => `Unknown set type: ${ctx.obj.type}`);
       },
