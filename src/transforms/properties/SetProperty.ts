@@ -1,6 +1,4 @@
 import { Builder } from '../../engine/Builder';
-import { transformStructProperty } from './StructProperty';
-import { debug } from 'console';
 import { RegisteredFunction } from '../../engine/TransformationEngine';
 
 // This has so far only occurred with the sweetTransportal mod
