@@ -43,6 +43,14 @@ export function transformSetProperty(builder: Builder): void {
           })
           .endArr();
       },
+      IntProperty: (builder) => {
+        builder.arr('values')
+          .loop('_itemCount', (builder) => {
+            builder
+              .int('#_index');
+          })
+          .endArr();
+      },
       $default: (builder) => {
         builder.error((ctx) => `Unknown set type: ${ctx.obj.type}`);
       },

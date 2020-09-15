@@ -100,7 +100,7 @@ export function transformEntity(builder: Builder): void {
     .hexRemaining('missing', '_entityLength')
     .exec((ctx) => {
       if (ctx.obj.missing !== '') {
-        console.error('Too much data in object: ', ctx.obj.missing, ctx);
+        console.warn('Too much data in object: ', ctx.obj.missing, ctx);
       }
     })
 
