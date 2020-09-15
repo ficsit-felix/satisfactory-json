@@ -44,10 +44,10 @@ export function transformSetProperty(builder: Builder): void {
           .endArr();
       },
       IntProperty: (builder) => {
-        builder.arr('values')
+        builder
+          .arr('values')
           .loop('_itemCount', (builder) => {
-            builder
-              .int('#_index');
+            builder.int('#_index');
           })
           .endArr();
       },
