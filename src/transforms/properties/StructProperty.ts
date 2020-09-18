@@ -28,7 +28,16 @@ export function transformStructProperty(builder: Builder): void {
         ctx.tmp._zero2 !== 0 ||
         ctx.tmp._zero3 !== 0
       ) {
-        throw new Error('Struct GUID not 0');
+        throw new Error(
+          'Struct GUID not 0, but ' +
+            ctx.tmp._zero0 +
+            ' ' +
+            ctx.tmp._zero1 +
+            ' ' +
+            ctx.tmp._zero2 +
+            ' ' +
+            ctx.tmp._zero3
+        );
       }
     })
     .assertNullByte(false) // Tag.HasPropertyGuid

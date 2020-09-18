@@ -1,7 +1,7 @@
 import { Builder } from '../../engine/Builder';
 import { RegisteredFunction } from '../../engine/TransformationEngine';
 
-// This has so far only occurred with the sweetTransportal mod
+// This has so far only been seen in mods such as sweetTransportal and FicsIt-Network
 export function transformSetProperty(builder: Builder): void {
   builder
     .obj('value')
@@ -33,12 +33,8 @@ export function transformSetProperty(builder: Builder): void {
           .loop('_itemCount', (builder) => {
             builder
               .elem('_index')
-              .int('unk1')
-              .str('name')
-              .str('type')
-              .int('unk2')
-              .int('unk3')
-              .call(RegisteredFunction.transformStructProperty)
+              // This currently used to store FFINNetworkTrace by the FicsIt-Networks mod which uses custom serialization logic
+              .call(RegisteredFunction.transformFINNetworkTrace)
               .endElem();
           })
           .endArr();
@@ -56,4 +52,35 @@ export function transformSetProperty(builder: Builder): void {
       },
     })
     .endObj();
+}
+
+// Custom serialization logic for FINNetworkTrace
+// https://github.com/CoderDE/FicsIt-Networks/blob/ab918a81a8a7527aec0cf6cd35270edfc5a1ddfe/Source/FicsItNetworks/Network/FINNetworkTrace.cpp#L154
+export function transformFINNetworkTrace(builder: Builder): void {
+  builder.int('valid').if(
+    (ctx) => ctx.obj.valid,
+    (builder) => {
+      builder
+        .str('levelName')
+        .str('pathName')
+        .int('hasPrev')
+        .if(
+          (ctx) => ctx.obj.hasPrev,
+          (builder) => {
+            // serialize previous trace
+            builder
+              .obj('prev')
+              .call(RegisteredFunction.transformFINNetworkTrace)
+              .endObj();
+          }
+        )
+        .int('hasStep')
+        .if(
+          (ctx) => ctx.obj.hasStep,
+          (builder) => {
+            builder.str('step');
+          }
+        );
+    }
+  );
 }

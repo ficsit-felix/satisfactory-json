@@ -31,7 +31,10 @@ import { transformObjectProperty } from '../transforms/properties/ObjectProperty
 import { transformStructProperty } from '../transforms/properties/StructProperty';
 import { transformArrayProperty } from '../transforms/properties/ArrayProperty';
 import { transformMapProperty } from '../transforms/properties/MapProperty';
-import { transformSetProperty } from '../transforms/properties/SetProperty';
+import {
+  transformFINNetworkTrace,
+  transformSetProperty,
+} from '../transforms/properties/SetProperty';
 import { transformInt64Property } from '../transforms/properties/Int64Property';
 import { transformInt8Property } from '../transforms/properties/Int8Property';
 
@@ -86,6 +89,8 @@ export enum RegisteredFunction {
   transformSetProperty = 'transformSetProperty',
   transformInt64Property = 'transformInt64Property',
   transformInt8Property = 'transformInt8Property',
+  // MODS
+  transformFINNetworkTrace = 'transformFINNetworkTrace',
 }
 
 export class TransformationEngine {
@@ -204,6 +209,11 @@ export class TransformationEngine {
     registerFunction(
       RegisteredFunction.transformInt8Property,
       transformInt8Property
+    );
+    // MODS
+    registerFunction(
+      RegisteredFunction.transformFINNetworkTrace,
+      transformFINNetworkTrace
     );
   }
 
