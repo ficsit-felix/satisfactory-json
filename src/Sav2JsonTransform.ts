@@ -28,6 +28,7 @@ export class Sav2JsonTransform extends Transform {
     this.transformationEngine.prepare(true);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {
     try {
       // We can only handle Buffers

@@ -12,6 +12,7 @@ import { transformGuid } from './structs/Guid';
 import { transformFluidBox } from './structs/FluidBox';
 import { transformSlateBrush } from './structs/SlateBrush';
 import { transformVector2D } from './structs/Vector2D';
+import { transformFINNetworkTrace } from './structs/FINetworkTrace';
 
 export function transformStructProperty(builder: Builder): void {
   builder
@@ -64,6 +65,7 @@ export function transformStructProperty(builder: Builder): void {
       Hotbar: (builder) => transformArbitraryStruct(builder),
       EnabledCheats: (builder) => transformArbitraryStruct(builder),
       Vector2D: (builder) => transformVector2D(builder),
+      FINNetworkTrace: (builder) => transformFINNetworkTrace(builder),
       $default: (builder) =>
         builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
     })

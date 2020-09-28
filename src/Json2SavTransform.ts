@@ -33,6 +33,7 @@ export class Json2SavTransform extends Transform {
     this.transformationEngine.prepare(false);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   _transform(chunk: any, encoding: string, callback: TransformCallback): void {
     try {
       let continueWriting = true;

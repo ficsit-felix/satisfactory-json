@@ -31,12 +31,10 @@ import { transformObjectProperty } from '../transforms/properties/ObjectProperty
 import { transformStructProperty } from '../transforms/properties/StructProperty';
 import { transformArrayProperty } from '../transforms/properties/ArrayProperty';
 import { transformMapProperty } from '../transforms/properties/MapProperty';
-import {
-  transformFINNetworkTrace,
-  transformSetProperty,
-} from '../transforms/properties/SetProperty';
+import { transformSetProperty } from '../transforms/properties/SetProperty';
 import { transformInt64Property } from '../transforms/properties/Int64Property';
 import { transformInt8Property } from '../transforms/properties/Int8Property';
+import { transformFINNetworkTrace } from '../transforms/properties/structs/FINetworkTrace';
 
 interface StackFrame {
   commands: Command[];
