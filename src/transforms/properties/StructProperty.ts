@@ -66,6 +66,7 @@ export function transformStructProperty(builder: Builder): void {
       EnabledCheats: (builder) => transformArbitraryStruct(builder),
       Vector2D: (builder) => transformVector2D(builder),
       FINNetworkTrace: (builder) => transformFINNetworkTrace(builder),
+      FFSlugBreedTask: (builder) => transformArbitraryStruct(builder),
       $default: (builder) =>
         builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
     })
