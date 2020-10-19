@@ -31,13 +31,13 @@ export function transformStructProperty(builder: Builder): void {
       ) {
         throw new Error(
           'Struct GUID not 0, but ' +
-          ctx.tmp._zero0 +
-          ' ' +
-          ctx.tmp._zero1 +
-          ' ' +
-          ctx.tmp._zero2 +
-          ' ' +
-          ctx.tmp._zero3
+            ctx.tmp._zero0 +
+            ' ' +
+            ctx.tmp._zero1 +
+            ' ' +
+            ctx.tmp._zero2 +
+            ' ' +
+            ctx.tmp._zero3
         );
       }
     })
