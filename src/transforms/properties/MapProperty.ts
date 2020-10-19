@@ -62,6 +62,12 @@ export function transformMapProperty(builder: Builder): void {
           StrProperty: (builder) => {
             builder.str('key');
           },
+          NameProperty: (builder) => {
+            builder.str('key');
+          },
+          Int64Property: (builder) => {
+            builder.long('key');
+          },
           $default: (builder) => {
             builder.exec((ctx) => {
               throw Error(`Unimplemented key type ${ctx.tmp._keyTransform}`);
@@ -80,6 +86,9 @@ export function transformMapProperty(builder: Builder): void {
           },
           StrProperty: (builder) => {
             builder.str('value');
+          },
+          ObjectProperty: (builder) => {
+            builder.obj('value').str('levelName').str('pathName').endObj();
           },
           $default: (builder) => {
             builder.exec((ctx) => {
