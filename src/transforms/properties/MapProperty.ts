@@ -90,6 +90,9 @@ export function transformMapProperty(builder: Builder): void {
           ObjectProperty: (builder) => {
             builder.obj('value').str('levelName').str('pathName').endObj();
           },
+          IntProperty: (builder) => {
+            builder.int('value');
+          },
           $default: (builder) => {
             builder.exec((ctx) => {
               throw Error(
