@@ -70,6 +70,7 @@ export function transformStructProperty(builder: Builder): void {
       FICFloatAttribute: (builder) => transformArbitraryStruct(builder),
       FFCompostingTask: (builder) => transformArbitraryStruct(builder),
       FFSeedExtrationTask: (builder) => transformArbitraryStruct(builder),
+      FFSlimeProcessingTask: (builder) => transformArbitraryStruct(builder),
       $default: (builder) =>
         builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
     })
