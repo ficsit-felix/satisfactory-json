@@ -68,6 +68,9 @@ export function transformMapProperty(builder: Builder): void {
           Int64Property: (builder) => {
             builder.long('key');
           },
+          EnumProperty: (builder) => {
+            builder.str('key');
+          },
           $default: (builder) => {
             builder.exec((ctx) => {
               throw Error(`Unimplemented key type ${ctx.tmp._keyTransform}`);

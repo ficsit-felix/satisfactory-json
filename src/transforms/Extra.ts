@@ -7,6 +7,9 @@ export function transformExtra(builder: Builder): void {
     '/Game/FactoryGame/Buildable/Factory/PowerLine/Build_PowerLine.Build_PowerLine_C': (
       builder
     ) => builder.call(RegisteredFunction.transformPowerLine),
+    '/Game/FactoryGame/Events/Christmas/Buildings/PowerLineLights/Build_XmassLightsLine_C': (
+      builder
+    ) => builder.call(RegisteredFunction.transformPowerLine),
     '/Game/FactoryGame/-Shared/Blueprint/BP_CircuitSubsystem.BP_CircuitSubsystem_C': (
       builder
     ) => builder.call(RegisteredFunction.transformCircuitSubsystem),
