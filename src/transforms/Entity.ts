@@ -1,3 +1,4 @@
+import { ReadArchive } from '../engine/Archive';
 import { Builder } from '../engine/Builder';
 import { RegisteredFunction } from '../engine/TransformationEngine';
 
@@ -83,17 +84,37 @@ export function transformEntity(builder: Builder): void {
       }
     )
 
-    .call(RegisteredFunction.transformProperties)
-    .int('_extraObjectCount', () => 0)
-    .exec((ctx) => {
-      if (ctx.tmp._extraObjectCount !== 0) {
-        console.error(
-          `Extra object count not zero, but ${ctx.tmp._extraObjectCount}`,
-          ctx
-        );
+    .exec((ctx, ar) => {
+      if (ctx.isLoading) {
+        // FINComputerSubsystem manages to not even have a 'None' entry to signify the empty properties array
+        // TODO when saving, this inserts the 'None' entry. Evaluate whether the modified save still loads with the FIN mod
+        if (ctx.tmp._entityLength === (ar as ReadArchive).getBytesRead()) {
+          ctx.tmp._skipProperties = true;
+          ctx.obj.properties = [];
+        }
       }
     })
-    .call(RegisteredFunction.transformExtra);
+    .if(
+      (ctx) => !ctx.tmp._skipProperties,
+      (builder) => {
+        builder
+          .call(RegisteredFunction.transformProperties)
+          .int('_extraObjectCount', () => 0)
+          .exec((ctx) => {
+            if (ctx.tmp._extraObjectCount !== 0) {
+              console.error(
+                `Extra object count not zero, but ${ctx.tmp._extraObjectCount}`,
+                ctx
+              );
+            }
+          })
+          .call(RegisteredFunction.transformExtra);
+      },
+      (builder) => {
+        // reset skip flag
+        builder.exec((ctx) => (ctx.tmp._skipProperties = false));
+      }
+    );
 
   builder
     // TODO read missing data

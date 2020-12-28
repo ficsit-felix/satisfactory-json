@@ -91,6 +91,6 @@ export function transformExtra(builder: Builder): void {
     '/Game/FactoryGame/-Shared/Blueprint/BP_RailroadSubsystem.BP_RailroadSubsystem_C': (
       builder
     ) => builder.call(RegisteredFunction.transformPlayerState),
-    $default: (_) => { },
+    $default: (_) => {},
   });
 }
