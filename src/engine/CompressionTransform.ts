@@ -1,7 +1,7 @@
 import { deflate } from 'pako';
 import { Transform, TransformCallback } from 'stream';
 import { writeBigInt64LE } from './Archive';
-import JSBI from '../vendor/jsbi';
+import JSBI from 'jsbi';
 export class CompressionTransform extends Transform {
   private maxChunkSize = 131072;
   private packageFileTag = JSBI.BigInt('2653586369');

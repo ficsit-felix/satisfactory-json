@@ -4,7 +4,7 @@
   "description": "Convert Satisfactory save files to JSON and back",
   "author": "ficsit-felix",
   "dependencies": {
-    "jsbi": "^3.1.2",
+    "jsbi": "^3.1.4",
     "pako": "^2.0.2"
   },
   "devDependencies": {
