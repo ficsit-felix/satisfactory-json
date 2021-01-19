@@ -44,7 +44,20 @@ export function transformFText(builder: Builder): void {
       '0' /*HISTORYTYPE_BASE*/: (builder) => {
         builder.str('namespace').str('key').str('sourceString');
       },
-      '255' /*HISTORYTYPE_NONE*/: (_builder) => {}, // this is the end of the  no value ?
+      '255' /*HISTORYTYPE_NONE*/: (builder) => {
+        // From Unreal Engine 4.23 on, the culture invariant strings are stored without history. This applies to Satisfactory builds from 140822 on.
+        builder.if(
+          (ctx) => ctx.tmp.buildVersion >= 140822,
+          (builder) => {
+            builder.int('hasCultureInvariantString').if(
+              (ctx) => ctx.obj.hasCultureInvariantString == 1,
+              (builder) => {
+                builder.str('cultureInvariantString');
+              }
+            );
+          }
+        );
+      }, // this is the end of the  no value ?
       '3' /*HISTORYTYPE_ARGUMENTFORMAT*/: (builder) => {
         builder
           .obj('sourceFmt')

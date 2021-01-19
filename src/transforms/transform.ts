@@ -7,6 +7,8 @@ export function transformHeader(builder: Builder): void {
     .int('saveHeaderType')
     .int('saveVersion')
     .int('buildVersion')
+    // Store buildVersion in tmp object to be able to access it later in TextProperty
+    .exec((ctx) => (ctx.tmp.buildVersion = ctx.obj.buildVersion))
     .str('mapName')
     .str('mapOptions')
     .str('sessionName')

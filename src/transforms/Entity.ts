@@ -87,7 +87,7 @@ export function transformEntity(builder: Builder): void {
     .exec((ctx, ar) => {
       if (ctx.isLoading) {
         // FINComputerSubsystem manages to not even have a 'None' entry to signify the empty properties array
-        // TODO when saving, this inserts the 'None' entry. Evaluate whether the modified save still loads with the FIN mod
+        // When saving, this inserts the 'None' entry. The modified save still loads with the FIN mod.
         if (ctx.tmp._entityLength === (ar as ReadArchive).getBytesRead()) {
           ctx.tmp._skipProperties = true;
           ctx.obj.properties = [];
