@@ -26,6 +26,8 @@ program
   })
   .parse(process.argv);
 
+const options = program.opts();
+
 if (sourceValue === undefined) {
   program.outputHelp();
   quitWithError('No source file specified.');
@@ -33,7 +35,7 @@ if (sourceValue === undefined) {
   program.outputHelp();
   quitWithError('No target file specified.');
 } else {
-  if (program.profile) {
+  if (options.profile) {
     profiler.startProfiling('probe', true);
   }
 
@@ -41,7 +43,7 @@ if (sourceValue === undefined) {
   const stream = fs.createReadStream(sourceValue, opts);
   const outStream = fs.createWriteStream(targetValue, opts);
 
-  if (program.time) {
+  if (options.time) {
     console.time('sav2json');
   }
 
@@ -63,11 +65,11 @@ if (sourceValue === undefined) {
     .pipe(stringifyTransform)
     .pipe(outStream)
     .on('finish', () => {
-      if (program.time) {
+      if (options.time) {
         console.timeEnd('sav2json');
       }
 
-      if (program.profile) {
+      if (options.profile) {
         const profile = profiler.stopProfiling('probe');
         profile.export((error: any, result: any) => {
           console.log('Profile stored.');
