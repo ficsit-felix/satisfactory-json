@@ -7,7 +7,8 @@ export interface SaveGame {
   sessionName: string;
   playDurationSeconds: number;
   saveDateTime: string;
-  sessionVisibility: number;
+  sessionVisibility?: number;
+  editorObjectVersion?: number;
   actors: Actor[];
   components: Component[];
   collected: ObjectReference[];

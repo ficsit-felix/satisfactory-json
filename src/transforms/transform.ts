@@ -20,6 +20,10 @@ export function transformHeader(builder: Builder): void {
       (bldr) => bldr.byte('sessionVisibility')
     )
     .if(
+      (ctx) => ctx.obj.saveHeaderType >= 7,
+      (bldr) => bldr.int('editorObjectVersion')
+    )
+    .if(
       (ctx) => ctx.obj.saveVersion >= 21,
       (builder) => {
         builder.startCompression().bufferStart('_length', true);
