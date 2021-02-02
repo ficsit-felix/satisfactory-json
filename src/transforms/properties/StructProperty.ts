@@ -72,6 +72,7 @@ export function transformStructProperty(builder: Builder): void {
       FFSeedExtrationTask: (builder) => transformArbitraryStruct(builder),
       FFSlimeProcessingTask: (builder) => transformArbitraryStruct(builder),
       SInventory: (builder) => transformArbitraryStruct(builder),
+      FFPlotTask: (builder) => transformArbitraryStruct(builder),
       $default: (builder) =>
         builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
     })
