@@ -68,10 +68,12 @@ function buildReference(name: Name): Reference {
 // TODO replace with references and getVar from Archive
 function getVar(ctx: Context, name: Name): any {
   switch (name.toString().charAt(0)) {
-    case '#':
+    case '#': // temporary with indirection
       return ctx.tmp[getVar(ctx, name.toString().substring(1))];
-    case '_':
+    case '_': // temporary
       return ctx.tmp[name];
+    case '^': // parent
+      return ctx.parent?.obj[name.toString().substring(1)];
     default:
       return ctx.obj[name];
   }
