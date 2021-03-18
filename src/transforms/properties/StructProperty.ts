@@ -66,6 +66,8 @@ export function transformStructProperty(builder: Builder): void {
       EnabledCheats: (builder) => transformArbitraryStruct(builder),
       Vector2D: (builder) => transformVector2D(builder),
       DroneTripInformation: (builder) => transformArbitraryStruct(builder),
+      DroneDockingStateInfo: (builder) => transformArbitraryStruct(builder),
+      LightSourceControlData: (builder) => transformArbitraryStruct(builder),
       FINNetworkTrace: (builder) => transformFINNetworkTrace(builder),
       FFSlugBreedTask: (builder) => transformArbitraryStruct(builder),
       FICFloatAttribute: (builder) => transformArbitraryStruct(builder),
