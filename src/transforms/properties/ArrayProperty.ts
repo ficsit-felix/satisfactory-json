@@ -143,6 +143,9 @@ function transformSpecialStructArray(builder: Builder): void {
         .float('a')
         .endElem();
     },
+    Vector: (builder) => {
+      builder.elem('_index').float('x').float('y').float('z').endElem();
+    },
     FINNetworkTrace: (builder) => {
       builder.elem('_index');
       transformFINNetworkTrace(builder);
