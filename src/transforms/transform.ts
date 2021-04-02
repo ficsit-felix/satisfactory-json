@@ -24,6 +24,10 @@ export function transformHeader(builder: Builder): void {
       (bldr) => bldr.int('editorObjectVersion')
     )
     .if(
+      (ctx) => ctx.obj.saveHeaderType >= 8,
+      (bldr) => bldr.str('modMetadata').int('isModdedSave')
+    )
+    .if(
       (ctx) => ctx.obj.saveVersion >= 21,
       (builder) => {
         builder.startCompression().bufferStart('_length', true);
