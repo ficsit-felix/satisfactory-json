@@ -90,6 +90,13 @@ export function transformFText(builder: Builder): void {
           })
           .endArr();
       },
+      '10' /*HISTORYTYPE_TRANSFORM*/: (builder) => {
+        builder
+        .obj('sourceText')
+        .call(RegisteredFunction.transformFText)
+        .endObj()
+        .byte('transformType');
+      },
       $default: (builder) => {
         builder.error((ctx) => `Unhandled HistoryType: ${ctx.obj.historyType}`);
       },
