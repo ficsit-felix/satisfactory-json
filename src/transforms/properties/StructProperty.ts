@@ -13,6 +13,7 @@ import { transformFluidBox } from './structs/FluidBox';
 import { transformSlateBrush } from './structs/SlateBrush';
 import { transformVector2D } from './structs/Vector2D';
 import { transformFINNetworkTrace } from './structs/FINetworkTrace';
+import { transformDateTime } from './structs/DateTime';
 
 export function transformStructProperty(builder: Builder): void {
   builder
@@ -76,6 +77,7 @@ export function transformStructProperty(builder: Builder): void {
       FFSlimeProcessingTask: (builder) => transformArbitraryStruct(builder),
       SInventory: (builder) => transformArbitraryStruct(builder),
       FFPlotTask: (builder) => transformArbitraryStruct(builder),
+      DateTime: (builder) => transformDateTime(builder),
       $default: (builder) =>
         builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
     })
