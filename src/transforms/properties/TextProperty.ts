@@ -50,7 +50,8 @@ export function transformFText(builder: Builder): void {
           (ctx) =>
             ctx.tmp.buildVersion == 139650 || ctx.tmp.buildVersion >= 140822,
           (builder) => {
-            builder.int('hasCultureInvariantString').if(
+            builder.int('hasCultureInvariantString')
+            .if(
               (ctx) => ctx.obj.hasCultureInvariantString == 1,
               (builder) => {
                 builder.str('cultureInvariantString');

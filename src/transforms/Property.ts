@@ -43,6 +43,10 @@ export function transformProperty(builder: Builder): void {
         builder.call(RegisteredFunction.transformObjectProperty),
       Int8Property: (builder: Builder) =>
         builder.call(RegisteredFunction.transformInt8Property),
+      UInt64Property: (builder: Builder) =>
+        builder.call(RegisteredFunction.transformInt64Property),
+      DoubleProperty: (builder: Builder) => 
+      builder.call(RegisteredFunction.transformInt64Property), // TODO
       $default: (builder: Builder) =>
         builder.error((ctx) => `Unknown property: ${ctx.obj.type}`),
     })

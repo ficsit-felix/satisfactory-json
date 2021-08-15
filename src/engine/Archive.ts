@@ -97,6 +97,12 @@ export abstract class Archive {
     shouldCount: boolean
   ): boolean;
 
+  public abstract transformDouble(
+    ctx: Context,
+    ref: Reference,
+    shouldCount: boolean
+  ): boolean;
+
   public abstract assertNullByte(ctx: Context, shouldCount: boolean): boolean;
 
   public abstract transformHex(
@@ -200,6 +206,19 @@ export class ReadArchive extends Archive {
     shouldCount: boolean
   ): boolean {
     const result = this.readFloat(shouldCount);
+    if (result === undefined) {
+      return false;
+    }
+    setVar(ctx, ref, result);
+
+    return true;
+  }
+  public transformDouble(
+    ctx: Context,
+    ref: Reference,
+    shouldCount: boolean
+  ): boolean {
+    const result = this.readDouble(shouldCount);
     if (result === undefined) {
       return false;
     }
@@ -386,9 +405,11 @@ export class ReadArchive extends Archive {
         return undefined;
       }
       if (result !== 0) {
-        throw new Error(
+        // TODO russian characters for some reason do not end with double zero?
+        console.error(`string ${resultStr} (len: ${length}) does not end with double zero, but with ${result}`)
+        /*throw new Error(
           `string(len: ${length}) does not end with zero, but with ${result}`
-        );
+        );*/
       }
     }
 
@@ -400,8 +421,9 @@ export class ReadArchive extends Archive {
     }
     if (result !== 0) {
       throw new Error(
-        `string(len: ${length}) does not end with zero, but with ${result}`
+        `string ${resultStr} (len: ${length}) does not end with zero, but with ${result}`
       );
+      //console.error(`string ${resultStr} (len: ${length}) does not end with zero, but with ${result}`)
     }
     return resultStr;
   }
@@ -446,6 +468,20 @@ export class ReadArchive extends Archive {
       return undefined;
     }
     const result = this.buffer.readFloatLE(this.cursor);
+    this.cursor += bytes;
+    this.bytesRead += bytes;
+    return result;
+  }
+
+  public readDouble(_shouldCount = true): number | undefined {
+    const bytes = 8;
+
+    if (this.cursor + bytes > this.buffer.length) {
+      // Not enough bytes in this chunk
+      this.missingBytes = this.cursor + bytes - this.buffer.length;
+      return undefined;
+    }
+    const result = this.buffer.readDoubleLE(this.cursor);
     this.cursor += bytes;
     this.bytesRead += bytes;
     return result;
@@ -694,6 +730,34 @@ export class WriteArchive extends Archive {
       return false;
     }
     this.buffer.writeFloatLE(value, this.cursor);
+    this.cursor += bytes;
+    return true;
+  }
+
+  public transformDouble(
+    ctx: Context,
+    ref: Reference,
+    shouldCount: boolean
+  ): boolean {
+    const value = getVar(ctx, ref);
+    if (value === undefined) {
+      throw new Error(`Undefined float ${ref.name}`);
+    }
+    const bytes = 8;
+
+    if (shouldCount) {
+      this.bufferLength += bytes;
+    }
+    this.totalBytes += bytes;
+
+    if (this.cursor + bytes > MAX_CHUNK_SIZE) {
+      // not enough place in the buffer
+      const buffer = Buffer.alloc(bytes);
+      buffer.writeDoubleLE(value, 0);
+      this.putInNewChunk(buffer, bytes);
+      return false;
+    }
+    this.buffer.writeDoubleLE(value, this.cursor);
     this.cursor += bytes;
     return true;
   }

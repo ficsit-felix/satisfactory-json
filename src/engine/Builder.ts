@@ -29,6 +29,7 @@ import {
   StartCompressionCommand,
   EndSaveGameCommand,
   EmitEntityProgressCommand,
+  DoubleCommand,
 } from './commands';
 import { Archive } from './Archive';
 import { RegisteredFunction } from './TransformationEngine';
@@ -113,6 +114,10 @@ export class Builder {
   }
   public float(name: Name): Builder {
     this.commands.push(new FloatCommand(name));
+    return this;
+  }
+  public double(name: Name): Builder {
+    this.commands.push(new DoubleCommand(name));
     return this;
   }
   public hex(name: Name, bytes: number, shouldCount = true): Builder {

@@ -335,6 +335,22 @@ export class FloatCommand extends Command {
   }
 }
 
+export class DoubleCommand extends Command {
+  private ref: Reference;
+  constructor(name: Name) {
+    super();
+    this.ref = buildReference(name);
+  }
+  exec(ctx: Context, ar: Archive): number {
+    const result = ar.transformDouble(ctx, this.ref, true);
+    if (!result) {
+      return ar.missingBytes;
+    }
+
+    return 0;
+  }
+}
+
 export class AssertNullByteCommand extends Command {
   private shouldCount: boolean;
   constructor(shouldCount: boolean) {
