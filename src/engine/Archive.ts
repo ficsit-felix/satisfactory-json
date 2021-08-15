@@ -406,7 +406,9 @@ export class ReadArchive extends Archive {
       }
       if (result !== 0) {
         // TODO russian characters for some reason do not end with double zero?
-        console.error(`string ${resultStr} (len: ${length}) does not end with double zero, but with ${result}`)
+        console.error(
+          `string ${resultStr} (len: ${length}) does not end with double zero, but with ${result}`
+        );
         /*throw new Error(
           `string(len: ${length}) does not end with zero, but with ${result}`
         );*/

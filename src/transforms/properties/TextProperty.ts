@@ -50,8 +50,7 @@ export function transformFText(builder: Builder): void {
           (ctx) =>
             ctx.tmp.buildVersion == 139650 || ctx.tmp.buildVersion >= 140822,
           (builder) => {
-            builder.int('hasCultureInvariantString')
-            .if(
+            builder.int('hasCultureInvariantString').if(
               (ctx) => ctx.obj.hasCultureInvariantString == 1,
               (builder) => {
                 builder.str('cultureInvariantString');
@@ -93,10 +92,10 @@ export function transformFText(builder: Builder): void {
       },
       '10' /*HISTORYTYPE_TRANSFORM*/: (builder) => {
         builder
-        .obj('sourceText')
-        .call(RegisteredFunction.transformFText)
-        .endObj()
-        .byte('transformType');
+          .obj('sourceText')
+          .call(RegisteredFunction.transformFText)
+          .endObj()
+          .byte('transformType');
       },
       $default: (builder) => {
         builder.error((ctx) => `Unhandled HistoryType: ${ctx.obj.historyType}`);

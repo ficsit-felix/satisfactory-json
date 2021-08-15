@@ -1,8 +1,10 @@
-import { Builder } from "../../../engine/Builder";
+import { Builder } from '../../../engine/Builder';
 
 // https://github.com/CoderDE/FicsIt-Networks/blob/8df216ff8f8f8326c7a7f280c72d15106aa51c78/Source/FicsItNetworks/FicsItKernel/Processor/Lua/LuaProcessorStateStorage.cpp
 export function transformFINLuaProcessorStateStorage(builder: Builder): void {
-    builder.int('a').str('b')
+  builder
+    .int('a')
+    .str('b')
     .str('c')
     .int('d')
     .str('e')
@@ -42,7 +44,7 @@ export function transformFINLuaProcessorStateStorage(builder: Builder): void {
     .str('r_1')
     .int('r_2')
     .int('r_3')
-    .str('r_4base64') // globals 
+    .str('r_4base64') // globals
     .str('r_5base64') // thread
     .int('s')
     .str('s_0')
@@ -76,5 +78,6 @@ export function transformFINLuaProcessorStateStorage(builder: Builder): void {
     .int('s_A_1')
     .int('s_A_2')
 
-    .hex('_tmp', 256).debugger();
+    .hex('_tmp', 256)
+    .debugger();
 }

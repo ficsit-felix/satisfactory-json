@@ -78,7 +78,8 @@ export function transformStructProperty(builder: Builder): void {
       FFSlimeProcessingTask: (builder) => transformArbitraryStruct(builder),
       SInventory: (builder) => transformArbitraryStruct(builder),
       FFPlotTask: (builder) => transformArbitraryStruct(builder),
-      FINLuaProcessorStateStorage: (builder) => transformFINLuaProcessorStateStorage(builder),
+      FINLuaProcessorStateStorage: (builder) =>
+        transformFINLuaProcessorStateStorage(builder),
       DateTime: (builder) => transformDateTime(builder),
       $default: (builder) =>
         builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
