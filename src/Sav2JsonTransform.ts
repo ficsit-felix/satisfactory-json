@@ -59,7 +59,7 @@ export class Sav2JsonTransform extends Transform {
           }, this.progressTimeoutMs);
           break;
       }
-    } catch (error) {
+    } catch (error: any) {
       callback(error);
     }
   }
@@ -73,7 +73,7 @@ export class Sav2JsonTransform extends Transform {
 
         callback(error);
       });
-    } catch (error) {
+    } catch (error: any) {
       callback(error);
     }
   }

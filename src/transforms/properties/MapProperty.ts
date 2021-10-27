@@ -96,6 +96,9 @@ export function transformMapProperty(builder: Builder): void {
           IntProperty: (builder) => {
             builder.int('value');
           },
+          BoolProperty: (builder) => {
+            builder.byte('value');
+          },
           $default: (builder) => {
             builder.exec((ctx) => {
               throw Error(

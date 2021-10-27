@@ -13,7 +13,7 @@ function quitWithError(message: any): void {
   process.exit(1);
 }
 
-program
+program.program
   .description(
     'Converts Satisfactory save games (.sav) into a more readable format (.json)'
   )
@@ -26,13 +26,13 @@ program
   })
   .parse(process.argv);
 
-const options = program.opts();
+const options = program.program.opts();
 
 if (sourceValue === undefined) {
-  program.outputHelp();
+  program.program.outputHelp();
   quitWithError('No source file specified.');
 } else if (targetValue === undefined) {
-  program.outputHelp();
+  program.program.outputHelp();
   quitWithError('No target file specified.');
 } else {
   if (options.profile) {

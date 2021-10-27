@@ -1,6 +1,7 @@
 import { inflate } from 'pako';
 import { ReadArchive } from './Archive';
 import { TransformationEngine, TransformResult } from './TransformationEngine';
+import JSBI from 'jsbi';
 
 export class DecompressionTransform {
   private buffers: Buffer[] = [];
@@ -99,6 +100,6 @@ export class DecompressionTransform {
       return undefined;
     }
 
-    return chunk.read(Number(compressedSize));
+    return chunk.read(JSBI.toNumber(compressedSize));
   }
 }

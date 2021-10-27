@@ -31,16 +31,16 @@ export function transformStructProperty(builder: Builder): void {
         ctx.tmp._zero2 !== 0 ||
         ctx.tmp._zero3 !== 0
       ) {
-        throw new Error(
-          'Struct GUID not 0, but ' +
-            ctx.tmp._zero0 +
-            ' ' +
-            ctx.tmp._zero1 +
-            ' ' +
-            ctx.tmp._zero2 +
-            ' ' +
-            ctx.tmp._zero3
-        );
+        // throw new Error(
+        //   'Struct GUID not 0, but ' +
+        //     ctx.tmp._zero0 +
+        //     ' ' +
+        //     ctx.tmp._zero1 +
+        //     ' ' +
+        //     ctx.tmp._zero2 +
+        //     ' ' +
+        //     ctx.tmp._zero3
+        // );
       }
     })
     .assertNullByte(false) // Tag.HasPropertyGuid
@@ -70,7 +70,10 @@ export function transformStructProperty(builder: Builder): void {
       DroneTripInformation: (builder) => transformArbitraryStruct(builder),
       DroneDockingStateInfo: (builder) => transformArbitraryStruct(builder),
       LightSourceControlData: (builder) => transformArbitraryStruct(builder),
-      FINNetworkTrace: (builder) => transformFINNetworkTrace(builder),
+      FactoryCustomizationData: (builder) => transformArbitraryStruct(builder),
+      FactoryCustomizationColorSlot: (builder) =>
+        transformArbitraryStruct(builder),
+      // Mods
       FFSlugBreedTask: (builder) => transformArbitraryStruct(builder),
       FICFloatAttribute: (builder) => transformArbitraryStruct(builder),
       FFCompostingTask: (builder) => transformArbitraryStruct(builder),
@@ -78,9 +81,22 @@ export function transformStructProperty(builder: Builder): void {
       FFSlimeProcessingTask: (builder) => transformArbitraryStruct(builder),
       SInventory: (builder) => transformArbitraryStruct(builder),
       FFPlotTask: (builder) => transformArbitraryStruct(builder),
+      DateTime: (builder) => transformDateTime(builder),
+      FINNetworkTrace: (builder) => transformFINNetworkTrace(builder),
       FINLuaProcessorStateStorage: (builder) =>
         transformFINLuaProcessorStateStorage(builder),
-      DateTime: (builder) => transformDateTime(builder),
+      RPHeaterTask: (builder) => transformArbitraryStruct(builder),
+      RPProductionTask: (builder) => transformArbitraryStruct(builder),
+      RPHeaterItemData: (builder) => transformArbitraryStruct(builder),
+      RPBoilerItemData: (builder) => transformArbitraryStruct(builder),
+      RPTurbineItemData: (builder) => transformArbitraryStruct(builder),
+      RPMRReactorChamberState: (builder) => transformArbitraryStruct(builder),
+      RPMRSupportRingState: (builder) => transformArbitraryStruct(builder),
+      Loot: (builder) => transformArbitraryStruct(builder),
+      RPPatreon: (builder) => transformArbitraryStruct(builder),
+      RPIcarusState: (builder) => transformArbitraryStruct(builder),
+      RPMRReactorProductionTask: (builder) => transformArbitraryStruct(builder),
+      ItemAmount: (builder) => transformArbitraryStruct(builder),
       $default: (builder) =>
         builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
     })

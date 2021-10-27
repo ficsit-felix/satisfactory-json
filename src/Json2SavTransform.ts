@@ -67,7 +67,7 @@ export class Json2SavTransform extends Transform {
         }
       }
       callback();
-    } catch (error) {
+    } catch (error: any) {
       callback(error);
     }
   }
@@ -75,7 +75,7 @@ export class Json2SavTransform extends Transform {
   _final(callback: (error?: Error | null) => void): void {
     try {
       this.transformationEngine.end(callback);
-    } catch (error) {
+    } catch (error: any) {
       callback(error);
     }
   }
