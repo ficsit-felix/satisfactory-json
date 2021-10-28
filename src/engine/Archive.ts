@@ -30,7 +30,7 @@ function wrtBigUInt64LE(
   min: JSBI,
   max: JSBI
 ) {
-  let lo = Number(JSBI.bitwiseAnd(value, JSBI.BigInt("0xffffffff")));
+  let lo = JSBI.toNumber(JSBI.bitwiseAnd(value, JSBI.BigInt("0xffffffff")));
   buf[offset++] = lo;
   lo = lo >> 8;
   buf[offset++] = lo;
@@ -38,7 +38,7 @@ function wrtBigUInt64LE(
   buf[offset++] = lo;
   lo = lo >> 8;
   buf[offset++] = lo;
-  let hi = Number(
+  let hi = JSBI.toNumber(
     JSBI.bitwiseAnd(
       JSBI.signedRightShift(value, JSBI.BigInt(32)),
       JSBI.BigInt("0xffffffff")
