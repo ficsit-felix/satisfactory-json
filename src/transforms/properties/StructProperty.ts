@@ -73,6 +73,7 @@ export function transformStructProperty(builder: Builder): void {
       FactoryCustomizationData: (builder) => transformArbitraryStruct(builder),
       FactoryCustomizationColorSlot: (builder) =>
         transformArbitraryStruct(builder),
+      TrainDockingRuleSet: (builder) => transformArbitraryStruct(builder),
       // Mods
       FFSlugBreedTask: (builder) => transformArbitraryStruct(builder),
       FICFloatAttribute: (builder) => transformArbitraryStruct(builder),
