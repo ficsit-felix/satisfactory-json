@@ -51,6 +51,7 @@ export function transformStructProperty(builder: Builder): void {
       Color: (builder) => transformColor(builder),
       LinearColor: (builder) => transformLinearColor(builder),
       Quat: (builder) => transformQuat(builder),
+      Vector4: (builder) => transformQuat(builder),
       InventoryItem: (builder) => transformInventoryItem(builder),
       RailroadTrackPosition: (builder) =>
         transformRailroadTrackPosition(builder),
@@ -98,8 +99,18 @@ export function transformStructProperty(builder: Builder): void {
       RPIcarusState: (builder) => transformArbitraryStruct(builder),
       RPMRReactorProductionTask: (builder) => transformArbitraryStruct(builder),
       ItemAmount: (builder) => transformArbitraryStruct(builder),
+      RssSignData: (builder) => transformArbitraryStruct(builder),
+      RssSignMaterialData: (builder) => transformArbitraryStruct(builder),
+      RssElementTextData: (builder) => transformArbitraryStruct(builder),
+      RssElementImageData: (builder) => transformArbitraryStruct(builder),
+      RssElementEffectData: (builder) => transformArbitraryStruct(builder),
+      RssElementSharedData: (builder) => transformArbitraryStruct(builder),
+      RssHologramData: (builder) => transformArbitraryStruct(builder),
+      RuntimeFloatCurve: (builder) => transformArbitraryStruct(builder),
+      MWProductionTask: (builder) => transformArbitraryStruct(builder),
       $default: (builder) =>
         builder.error((ctx) => `Unknown struct property: ${ctx.obj.type}`),
     })
     .endObj();
 }
+
