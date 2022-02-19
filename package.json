@@ -1,6 +1,6 @@
 {
   "name": "satisfactory-json",
-  "version": "0.0.62",
+  "version": "0.0.63",
   "description": "Convert Satisfactory save files to JSON and back",
   "author": "ficsit-felix",
   "dependencies": {

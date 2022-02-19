@@ -113,4 +113,3 @@ export function transformStructProperty(builder: Builder): void {
     })
     .endObj();
 }
-
